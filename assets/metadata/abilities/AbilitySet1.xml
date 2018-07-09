@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<AbilitySet Name="Basics">
+    <AbilityGroup Name="Cantrips">
+        <Ability>
+            <Name>Blink</Name>
+            <Icon></Icon>
+            <Level>Cantrip</Level>
+            <Script>scripts/abilities/blink.js</Script>
+            <Cost />
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Rogue</Class>
+                </ClassRequirement>
+                <LevelRequirement>1</LevelRequirement>
+            </Requirements>
+        </Ability>
+`
+        <Ability>
+            <Name>Heal</Name>
+            <Icon></Icon>
+            <Level>Cantrip</Level>
+            <Script>scripts/abilities/heal.js</Script>
+            <Cost>
+                <Component type="Verbal"/>
+                <Component type="Somatic"/>
+            </Cost>
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Bard</Class>
+                    <Class>Cleric</Class>
+                    <Class>Druid</Class>
+                    <Class>Paladin</Class>
+                    <Class>Wizard</Class>
+                </ClassRequirement>
+                <LevelRequirement>1</LevelRequirement>
+            </Requirements>
+        </Ability>
+    </AbilityGroup>
+    <AbilityGroup Name="Level 1">
+
+    </AbilityGroup>
+</AbilitySet>

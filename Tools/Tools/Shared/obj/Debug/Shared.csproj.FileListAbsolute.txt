@@ -1,0 +1,6 @@
+J:\Development\Repositories\DungeonGame\Tools\Tools\Shared\bin\Debug\Shared.dll
+J:\Development\Repositories\DungeonGame\Tools\Tools\Shared\bin\Debug\Shared.pdb
+J:\Development\Repositories\DungeonGame\Tools\Tools\Shared\obj\Debug\Shared.csprojResolveAssemblyReference.cache
+J:\Development\Repositories\DungeonGame\Tools\Tools\Shared\obj\Debug\Shared.csproj.CoreCompileInputs.cache
+J:\Development\Repositories\DungeonGame\Tools\Tools\Shared\obj\Debug\Shared.dll
+J:\Development\Repositories\DungeonGame\Tools\Tools\Shared\obj\Debug\Shared.pdb
