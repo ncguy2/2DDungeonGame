@@ -5,7 +5,6 @@ dependencies {
   compile "com.badlogicgames.gdx:gdx:$gdxVersion"
   compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
-  compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
   compile "com.rafaskoberg.gdx:typing-label:$typingLabelVersion"
   compile "com.kotcrab.vis:vis-ui:$visUiVersion"
   compile "com.github.tommyettinger:regexodus:$regExodusVersion"

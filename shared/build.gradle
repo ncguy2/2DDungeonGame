@@ -1,5 +1,11 @@
 eclipse.project.name = appName + '-shared'
 
 dependencies {
+    compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+
+    compile 'com.google.code.gson:gson:2.8.2'
+
     compile project(':Libraries/DamageSystem')
+    compile project(':Libraries/Generator')
 }

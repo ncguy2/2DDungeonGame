@@ -1,1 +1,3 @@
-include 'core', 'desktop', 'lwjgl3', 'server', 'shared', 'Libraries/DamageSystem'
+include 'core', 'desktop', 'lwjgl3', 'server', 'shared'
+include 'Libraries/DamageSystem'
+include 'Libraries/Generator'

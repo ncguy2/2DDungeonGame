@@ -21,11 +21,11 @@ public class Lwjgl3Launcher {
         createApplication();
     }
 
-    private static Lwjgl3Application createApplication() {
+    public static Lwjgl3Application createApplication() {
         return new Lwjgl3Application(new GameLauncher(), getDefaultConfiguration());
     }
 
-    private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
+    public static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("DungeonGame");
         configuration.useOpenGL3(true, 3, 3);
