@@ -21,9 +21,9 @@ public class Transform2D {
 //    protected float scaleX = 1;
 //    protected float scaleY = 1;
 
-    protected final Vector2 translation = new Vector2();
-    protected float rotationDegrees = 0;
-    protected final Vector2 scale = new Vector2(1, 1);
+    public final Vector2 translation = new Vector2();
+    public float rotationDegrees = 0;
+    public final Vector2 scale = new Vector2(1, 1);
 
     public final Matrix3 transformation = new Matrix3();
 
@@ -48,4 +48,12 @@ public class Transform2D {
         return mat.mul(this.LocalTransform());
     }
 
+    public float RotationRad() {
+        return (float) Math.toRadians(rotationDegrees);
+    }
+
+    public void Translate(Vector2 vec) {
+        translation.add(vec);
+        Update();
+    }
 }

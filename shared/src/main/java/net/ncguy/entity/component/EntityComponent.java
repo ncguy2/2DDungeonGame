@@ -1,5 +1,6 @@
 package net.ncguy.entity.component;
 
+import net.ncguy.entity.Entity;
 import net.ncguy.io.Json;
 import net.ncguy.io.RuntimeTypeAdapterFactory;
 
@@ -11,10 +12,11 @@ import java.util.HashSet;
 public class EntityComponent {
 
     public String name;
+    public SceneComponent owningComponent;
 
     // Serialization stuffs
 
-    protected static final RuntimeTypeAdapterFactory<EntityComponent> adapter = RuntimeTypeAdapterFactory.of(EntityComponent.class);
+    protected static final RuntimeTypeAdapterFactory<EntityComponent> adapter = RuntimeTypeAdapterFactory.of(EntityComponent.class, "Internal_ComponentType");
     protected static final HashSet<Class<? extends EntityComponent>> registeredClasses = new HashSet<>();
 
     static {
@@ -35,12 +37,37 @@ public class EntityComponent {
         this.name = name;
     }
 
+    public void _OnAddToComponent(SceneComponent component) {
+        owningComponent = component;
+    }
+
+    public void _OnRemoveFromComponent() {
+        owningComponent = null;
+    }
+
+    public Entity GetOwningEntity() {
+        if(owningComponent != null)
+            return owningComponent.GetOwningEntity();
+        return null;
+    }
+
     public String GetType() {
         return getClass().getSimpleName();
     }
 
     public boolean CanReplicate() {
         return true;
+    }
+
+    public boolean Has(Class<? extends EntityComponent> type) {
+        return false;
+    }
+
+    public <T extends EntityComponent> T GetComponent(Class<T> type, boolean searchDescendants) {
+        return null;
+    }
+
+    public void Update(float delta) {
     }
 
 }

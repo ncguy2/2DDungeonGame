@@ -12,11 +12,21 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import net.ncguy.asset.Sprites;
+import net.ncguy.entity.Entity;
+import net.ncguy.entity.component.CollisionComponent;
+import net.ncguy.entity.component.InputComponent;
+import net.ncguy.entity.component.MovementComponent;
+import net.ncguy.system.InputSystem;
+import net.ncguy.system.PhysicsSystem;
+import net.ncguy.world.Engine;
 
-/** First screen of the application. Displayed after the application is created. */
+import static net.ncguy.system.PhysicsSystem.physicsToScreen;
+import static net.ncguy.system.PhysicsSystem.screenToPhysics;
+
+/**
+ * First screen of the application. Displayed after the application is created.
+ */
 public class TestScreen implements Screen {
-
-    World world;
 
     ShaderProgram shader;
     SpriteBatch batch;
@@ -31,30 +41,21 @@ public class TestScreen implements Screen {
     Box2DDebugRenderer debugRenderer;
     Body player;
 
-    static float screenToPhysics = .01f;
-    static float physicsToScreen = 100f;
-
-    private float accumulator = 0;
-
-    private void DoPhysicsStep(float deltaTime) {
-        // fixed time step
-        // max frame time to avoid spiral of death (on slow devices)
-        float frameTime = Math.min(deltaTime, 0.25f);
-        accumulator += frameTime;
-        float timeStep = 1f / 45f;
-        while (accumulator >= timeStep) {
-            world.step(timeStep, 6, 2);
-            accumulator -= timeStep;
-        }
-    }
+    Engine engine;
+    Entity playerEntity;
+    PhysicsSystem physicsSystem;
 
     @Override
     public void show() {
         // Prepare your screen here.
         ShaderProgram.pedantic = false;
-        World.setVelocityThreshold(10);
-        world = new World(new Vector2(0, 0), true);
+//        World.setVelocityThreshold(10);
+//        world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
+
+        engine = new Engine();
+        engine.AddSystem(new InputSystem(engine.world));
+        engine.AddSystem(physicsSystem = new PhysicsSystem(engine.world));
 
         shader = new ShaderProgram(Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
         System.out.println(shader.getLog());
@@ -74,11 +75,11 @@ public class TestScreen implements Screen {
         for (int i = 0; i < solidMap.length; i++) {
             for (int j = 0; j < solidMap[i].length; j++) {
 
-                if(i == 0 || i == solidMap.length - 1) {
+                if (i == 0 || i == solidMap.length - 1) {
                     solidMap[i][j] = true;
                     continue;
                 }
-                if(j == 0 || j == solidMap[i].length - 1) {
+                if (j == 0 || j == solidMap[i].length - 1) {
                     solidMap[i][j] = true;
                     continue;
                 }
@@ -102,12 +103,13 @@ public class TestScreen implements Screen {
 
         for (int x = 0; x < solidMap.length; x++) {
             for (int y = 0; y < solidMap[x].length; y++) {
-                if(solidMap[x][y]) {
+                if (solidMap[x][y]) {
                     BodyDef def = new BodyDef();
                     def.type = BodyDef.BodyType.StaticBody;
-                    def.position.set((x * width) + halfWidth, (y * height) + halfHeight).scl(screenToPhysics);
+                    def.position.set((x * width) + halfWidth, (y * height) + halfHeight)
+                            .scl(screenToPhysics);
 
-                    Body body = world.createBody(def);
+                    Body body = physicsSystem.World().createBody(def);
                     PolygonShape shape = new PolygonShape();
                     shape.setAsBox(halfWidth * screenToPhysics, halfHeight * screenToPhysics);
 
@@ -120,8 +122,9 @@ public class TestScreen implements Screen {
 
         BodyDef def = new BodyDef();
         def.type = BodyDef.BodyType.DynamicBody;
-        def.position.set(400, 300).scl(screenToPhysics);
-        player = world.createBody(def);
+        def.position.set(400, 300)
+                .scl(screenToPhysics);
+        player = physicsSystem.World().createBody(def);
         CircleShape shape = new CircleShape();
         shape.setRadius(32f * screenToPhysics);
         FixtureDef fixtureDef = new FixtureDef();
@@ -131,12 +134,17 @@ public class TestScreen implements Screen {
         fixtureDef.restitution = 0.0f;
         player.createFixture(fixtureDef);
 
+        playerEntity = new Entity();
+        playerEntity.AddComponent(new InputComponent("Input"));
+        playerEntity.AddComponent(new MovementComponent("Movement"));
+        playerEntity.AddComponent(new CollisionComponent("Collision")).body = player;
+        engine.world.Add(playerEntity);
     }
 
     public boolean Sample(int x, int y) {
-        if(x < 0 || x >= solidMap.length)
+        if (x < 0 || x >= solidMap.length)
             return false;
-        if(y < 0 || y >= solidMap[x].length)
+        if (y < 0 || y >= solidMap[x].length)
             return false;
 
         return solidMap[x][y];
@@ -150,36 +158,9 @@ public class TestScreen implements Screen {
     @Override
     public void render(float delta) {
 
-        float speed = 5;
-        Vector2 direction = new Vector2();
+        engine.Update(delta);
 
-        if(Gdx.input.isKeyPressed(Input.Keys.W)) {
-            direction.y++;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.S)) {
-            direction.y--;
-        }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.A)) {
-            direction.x--;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.D)) {
-            direction.x++;
-        }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            speed *= 2.5f;
-        }
-
-        direction.nor().scl(speed);
-
-//        if(direction.isZero()) player.setLinearDamping(9001);
-//        else player.setLinearDamping(0);
-//        player.setLinearVelocity(direction);
-
-
-        player.setLinearVelocity(direction);
-
+//        player.setTransform(playerEntity.rootComponent.transform.translation, playerEntity.rootComponent.transform.RotationRad());
 
         // Draw your screen here. "delta" is the time since last render in seconds.
         batch.setProjectionMatrix(camera.combined);
@@ -193,39 +174,35 @@ public class TestScreen implements Screen {
 
         for (int x = 0; x < solidMap.length; x++) {
             for (int y = 0; y < solidMap[x].length; y++) {
-
-//                Sprites.Pixel().setBounds(width * x, height * y, width, height);
-//                Sprites.Pixel().setColor((solidMap[x][y] ? Color.RED.cpy() : Color.GREEN.cpy()).mul(.6f));
-//                Sprites.Pixel().draw(batch);
-
                 Texture t = solidMap[x][y] ? wallTex : floorTex;
-
                 batch.draw(t, width * x, height * y, width, height);
             }
         }
 
+        Vector2 pos = this.player.getPosition()
+                .cpy()
+                .scl(physicsToScreen);
 
-        Vector2 pos = this.player.getPosition().cpy().scl(physicsToScreen);
-
-        Sprites.Ball().setBounds(pos.x - 32, pos.y - 32, 64, 64);
-        Sprites.Ball().setColor(Color.CYAN);
-        Sprites.Ball().draw(batch);
+        Sprites.Ball()
+                .setBounds(pos.x - 32, pos.y - 32, 64, 64);
+        Sprites.Ball()
+                .setColor(Color.CYAN);
+        Sprites.Ball()
+                .draw(batch);
 
 
         batch.end();
 
-        debugRenderer.render(world, camera.combined);
+        debugRenderer.render(physicsSystem.World(), camera.combined);
 
-        if(Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             ShaderProgram shader = new ShaderProgram(Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
             System.out.println(shader.getLog());
-            if(shader.isCompiled()) {
+            if (shader.isCompiled()) {
                 this.shader.dispose();
                 this.shader = shader;
             }
         }
-
-        DoPhysicsStep(delta);
     }
 
     @Override
