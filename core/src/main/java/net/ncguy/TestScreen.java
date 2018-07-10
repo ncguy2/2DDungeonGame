@@ -145,7 +145,8 @@ public class TestScreen implements Screen {
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement"));
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
-        AbilityRegistry.instance().Get("Blink").ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Blink")).SetAbility(blink));
+        AbilityRegistry.instance().Get("Blink").ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Blink")).SlotIdx(1).SetAbility(blink));
+        AbilityRegistry.instance().Get("Heal").ifPresent(heal -> playerEntity.AddComponent(new AbilityComponent("Heal")).SlotIdx(0).SetAbility(heal));
         engine.world.Add(playerEntity);
     }
 

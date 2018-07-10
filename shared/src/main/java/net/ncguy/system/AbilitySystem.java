@@ -21,20 +21,22 @@ public class AbilitySystem extends BaseSystem {
     public void Update(float delta) {
         List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(AbilityComponent.class);
         for (Entity entity : entities) {
-            AbilityComponent ability = entity.GetComponent(AbilityComponent.class, true);
+            List<AbilityComponent> abilities = entity.GetComponents(AbilityComponent.class, true);
 
-            AbilityComponent.AbilityState state = ability.State();
-            if(state.enabled) {
-                if(state.just)
-                    InvokeJustEnabled(entity, ability);
-                else InvokeEnabled(entity, ability, delta);
-            }else {
-                if(state.just)
-                    InvokeJustDisabled(entity, ability);
-                else InvokeDisabled(entity, ability, delta);
+            for (AbilityComponent ability : abilities) {
+                AbilityComponent.AbilityState state = ability.State();
+                if(state.enabled) {
+                    if(state.just)
+                        InvokeJustEnabled(entity, ability);
+                    else InvokeEnabled(entity, ability, delta);
+                }else {
+                    if(state.just)
+                        InvokeJustDisabled(entity, ability);
+                    else InvokeDisabled(entity, ability, delta);
+                }
+
+                InvokeUpdate(entity, ability, delta);
             }
-
-            InvokeUpdate(entity, ability, delta);
         }
     }
     

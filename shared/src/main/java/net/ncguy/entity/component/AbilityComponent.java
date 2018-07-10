@@ -20,6 +20,11 @@ public class AbilityComponent extends EntityComponent {
         super(name);
     }
 
+    public AbilityComponent SlotIdx(int slotIdx) {
+        this.slotIdx = slotIdx;
+        return this;
+    }
+
     public void SetAbility(Ability ability) {
         this.ability = ability;
         script = new AbilityScript(Gdx.files.internal(this.ability.scriptPath).readString());

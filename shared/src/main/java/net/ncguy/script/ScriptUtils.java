@@ -51,6 +51,13 @@ public class ScriptUtils {
         tempPrimitives.add(e);
         return e;
     }
+    public Primitive DebugCircle(Vector2 point, float radius, float duration) {
+        Circle e = new Circle(duration);
+        e.point.set(point);
+        e.radius = radius;
+        tempPrimitives.add(e);
+        return e;
+    }
     public Primitive DebugLine(Vector2 start, Vector2 end, float duration) {
         Line e = new Line(duration);
         e.start.set(start);
@@ -173,6 +180,21 @@ public class ScriptUtils {
         @Override
         public void Render(ShapeRenderer renderer) {
             renderer.x(point, 4);
+        }
+    }
+
+    public static class Circle extends Primitive {
+
+        public Circle(float duration) {
+            super(duration);
+        }
+
+        public float radius;
+        public final Vector2 point = new Vector2();
+
+        @Override
+        public void Render(ShapeRenderer renderer) {
+            renderer.circle(point.x, point.y, radius);
         }
     }
 
