@@ -1,6 +1,7 @@
 package net.ncguy.system;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Transform;
 import com.badlogic.gdx.physics.box2d.World;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.CollisionComponent;
@@ -40,6 +41,14 @@ public class PhysicsSystem extends BaseSystem {
         }
 
         DoPhysicsStep(delta);
+
+        // Post-Step
+        for (Entity entity : entities) {
+            CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
+            Transform transform = collision.body.getTransform();
+            collision.transform.translation.set(transform.getPosition()).scl(physicsToScreen);
+            collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
+        }
     }
 
     @Override

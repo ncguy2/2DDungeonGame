@@ -12,8 +12,18 @@ import java.util.Scanner;
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
 
+
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         System.out.println(runtimeMXBean.getName());
+
+//        String script = String.join("\n", Files.readAllLines(new File("assets/scripts/abilities/blink.js").toPath()));
+//        ScriptHost.Invoke(null, script, ctx -> {
+//            Bindings bindings = ctx.getBindings(ScriptContext.ENGINE_SCOPE);
+//            System.out.println(bindings);
+//            ScriptObjectMirror test = (ScriptObjectMirror) bindings.get("test");
+//            test.call(bindings);
+//        });
+
 
         System.out.println("Renderdoc injection point");
         new Scanner(System.in).next();

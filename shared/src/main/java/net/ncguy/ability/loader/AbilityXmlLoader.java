@@ -57,7 +57,10 @@ public class AbilityXmlLoader {
     }
 
     public void ParseNode(Element element, List<Ability> abilities) {
-        String tagName = element.getLocalName();
+        String tagName = element.getTagName();
+        if(tagName == null)
+            return;
+
         if(tagName.equalsIgnoreCase("AbilitySet"))
             ParseAbilitySetTag(element, abilities);
         else if(tagName.equalsIgnoreCase("AbilityGroup"))

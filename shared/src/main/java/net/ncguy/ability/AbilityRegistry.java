@@ -22,7 +22,7 @@ public class AbilityRegistry {
     }
 
     public Optional<Ability> Get(String name) {
-        return GetAll(name).filter(a -> a.length > 1).map(a -> a[0]);
+        return GetAll(name).filter(a -> a.length >= 1).map(a -> a[0]);
     }
 
     public Optional<Ability[]> GetAll(String name) {

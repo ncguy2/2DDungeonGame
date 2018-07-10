@@ -4,6 +4,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,12 +35,15 @@ public class SceneComponent extends EntityComponent {
     @Override
     public void _OnAddToComponent(SceneComponent component) {
         super._OnAddToComponent(component);
-        if(component != null)
+        if(component != null) {
+            this.transform.parent = component.transform;
             owningEntity = null;
+        }
     }
 
     @Override
     public void _OnRemoveFromComponent() {
+        this.transform.parent = null;
         super._OnRemoveFromComponent();
         owningEntity = null;
     }
@@ -85,6 +89,21 @@ public class SceneComponent extends EntityComponent {
         }
 
         return null;
+    }
+
+    @Override
+    public <T extends EntityComponent> void GetComponents(Class<T> type, boolean searchDescendants, List<T> componentList) {
+        for (EntityComponent component : childrenComponents) {
+            if(type.isInstance(component))
+                componentList.add((T) component);
+        }
+
+        if(searchDescendants) {
+            for (EntityComponent component : childrenComponents) {
+                if (component.Has(type))
+                    component.GetComponents(type, searchDescendants, componentList);
+            }
+        }
     }
 
     @Override

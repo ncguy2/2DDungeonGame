@@ -1,6 +1,7 @@
 package net.ncguy.system;
 
 import net.ncguy.entity.Entity;
+import net.ncguy.entity.component.AbilityComponent;
 import net.ncguy.entity.component.InputComponent;
 import net.ncguy.entity.component.MovementComponent;
 import net.ncguy.input.InputManager;
@@ -33,6 +34,8 @@ public class InputSystem extends BaseSystem {
             movement.velocity.y += InputManager.Scale(movement.movementSpeed, input.keyUp);
             movement.velocity.y -= InputManager.Scale(movement.movementSpeed, input.keyDown);
 
+            List<AbilityComponent> abilities = e.GetComponents(AbilityComponent.class, true);
+            abilities.forEach(a -> input.GetAbilityKey(a.slotIdx).map(InputManager::IsPressed).ifPresent(a::SetEnabled));
         });
     }
 

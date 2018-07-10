@@ -3,7 +3,9 @@ package net.ncguy.entity;
 import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.SceneComponent;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Entity {
@@ -23,12 +25,14 @@ public class Entity {
             entity.Update(delta);
     }
 
-    public void SetRootComponent(SceneComponent component) {
+    public <T extends SceneComponent> T SetRootComponent(T component) {
         if(this.rootComponent != null)
             this.rootComponent.SetOwningEntity(null);
         this.rootComponent = component;
         if(this.rootComponent != null)
             this.rootComponent.SetOwningEntity(this);
+
+        return component;
     }
 
     public <T extends EntityComponent> T AddComponent(T component) {
@@ -54,6 +58,10 @@ public class Entity {
     }
 
     public boolean HasComponent(Class<? extends EntityComponent> componentType) {
+
+        if(componentType.isInstance(rootComponent))
+            return true;
+
         return rootComponent.Has(componentType);
     }
 
@@ -89,6 +97,24 @@ public class Entity {
     public <T extends EntityComponent> T GetComponent(Class<T> type, boolean searchDescendants) {
         if(rootComponent == null)
             return null;
+
+        if(type.isInstance(rootComponent))
+            return (T) rootComponent;
+
         return rootComponent.GetComponent(type, searchDescendants);
+    }
+
+    public SceneComponent GetRootComponent() {
+        return rootComponent;
+    }
+
+    public <T extends EntityComponent> List<T> GetComponents(Class<T> type, boolean searchDescendants) {
+        List<T> list = new ArrayList<>();
+        GetRootComponent().GetComponents(type, searchDescendants, list);
+        return list;
+    }
+
+    public Transform2D Transform() {
+        return rootComponent.transform;
     }
 }

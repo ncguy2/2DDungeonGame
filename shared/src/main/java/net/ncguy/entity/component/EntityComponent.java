@@ -5,6 +5,7 @@ import net.ncguy.io.Json;
 import net.ncguy.io.RuntimeTypeAdapterFactory;
 
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Base entity component, has no runtime functionality but defines instantiation behaviours such as serialization registry and such
@@ -25,7 +26,7 @@ public class EntityComponent {
 
     private synchronized void _RegisterClass() {
         Class<? extends EntityComponent> cls = getClass();
-        if(registeredClasses.contains(cls))
+        if (registeredClasses.contains(cls))
             return;
 
         registeredClasses.add(cls);
@@ -46,7 +47,7 @@ public class EntityComponent {
     }
 
     public Entity GetOwningEntity() {
-        if(owningComponent != null)
+        if (owningComponent != null)
             return owningComponent.GetOwningEntity();
         return null;
     }
@@ -66,6 +67,10 @@ public class EntityComponent {
     public <T extends EntityComponent> T GetComponent(Class<T> type, boolean searchDescendants) {
         return null;
     }
+
+    public <T extends EntityComponent> void GetComponents(Class<T> type, boolean searchDescendants, List<T> componentList) {
+    }
+
 
     public void Update(float delta) {
     }
