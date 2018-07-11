@@ -5,17 +5,19 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.RayCastCallback;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
 import net.ncguy.entity.component.CameraComponent;
 import net.ncguy.entity.component.CollisionComponent;
+import net.ncguy.physics.worker.DestroyBodyTask;
+import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.world.Engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ScriptUtils {
 
@@ -32,6 +34,7 @@ public class ScriptUtils {
 
     protected Engine engine;
     protected World collisionWorld;
+    protected PhysicsSystem physicsSystem;
 
     public Engine Engine() { return engine; }
     public ScriptUtils Engine(Engine engine) {
@@ -39,7 +42,15 @@ public class ScriptUtils {
         return this;
     }
 
-    public World World() { return collisionWorld; }
+
+    public PhysicsSystem PhysicsSystem() { return physicsSystem; }
+    public ScriptUtils PhysicsSystem(PhysicsSystem physicsSystem) {
+        this.physicsSystem = physicsSystem;
+        return this;
+    }
+
+    public World World() { return physicsSystem.World(); }
+    @Deprecated
     public ScriptUtils World(World collisionWorld) {
         this.collisionWorld = collisionWorld;
         return this;
@@ -132,6 +143,32 @@ public class ScriptUtils {
         CameraComponent camera = entity.GetComponent(CameraComponent.class, true);
         Vector3 unproject = camera.camera.unproject(new Vector3(screenCoords, 0.f));
         return new Vector2(unproject.x, unproject.y);
+    }
+
+    public void CreateCircularSensor(Vector2 point, float radius, Consumer<Body> task) {
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.KinematicBody;
+        bodyDef.position.set(point);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 0;
+        fixtureDef.isSensor = true;
+        CircleShape shape = new CircleShape();
+        shape.setRadius(radius);
+        fixtureDef.shape = shape;
+
+        SpawnEntityTask dispatchedTask = new SpawnEntityTask(bodyDef, fixtureDef);
+        dispatchedTask.OnFinish(b -> {
+            shape.dispose();
+            if(task != null)
+                task.accept(b);
+        });
+        PhysicsSystem().Foreman().Post(dispatchedTask);
+    }
+
+    public void DestroyBody(Body body) {
+        PhysicsSystem().Foreman().Post(new DestroyBodyTask(body));
     }
 
     public Vector2 ToDirection(Vector2 a, Vector2 b) {

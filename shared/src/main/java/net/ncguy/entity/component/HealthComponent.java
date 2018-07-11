@@ -10,4 +10,10 @@ public class HealthComponent extends EntityComponent {
         super(name);
         health = new Health();
     }
+
+    @Override
+    public void Update(float delta) {
+        super.Update(delta);
+        health._Update(delta);
+    }
 }

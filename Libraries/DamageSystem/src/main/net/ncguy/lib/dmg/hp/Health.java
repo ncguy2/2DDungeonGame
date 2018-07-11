@@ -18,6 +18,8 @@ public class Health {
 
     public Health() {
         statusEffectMap = new HashMap<>();
+        maxHealth = health = 100;
+        tempHealth = 0;
     }
 
     public void Damage(float amt) {
@@ -42,6 +44,12 @@ public class Health {
     // Internal API
 
     public void _Damage(float amt) {
+
+        if(amt < 0) {
+            _Heal(-amt);
+            return;
+        }
+
         // TempHealth gate
         if(tempHealth > 0) {
             tempHealth -= amt;
@@ -60,10 +68,10 @@ public class Health {
         health += amt;
         float overflow = health - maxHealth;
         health = Math.min(health, maxHealth);
-        if (overflow > 0)
+        if (overflow > 0) {
             tempHealth = overflow * .5f;
-
-        healCooldown = GetHealCooldownFactor(amt);
+            healCooldown = GetHealCooldownFactor(overflow);
+        }
     }
 
     public void _Update(float delta) {

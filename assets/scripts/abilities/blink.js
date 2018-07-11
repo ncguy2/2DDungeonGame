@@ -13,10 +13,16 @@ function OnEnabled() {
     var target = Utils.GetMouseCoords();
 
     target = Utils.UnprojectCoords(this, target);
+    var origTarget = target.cpy();
 
     var direction = Utils.ToDirection(origin, target);
 
     var range = 500;
+
+    var distanceToTarget = target.dst(origin);
+    if(range > distanceToTarget)
+        range = distanceToTarget;
+
     // target.set(origin).add(direction.scl(range));
     target.set(direction).scl(range).add(origin);
 
@@ -33,6 +39,7 @@ function OnEnabled() {
     // Debug rendering
 
     Utils.DebugPoint(intersection.point, 5).colour = new Color(1, 0, 0, 1);
+    Utils.DebugPoint(origTarget, 5).colour = new Color(1, 1, 1, 1);
     Utils.DebugLine(intersection.point, offsetPoint, 5).colour = new Color(1, 0, 1, 1);
     Utils.DebugLine(origin, intersection.point, 5).colour = new Color(0, 1, 0, 1);
     Utils.DebugLine(intersection.point, target, 5).colour = new Color(0, 0, 1, 1);

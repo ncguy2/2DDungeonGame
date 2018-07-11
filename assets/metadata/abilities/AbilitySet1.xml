@@ -35,8 +35,48 @@
                 <LevelRequirement>1</LevelRequirement>
             </Requirements>
         </Ability>
+
+        <Ability>
+            <Name>Hurt</Name>
+            <Icon></Icon>
+            <Level>Cantrip</Level>
+            <Script>scripts/abilities/hurt.js</Script>
+            <Cost>
+                <Component type="Verbal"/>
+                <Component type="Somatic"/>
+            </Cost>
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Bard</Class>
+                    <Class>Cleric</Class>
+                    <Class>Druid</Class>
+                    <Class>Paladin</Class>
+                    <Class>Wizard</Class>
+                </ClassRequirement>
+                <LevelRequirement>1</LevelRequirement>
+            </Requirements>
+        </Ability>
     </AbilityGroup>
     <AbilityGroup Name="Level 1">
 
+    </AbilityGroup>
+
+    <AbilityGroup Name="Level 7">
+        <Ability>
+            <Name>Bladestorm</Name>
+            <Icon></Icon>
+            <Level>Level_7</Level>
+            <Script>scripts/abilities/bladestorm.js</Script>
+            <Cost>
+                <Component type="Somatic"/>
+            </Cost>
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Fighter</Class>
+                    <Class>Rogue</Class>
+                </ClassRequirement>
+                <LevelRequirement>12</LevelRequirement>
+            </Requirements>
+        </Ability>
     </AbilityGroup>
 </AbilitySet>

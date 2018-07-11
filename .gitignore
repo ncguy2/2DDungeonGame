@@ -53,7 +53,6 @@ tmp/
 
 ## NetBeans
 **/nbproject/private/
-build/
 nbbuild/
 dist/
 nbdist/
@@ -62,3 +61,6 @@ nb-configuration.xml
 
 ## OS Specific
 .DS_Store
+
+## Loose assets
+_Loose Assets/

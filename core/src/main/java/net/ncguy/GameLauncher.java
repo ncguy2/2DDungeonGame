@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import net.ncguy.ability.AbilityRegistry;
+import net.ncguy.util.Shaders;
 
 import static net.ncguy.script.ScriptUtils.tempPrimitives;
 
@@ -17,12 +18,17 @@ public class GameLauncher extends Game {
                 .readString();
         AbilityRegistry.instance().Load(xml);
 
+        Shaders.Init();
+
         Box2D.init();
         setScreen(new TestScreen());
     }
 
     @Override
     public void render() {
+
+        Gdx.graphics.setTitle("FPS: " + Gdx.graphics.getFramesPerSecond());
+
         super.render();
 
         float delta = Gdx.graphics.getDeltaTime();
@@ -31,4 +37,9 @@ public class GameLauncher extends Game {
         tempPrimitives.removeIf(p -> p.duration <= 0);
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        Shaders.Dispose();
+    }
 }

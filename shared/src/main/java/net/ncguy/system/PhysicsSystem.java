@@ -6,6 +6,9 @@ import com.badlogic.gdx.physics.box2d.World;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.CollisionComponent;
 import net.ncguy.entity.component.MovementComponent;
+import net.ncguy.physics.PhysicsService;
+import net.ncguy.physics.PhysicsServiceImpl;
+import net.ncguy.physics.worker.PhysicsForeman;
 import net.ncguy.world.EntityWorld;
 
 import java.util.List;
@@ -16,6 +19,8 @@ public class PhysicsSystem extends BaseSystem {
     public static float physicsToScreen = 100f;
 
     World collisionWorld;
+    PhysicsService service;
+    PhysicsForeman foreman;
 
     public PhysicsSystem(EntityWorld operatingWorld) {
         super(operatingWorld);
@@ -24,10 +29,13 @@ public class PhysicsSystem extends BaseSystem {
     @Override
     public void Startup() {
         collisionWorld = new World(Vector2.Zero, true);
+        service = new PhysicsServiceImpl(collisionWorld);
+        foreman = new PhysicsForeman(collisionWorld, service);
     }
 
     @Override
     public void Update(float delta) {
+        service.Produce();
 
         // Pre-Step
         List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(CollisionComponent.class, MovementComponent.class);
@@ -35,7 +43,8 @@ public class PhysicsSystem extends BaseSystem {
             CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
             MovementComponent movement = entity.GetComponent(MovementComponent.class, true);
 
-            collision.body.setLinearVelocity(movement.velocity.scl(screenToPhysics));
+            if(collision.body != null)
+                collision.body.setLinearVelocity(movement.velocity.scl(screenToPhysics));
 
             movement.velocity.setZero();
         }
@@ -45,10 +54,13 @@ public class PhysicsSystem extends BaseSystem {
         // Post-Step
         for (Entity entity : entities) {
             CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
+            if(collision.body == null) continue;
             Transform transform = collision.body.getTransform();
             collision.transform.translation.set(transform.getPosition()).scl(physicsToScreen);
             collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
         }
+
+        service.Remove();
     }
 
     @Override
@@ -74,4 +86,13 @@ public class PhysicsSystem extends BaseSystem {
     public World World() {
         return collisionWorld;
     }
+
+    public PhysicsService Service() {
+        return service;
+    }
+
+    public PhysicsForeman Foreman() {
+        return foreman;
+    }
+
 }
