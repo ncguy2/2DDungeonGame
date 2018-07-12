@@ -2,6 +2,7 @@ package net.ncguy.physics.worker;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import net.ncguy.physics.PhysicsUserObject;
 
 public class CreateBodyTask extends PhysicsTask<Body> {
 
@@ -16,6 +17,7 @@ public class CreateBodyTask extends PhysicsTask<Body> {
         int i = service.QueueCreateBody(def);
         Body body;
         while((body = service.ObtainBody(i)) == null) Sleep(1);
+        body.setUserData(PhysicsUserObject.Scriptable());
         return body;
     }
 

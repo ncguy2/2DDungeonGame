@@ -19,6 +19,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
+import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.system.AbilitySystem;
@@ -165,6 +166,7 @@ public class TestScreen implements Screen {
 
         SpawnEntityTask task = new SpawnEntityTask(def, fixtureDef);
         task.OnFinish(body -> {
+            ((PhysicsUserObject) body.getUserData()).entity = playerEntity;
             collision.body = player = body;
             shape.dispose();
         });
@@ -199,6 +201,7 @@ public class TestScreen implements Screen {
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement"));
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
+        playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
         HealthComponent health = new HealthComponent("Health");
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
@@ -227,7 +230,48 @@ public class TestScreen implements Screen {
                         .SetAbility(bladestorm));
 
         engine.world.Add(playerEntity);
+
+        AddEntity(400, 500);
+        AddEntity(250, 500);
+        AddEntity(550, 500);
+
         omtEngine.start();
+    }
+
+    void AddEntity(Vector2 pos) {
+        AddEntity(pos.x, pos.y);
+    }
+    void AddEntity(float x, float y) {
+        Entity otherEntity = new Entity();
+        CollisionComponent otherCollision = otherEntity.SetRootComponent(new CollisionComponent("Collision"));
+        otherEntity.AddComponent(new PrimitiveCircleComponent("Circle")).colour.set(1, 0, 0, 1);
+        HealthComponent healthComponent = new HealthComponent("Health");
+        otherEntity.AddComponent(healthComponent);
+        otherEntity.AddComponent(new HealthUIComponent("UI/Health", healthComponent));
+
+        BodyDef otherDef = new BodyDef();
+        otherDef.type = BodyDef.BodyType.DynamicBody;
+        otherDef.position.set(x, y)
+                .scl(screenToPhysics);
+//        player = physicsSystem.World().createBody(def);
+        CircleShape othershape = new CircleShape();
+        othershape.setRadius(32f * screenToPhysics);
+        FixtureDef otherfixtureDef = new FixtureDef();
+        otherfixtureDef.shape = othershape;
+        otherfixtureDef.density = 0f;
+        otherfixtureDef.friction = 0f;
+        otherfixtureDef.restitution = 0.0f;
+//        player.createFixture(fixtureDef);
+
+        SpawnEntityTask othertask = new SpawnEntityTask(otherDef, otherfixtureDef);
+        othertask.OnFinish(body -> {
+            ((PhysicsUserObject) body.getUserData()).entity = otherEntity;
+            otherCollision.body = body;
+//            othershape.dispose();
+        });
+        physicsSystem.Foreman().Post(othertask);
+
+        engine.world.Add(otherEntity);
     }
 
     public boolean Sample(int x, int y) {
@@ -272,18 +316,28 @@ public class TestScreen implements Screen {
         }
 
         Vector2 pos = new Vector2();
-        if(player != null)
-            pos.set(this.player.getPosition()).scl(physicsToScreen);
+//        if(player != null)
+//            pos.set(this.player.getPosition()).scl(physicsToScreen);
 
-        Sprites.Ball()
-                .setBounds(pos.x - 32, pos.y - 32, 64, 64);
-        Sprites.Ball()
-                .setColor(Color.CYAN);
-        Sprites.Ball()
-                .draw(batch);
+        List<Entity> entities = engine.world.GetFlattenedEntitiesWithComponents(PrimitiveCircleComponent.class);
+        for (Entity entity : entities) {
+            List<PrimitiveCircleComponent> circles = entity.GetComponents(PrimitiveCircleComponent.class, true);
+            for (PrimitiveCircleComponent circle : circles) {
+                circle.transform.WorldTransform().getTranslation(pos);
+                Sprites.Ball()
+                        .setBounds(pos.x - 32, pos.y - 32, 64, 64);
+                Sprites.Ball()
+                        .setColor(circle.colour);
+                Sprites.Ball()
+                        .draw(batch);
+            }
+        }
 
-        List<UIComponent> uiComponents = playerEntity.GetComponents(UIComponent.class, true);
-        uiComponents.forEach(ui -> ui.Render(batch));
+        List<Entity> uiEntities = engine.world.GetFlattenedEntitiesWithComponents(UIComponent.class);
+        for (Entity uiEntity : uiEntities) {
+            List<UIComponent> uiComponents = uiEntity.GetComponents(UIComponent.class, true);
+            uiComponents.forEach(ui -> ui.Render(batch));
+        }
 
         batch.end();
 

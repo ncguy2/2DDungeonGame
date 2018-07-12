@@ -10,7 +10,9 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
 import net.ncguy.entity.component.CameraComponent;
 import net.ncguy.entity.component.CollisionComponent;
+import net.ncguy.entity.component.HealthComponent;
 import net.ncguy.physics.worker.DestroyBodyTask;
+import net.ncguy.physics.worker.SetTransformTask;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.world.Engine;
@@ -54,6 +56,12 @@ public class ScriptUtils {
     public ScriptUtils World(World collisionWorld) {
         this.collisionWorld = collisionWorld;
         return this;
+    }
+    public float PhysicsToScreen() {
+        return PhysicsSystem.physicsToScreen;
+    }
+    public float ScreenToPhysics() {
+        return PhysicsSystem.screenToPhysics;
     }
 
     public Primitive DebugPoint(Vector2 point, float duration) {
@@ -150,9 +158,9 @@ public class ScriptUtils {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.KinematicBody;
         bodyDef.position.set(point);
+        bodyDef.allowSleep = false;
 
         FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 0;
         fixtureDef.isSensor = true;
         CircleShape shape = new CircleShape();
         shape.setRadius(radius);
@@ -167,12 +175,40 @@ public class ScriptUtils {
         PhysicsSystem().Foreman().Post(dispatchedTask);
     }
 
+    public Body GetOtherBody(Contact contact, Body body) {
+        Fixture fixtureA = contact.getFixtureA();
+        Fixture fixtureB = contact.getFixtureB();
+
+        Body bodyA = fixtureA.getBody();
+        Body bodyB = fixtureB.getBody();
+
+        if(body.equals(bodyA))
+            return bodyB;
+        return bodyA;
+    }
+
     public void DestroyBody(Body body) {
         PhysicsSystem().Foreman().Post(new DestroyBodyTask(body));
     }
 
+    public void SetBodyTransformWS(Body body, Vector2 posWs, float angleDeg) {
+        SetBodyTransform(body, posWs.cpy().scl(ScreenToPhysics()), (float) Math.toRadians(angleDeg));
+    }
+
+    public void SetBodyTransform(Body body, Vector2 posPS, float angleRad) {
+        PhysicsSystem().Foreman().Post(new SetTransformTask(body, posPS, angleRad));
+    }
+
     public Vector2 ToDirection(Vector2 a, Vector2 b) {
         return new Vector2(b.x - a.x, b.y - a.y).nor();
+    }
+
+    public boolean IsEntityAlive(Entity entity) {
+        if(entity.HasComponent(HealthComponent.class)) {
+            // TODO add support for multiple health components
+            return entity.GetComponent(HealthComponent.class, true).health.health > 0;
+        }
+        return true;
     }
 
     public static class Intersection {

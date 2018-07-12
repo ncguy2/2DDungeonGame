@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.CollisionComponent;
 import net.ncguy.entity.component.MovementComponent;
+import net.ncguy.physics.PhysicsContactListener;
 import net.ncguy.physics.PhysicsService;
 import net.ncguy.physics.PhysicsServiceImpl;
 import net.ncguy.physics.worker.PhysicsForeman;
@@ -21,6 +22,7 @@ public class PhysicsSystem extends BaseSystem {
     World collisionWorld;
     PhysicsService service;
     PhysicsForeman foreman;
+    PhysicsContactListener listener;
 
     public PhysicsSystem(EntityWorld operatingWorld) {
         super(operatingWorld);
@@ -29,12 +31,16 @@ public class PhysicsSystem extends BaseSystem {
     @Override
     public void Startup() {
         collisionWorld = new World(Vector2.Zero, true);
+        listener = new PhysicsContactListener();
+        collisionWorld.setContactListener(listener);
         service = new PhysicsServiceImpl(collisionWorld);
         foreman = new PhysicsForeman(collisionWorld, service);
     }
 
     @Override
     public void Update(float delta) {
+        service.Execute();
+        service.Remove();
         service.Produce();
 
         // Pre-Step
@@ -52,6 +58,7 @@ public class PhysicsSystem extends BaseSystem {
         DoPhysicsStep(delta);
 
         // Post-Step
+        entities = operatingWorld.GetFlattenedEntitiesWithComponents(CollisionComponent.class);
         for (Entity entity : entities) {
             CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
             if(collision.body == null) continue;
@@ -59,8 +66,6 @@ public class PhysicsSystem extends BaseSystem {
             collision.transform.translation.set(transform.getPosition()).scl(physicsToScreen);
             collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
         }
-
-        service.Remove();
     }
 
     @Override

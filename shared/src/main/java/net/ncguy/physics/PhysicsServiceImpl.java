@@ -168,6 +168,21 @@ public class PhysicsServiceImpl extends PhysicsService {
     }
 
     @Override
+    public void Execute() {
+        if(taskList.isEmpty())
+            return;
+
+        final LinkedList<Runnable> queue;
+        synchronized (taskList) {
+            queue = new LinkedList<>(taskList);
+            taskList.clear();
+        }
+
+        while(!queue.isEmpty())
+            Optional.ofNullable(queue.remove()).ifPresent(Runnable::run);
+    }
+
+    @Override
     public void Remove() {
         List<Object> bin;
         synchronized (this.recycleBin) {

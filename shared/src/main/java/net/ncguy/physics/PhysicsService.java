@@ -4,10 +4,17 @@ import com.badlogic.gdx.physics.box2d.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public abstract class PhysicsService {
+
+    final List<Runnable> taskList = new ArrayList<>();
+
+    public synchronized void QueueTask(Runnable task) {
+        taskList.add(task);
+    }
 
     List<ServiceListener<?>> listeners = new ArrayList<>();
 
@@ -49,6 +56,7 @@ public abstract class PhysicsService {
     public abstract void QueueRemoveJoint(Joint joint);
 
     public abstract void Produce();
+    public abstract void Execute();
     public abstract void Remove();
 
     public static class ServiceListener<T> {
