@@ -24,7 +24,9 @@ import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
+import net.ncguy.system.PhysicsContainer;
 import net.ncguy.system.PhysicsSystem;
+import net.ncguy.util.ReloadableShader;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
@@ -37,7 +39,7 @@ import static net.ncguy.system.PhysicsSystem.screenToPhysics;
  */
 public class TestScreen implements Screen {
 
-    ShaderProgram shader;
+    ReloadableShader shader;
     SpriteBatch batch;
     OrthographicCamera camera;
     Texture texture;
@@ -77,7 +79,7 @@ public class TestScreen implements Screen {
                 .PhysicsSystem(physicsSystem)
                 .World(physicsSystem.World());
 
-        shader = new ShaderProgram(Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
+        shader = new ReloadableShader("TestScreen::CoreShader", Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
         System.out.println(shader.getLog());
 
         camera = new OrthographicCamera();
@@ -163,15 +165,18 @@ public class TestScreen implements Screen {
         fixtureDef.restitution = 0.0f;
 //        player.createFixture(fixtureDef);
 
+        PhysicsContainer overworld = physicsSystem.GetContainer("Overworld").orElse(physicsSystem.overworldContainer);
+
         SpawnEntityTask task = new SpawnEntityTask(def, fixtureDef);
         task.OnFinish(body -> {
             ((PhysicsUserObject) body.getUserData()).entity = playerEntity;
+            collision.container = overworld;
             collision.bodyDef = def;
             collision.fixtureDefs.add(fixtureDef);
             collision.body = player = body;
             shape.dispose();
         });
-        physicsSystem.Foreman().Post(task);
+        overworld.foreman.Post(task);
 
 //        physicsSystem.Foreman()
 //                .Post(new PhysicsTask.VoidPhysicsTask() {
@@ -354,14 +359,8 @@ public class TestScreen implements Screen {
         debugRenderer.render(physicsSystem.World(), camera.combined.cpy()
                 .scl(PhysicsSystem.physicsToScreen));
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            ShaderProgram shader = new ShaderProgram(Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
-            System.out.println(shader.getLog());
-            if (shader.isCompiled()) {
-                this.shader.dispose();
-                this.shader = shader;
-            }
-        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R))
+            shader.Reload();
     }
 
     @Override

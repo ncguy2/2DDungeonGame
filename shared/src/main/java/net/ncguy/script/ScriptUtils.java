@@ -19,6 +19,7 @@ import net.ncguy.world.Engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 
 public class ScriptUtils {
@@ -92,11 +93,25 @@ public class ScriptUtils {
         return e;
     }
 
+    public Vector2 RandomDirection() {
+        return new Vector2().setToRandomDirection();
+    }
+    public float RandomFloat() {
+        return new Random().nextFloat();
+    }
+
+    public Color RandomColour() {
+        Random random = new Random();
+        return new Color(random.nextInt());
+    }
+
     public void SetEntityRelativeLocation(Entity entity, float x, float y) {
         Transform2D transform = entity.Transform();
         transform.translation.set(x, y);
         CollisionComponent collision = entity.GetComponent(CollisionComponent.class, false);
-        collision.body.setTransform(x * PhysicsSystem.screenToPhysics, y * PhysicsSystem.screenToPhysics, transform.RotationRad());
+//        collision.body.setTransform(x * PhysicsSystem.screenToPhysics, y * PhysicsSystem.screenToPhysics, transform.RotationRad());
+        SetTransformTask task = new SetTransformTask(collision.body, new Vector2(x, y).scl(ScreenToPhysics()), transform.RotationRad());
+        physicsSystem.GetContainer("Overworld").ifPresent(w -> w.foreman.Post(task));
     }
     public void SetEntityRelativeLocation(Entity entity, Vector2 pos) {
         SetEntityRelativeLocation(entity, pos.x, pos.y);
@@ -204,6 +219,8 @@ public class ScriptUtils {
     }
 
     public boolean IsEntityAlive(Entity entity) {
+        if(entity == null)
+            return false;
         if(entity.HasComponent(HealthComponent.class)) {
             // TODO add support for multiple health components
             return entity.GetComponent(HealthComponent.class, true).health.health > 0;

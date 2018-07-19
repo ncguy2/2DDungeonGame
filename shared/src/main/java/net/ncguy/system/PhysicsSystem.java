@@ -10,6 +10,7 @@ import net.ncguy.entity.component.MovementComponent;
 import net.ncguy.physics.PhysicsService;
 import net.ncguy.physics.worker.PhysicsForeman;
 import net.ncguy.physics.worker.SpawnEntityTask;
+import net.ncguy.script.ScriptHost;
 import net.ncguy.world.EntityWorld;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class PhysicsSystem extends BaseSystem {
 //    PhysicsContactListener listener;
 
     @Deprecated
-    transient PhysicsContainer overworldContainer;
+    public transient PhysicsContainer overworldContainer;
 
     List<PhysicsContainer> physicsContainers;
 
@@ -39,6 +40,9 @@ public class PhysicsSystem extends BaseSystem {
     @Override
     public void Startup() {
         physicsContainers = new ArrayList<>();
+        ScriptHost.AddGlobalBinding("PhysicsSystem", this);
+        ScriptHost.AddGlobalBinding("screenToPhysics", screenToPhysics);
+        ScriptHost.AddGlobalBinding("physicsToScreen", physicsToScreen);
 //        collisionWorld = new World(Vector2.Zero, true);
 //        listener = new PhysicsContactListener();
 //        collisionWorld.setContactListener(listener);
@@ -54,33 +58,41 @@ public class PhysicsSystem extends BaseSystem {
     }
 
     void PreStep(PhysicsContainer container) {
-        // Pre-Step
-        List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(CollisionComponent.class, MovementComponent.class);
-        for (Entity entity : entities) {
-            CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
+        synchronized (operatingWorld) {
+            // Pre-Step
+            List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(CollisionComponent.class, MovementComponent.class);
+            for (Entity entity : entities) {
+                try {
+                    CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
 
-            if (!container.WorldContains(collision))
-                continue;
+                    if (!container.WorldContains(collision))
+                        continue;
 
-            MovementComponent movement = entity.GetComponent(MovementComponent.class, true);
+                    MovementComponent movement = entity.GetComponent(MovementComponent.class, true);
 
-            if(collision.body != null)
-                collision.body.setLinearVelocity(movement.velocity.scl(screenToPhysics));
+                    if (collision.body != null)
+                        collision.body.setLinearVelocity(movement.velocity.scl(screenToPhysics));
 
-            movement.velocity.setZero();
+                    movement.velocity.setZero();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
     void PostStep(PhysicsContainer container) {
-        List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(CollisionComponent.class);
-        for (Entity entity : entities) {
-            CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
-            if (!container.WorldContains(collision))
-                continue;
-            Transform transform = collision.body.getTransform();
-            collision.transform.translation.set(transform.getPosition())
-                    .scl(physicsToScreen);
-            collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
+        synchronized (operatingWorld) {
+            List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(CollisionComponent.class);
+            for (Entity entity : entities) {
+                CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
+                if (!container.WorldContains(collision))
+                    continue;
+                Transform transform = collision.body.getTransform();
+                collision.transform.translation.set(transform.getPosition())
+                        .scl(physicsToScreen);
+                collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
+            }
         }
     }
 

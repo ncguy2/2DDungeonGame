@@ -2,27 +2,30 @@ var Color = Java.type("com.badlogic.gdx.graphics.Color");
 var Damage = Java.type("net.ncguy.lib.dmg.Damage");
 var DmgTypeHeal = Java.type("net.ncguy.damage.DmgTypeHeal");
 var HealthComponent = Java.type("net.ncguy.entity.component.HealthComponent");
+var LightComponent = Java.type("net.ncguy.entity.component.LightComponent");
 
 var targets = [];
+var lights = [];
 
 // TODO add contact listener to watch for sensor overlaps
 
+function AddTarget(targetEntity) {
+    targets.push(targetEntity);
+    var light = new LightComponent("TMP/Target/Light");
+    light.radius = 32;
+    light.colour.set(1, 0, 0, 1);
+    lights.push(light);
+    targetEntity.GetRootComponent().Add(light);
+}
+
 function GetSensorOriginEntity() {
-    print("Targets.length = " + targets.length);
     if(targets.length == 0)
         return this;
-
-    targets.forEach(function (value, index) {
-        print("Target " + index + ": " + value);
-    });
-
     return targets[targets.length - 1];
 }
 
 function GetSensorOrigin() {
     var entity = GetSensorOriginEntity.call(this);
-    print("This: " + this);
-    print("Entity: " + entity);
     return entity.Transform().translation;
 }
 
@@ -34,26 +37,19 @@ function OnEnabled() {
     var that = this;
     Utils.CreateCircularSensor(origin, range, function(body) {
         sensor = body;
-        print("Sensor assigned");
         var userData = body.getUserData();
         userData.entity = that;
         if(userData.listener == null) {
-            print("No listener on body");
             return;
         }
 
         userData.listener.BeginContact = function(contact) {
-            print("Contact");
             var targetBody = Utils.GetOtherBody(contact, sensor);
-            print("TargetBody");
             var tgtUserData = targetBody.getUserData();
-            print("TargetUserData");
             if(tgtUserData.entity != that && Utils.IsEntityAlive(tgtUserData.entity) && targets.indexOf(tgtUserData.entity) == -1)
-                targets.push(tgtUserData.entity);
-            print("Finished");
+                AddTarget.call(that, tgtUserData.entity);
         };
 
-        print("Listener function assigned")
     });
 }
 
@@ -85,9 +81,6 @@ function OnActiveUpdate(delta) {
     Utils.DebugPoint(tgt, delta).colour = new Color(0, 0, 1, 1);
     Utils.DebugPoint(origin, delta).colour = new Color(1, 0, 1, 1);
 
-    targets.forEach(function(value) {
-        print("Value: " + value);
-    });
 }
 
 function GetTarget(idx) {
@@ -103,7 +96,6 @@ function GetTargetPos(idx) {
     var tgt = GetTarget.call(this, idx);
     if(tgt == null)
         return null;
-    print(tgt);
     return tgt.Transform().translation;
 }
 
@@ -140,10 +132,14 @@ function OnDisabled() {
     }
 
     var that = this;
-    var delay = .3;
+    var delay = .05;
     targets.forEach(function(value, index) {
         Defer.Post(delay * index, function() {
             DamageEntity.call(that, value);
+            var l = lights[index];
+            if(l != null)
+                l.RemoveFromParent();
+            lights[index] = null;
         })
     });
 

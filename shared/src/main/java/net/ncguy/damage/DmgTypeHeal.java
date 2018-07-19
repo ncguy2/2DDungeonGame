@@ -13,4 +13,7 @@ public class DmgTypeHeal extends DamageType {
     public float ModifyDamage(Health hp, float baseDamage) {
         return -baseDamage;
     }
+
+
+
 }

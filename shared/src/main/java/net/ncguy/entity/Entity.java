@@ -2,6 +2,7 @@ package net.ncguy.entity;
 
 import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.SceneComponent;
+import net.ncguy.world.EntityWorld;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -10,6 +11,8 @@ import java.util.Set;
 
 public class Entity {
 
+    public transient Entity parent;
+    public transient EntityWorld world;
     public Set<Entity> childEntities;
     public SceneComponent rootComponent;
 
@@ -47,13 +50,22 @@ public class Entity {
         return component;
     }
 
+    public void SetWorld(EntityWorld world) {
+        this.world = world;
+        this.childEntities.forEach(e -> e.SetWorld(world));
+    }
+
     public <T extends Entity> T AddEntity(T entity) {
         childEntities.add(entity);
+        entity.SetWorld(world);
+        entity.parent = this;
         return entity;
     }
 
     public <T extends Entity> T RemoveEntity(T entity) {
         childEntities.remove(entity);
+        entity.SetWorld(null);
+        entity.parent = null;
         return entity;
     }
 
@@ -119,5 +131,25 @@ public class Entity {
 
     public Transform2D Transform() {
         return rootComponent.transform;
+    }
+
+    public EntityWorld GetWorld() {
+        return world;
+    }
+
+    public void Destroy() {
+        world.PostRunnable(this::DestroyImmediate);
+    }
+
+    public void DestroyImmediate() {
+        childEntities.forEach(Entity::DestroyImmediate);
+        childEntities.clear();
+
+        rootComponent.Destroy();
+        rootComponent._OnRemoveFromComponent();
+
+        if(parent != null)
+            parent.RemoveEntity(this);
+        else world.Remove(this);
     }
 }

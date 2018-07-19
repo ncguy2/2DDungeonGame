@@ -11,15 +11,26 @@ public class Health {
     public transient Map<Class<? extends StatusEffect>, StatusEffect> statusEffectMap;
     public transient float healCooldown;
 
+    public Runnable onDeath;
+
     public float health;
     public float maxHealth;
     public float tempHealth;
 
+    public Object userData;
 
     public Health() {
         statusEffectMap = new HashMap<>();
         maxHealth = health = 100;
         tempHealth = 0;
+    }
+
+    public void SetMaxHealth(float maxHealth) {
+        this.maxHealth = maxHealth;
+        if(this.health > maxHealth) {
+            tempHealth = Math.abs(this.health - maxHealth) * .5f;
+            this.health = maxHealth;
+        }
     }
 
     public void Damage(float amt) {
@@ -41,6 +52,11 @@ public class Health {
         return (float) Math.sqrt(amtHealed * .2);
     }
 
+    public void Die() {
+        if(onDeath != null)
+            onDeath.run();
+    }
+
     // Internal API
 
     public void _Damage(float amt) {
@@ -59,6 +75,9 @@ public class Health {
         }
 
         health -= amt;
+
+        if(health <= 0)
+            Die();
     }
 
     public void _Heal(float amt) {

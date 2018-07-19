@@ -3,6 +3,7 @@ package net.ncguy.entity.component;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +62,8 @@ public class SceneComponent extends EntityComponent {
 
     @Override
     public boolean Has(Class<? extends EntityComponent> type) {
+        Set<EntityComponent> childrenComponents = GetComponents();
+
         for (EntityComponent component : childrenComponents) {
             if(type.isInstance(component))
                 return true;
@@ -76,6 +79,8 @@ public class SceneComponent extends EntityComponent {
 
     @Override
     public <T extends EntityComponent> T GetComponent(Class<T> type, boolean searchDescendants) {
+        Set<EntityComponent> childrenComponents = GetComponents();
+
         for (EntityComponent component : childrenComponents) {
             if(type.isInstance(component))
                 return (T) component;
@@ -93,6 +98,9 @@ public class SceneComponent extends EntityComponent {
 
     @Override
     public <T extends EntityComponent> void GetComponents(Class<T> type, boolean searchDescendants, List<T> componentList) {
+
+        Set<EntityComponent> childrenComponents = GetComponents();
+
         for (EntityComponent component : childrenComponents) {
             if(type.isInstance(component))
                 componentList.add((T) component);
@@ -106,10 +114,21 @@ public class SceneComponent extends EntityComponent {
         }
     }
 
+    private synchronized Set<EntityComponent> GetComponents() {
+        return new LinkedHashSet<>(childrenComponents);
+    }
+
     @Override
     public void Update(float delta) {
         super.Update(delta);
         for (EntityComponent childrenComponent : childrenComponents)
             childrenComponent.Update(delta);
+    }
+
+    @Override
+    public void Destroy() {
+        new ArrayList<>(childrenComponents).forEach(EntityComponent::Destroy);
+        childrenComponents.clear();
+        super.Destroy();
     }
 }

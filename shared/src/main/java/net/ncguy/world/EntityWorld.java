@@ -2,9 +2,6 @@ package net.ncguy.world;
 
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.EntityComponent;
-import net.ncguy.entity.component.HealthComponent;
-import net.ncguy.lib.dmg.hp.Health;
-import net.ncguy.script.ScriptHost;
 import net.ncguy.script.ScriptUtils;
 
 import java.util.ArrayList;
@@ -13,48 +10,73 @@ import java.util.stream.Collectors;
 
 public class EntityWorld {
 
+    public static EntityWorld instance;
+
     public List<Entity> entities;
+    public List<Runnable> tasks;
 
     public EntityWorld() {
+        instance = this;
         entities = new ArrayList<>();
+        tasks = new ArrayList<>();
+    }
+
+    public void PostRunnable(Runnable task) {
+        tasks.add(task);
     }
 
     public void Update(float delta) {
         for (Entity entity : entities)
             entity.Update(delta);
+
+        if(tasks.isEmpty())
+            return;
+
+        tasks.forEach(Runnable::run);
+        tasks.clear();
     }
 
-    public List<Entity> GetRootEntitiesOfComponent(Class<? extends EntityComponent> componentType) {
+    public synchronized List<Entity> GetRootEntitiesOfComponent(Class<? extends EntityComponent> componentType) {
         return entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).collect(Collectors.toList());
     }
 
-    public List<Entity> GetRootEntitiesWithComponents(Class<? extends EntityComponent>... componentType) {
+    public synchronized List<Entity> GetRootEntitiesWithComponents(Class<? extends EntityComponent>... componentType) {
         return entities.stream().filter(this::Alive).filter(e -> e.All(componentType)).collect(Collectors.toList());
     }
 
-    public List<Entity> GetFlattenedEntitiesOfComponent(Class<? extends EntityComponent> componentType) {
+    public synchronized List<Entity> GetFlattenedEntitiesOfComponent(Class<? extends EntityComponent> componentType) {
         return entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).collect(Collectors.toList());
     }
 
-    public List<Entity> GetFlattenedEntitiesWithComponents(Class<? extends EntityComponent>... componentType) {
+    public synchronized List<Entity> GetFlattenedEntitiesWithComponents(Class<? extends EntityComponent>... componentType) {
         return entities.stream().filter(this::Alive).filter(e -> e.All(componentType)).collect(Collectors.toList());
     }
 
-    public void _GetFlattenedEntitiesOfComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent> componentType) {
+    public synchronized void _GetFlattenedEntitiesOfComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent> componentType) {
         entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).forEach(entities::add);
         entity.childEntities.forEach(e -> _GetFlattenedEntitiesOfComponent(e, entities, componentType));
     }
 
-    public void _GetFlattenedEntitiesWithComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent>... componentType) {
+    public synchronized void _GetFlattenedEntitiesWithComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent>... componentType) {
         entities.stream().filter(this::Alive).filter(e -> e.All(componentType)).forEach(entities::add);
         entity.childEntities.forEach(e -> _GetFlattenedEntitiesWithComponent(e, entities, componentType));
     }
 
-    public void Add(Entity entity) {
+    public synchronized void Add(Entity entity) {
         this.entities.add(entity);
+        entity.SetWorld(this);
     }
 
     public boolean Alive(Entity entity) {
         return ScriptUtils.instance().IsEntityAlive(entity);
+    }
+
+    public List<Entity> getEntities() {
+        return new ArrayList<>(entities);
+    }
+
+    public synchronized void Remove(Entity entity) {
+        this.entities.remove(entity);
+        entity.SetWorld(null);
     }
 }

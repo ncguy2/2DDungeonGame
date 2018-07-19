@@ -1,6 +1,7 @@
 package net.ncguy;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -21,11 +22,13 @@ import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.render.BaseRenderer;
-import net.ncguy.render.LightRenderer;
+import net.ncguy.render.LightRenderer2;
 import net.ncguy.script.ScriptUtils;
+import net.ncguy.script.SpawnerScriptObject;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsSystem;
+import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
@@ -82,7 +85,7 @@ public class TestScreen2 implements Screen {
         batch = new SpriteBatch();
 
 //        sceneRenderer = new DeferredRenderer(engine, batch, camera);
-        sceneRenderer = new LightRenderer(engine, batch, camera);
+        sceneRenderer = new LightRenderer2(engine, batch, camera);
 
         floorTex = new Texture(Gdx.files.internal(floorTexPath = "textures/wood.png"));
         wallTex = new Texture(Gdx.files.internal(wallTexPath = "textures/wall.jpg"));
@@ -207,6 +210,8 @@ public class TestScreen2 implements Screen {
 //                    }
 //                });
 
+
+
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement"));
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
@@ -214,9 +219,9 @@ public class TestScreen2 implements Screen {
         HealthComponent health = new HealthComponent("Health");
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
-        LightComponent light = playerEntity.AddComponent(new LightComponent("Light"));
-        light.colour.set(1, 1, 1, 1);
-        light.radius = 250;
+//        LightComponent light = playerEntity.AddComponent(new LightComponent("Light"));
+//        light.colour.set(1, 1, 1, 1);
+//        light.radius = (1 << (new Random().nextInt(10-6) + 6));
 
         AbilityRegistry.instance()
                 .Get("Blink")
@@ -243,17 +248,28 @@ public class TestScreen2 implements Screen {
 
         engine.world.Add(playerEntity);
 
-        AddEntity(400, 500);
-        AddEntity(250, 500);
-        AddEntity(550, 500);
+        Entity entity = new Entity();
+        LightComponent light = entity.AddComponent(new LightComponent("Light"));
+        light.colour.set(1, 1, 0, 1);
+        light.radius = 256;
+        EntitySpawnerComponent spawner = new EntitySpawnerComponent("Spawner");
+        spawner.spawnInterval = .1f;
+        spawner.spawnerScript = new SpawnerScriptObject(Gdx.files.internal("scripts/spawner.alpha.js").readString());
+        spawner.spawnerScript.Parse();
+        entity.AddComponent(spawner);
+        entity.Transform().translation.set(400, 250);
+        DeferredCalls.Instance().Post(10, () -> engine.world.Add(entity));
+//        Entity entity = AddEntity(400, 250);
+//        AddEntity(250, 500);
+//        AddEntity(550, 500);
 
         omtEngine.start();
     }
 
-    void AddEntity(Vector2 pos) {
-        AddEntity(pos.x, pos.y);
+    Entity AddEntity(Vector2 pos) {
+        return AddEntity(pos.x, pos.y);
     }
-    void AddEntity(float x, float y) {
+    Entity AddEntity(float x, float y) {
         Entity otherEntity = new Entity();
         CollisionComponent otherCollision = otherEntity.SetRootComponent(new CollisionComponent("Collision"));
         otherEntity.AddComponent(new PrimitiveCircleComponent("Circle")).colour.set(1, 0, 0, 1);
@@ -261,9 +277,9 @@ public class TestScreen2 implements Screen {
         otherEntity.AddComponent(healthComponent);
         otherEntity.AddComponent(new HealthUIComponent("UI/Health", healthComponent));
         Random random = new Random();
-        LightComponent light = otherEntity.AddComponent(new LightComponent("Light"));
-        light.colour.set(random.nextInt()).a = 1f;
-        light.radius = 250;
+//        LightComponent light = otherEntity.AddComponent(new LightComponent("Light"));
+//        light.colour.set(random.nextInt()).a = 1f;
+//        light.radius = (1 << (new Random().nextInt(10-6) + 6));
 
         BodyDef otherDef = new BodyDef();
         otherDef.type = BodyDef.BodyType.DynamicBody;
@@ -288,6 +304,7 @@ public class TestScreen2 implements Screen {
         physicsSystem.Foreman().Post(othertask);
 
         engine.world.Add(otherEntity);
+        return otherEntity;
     }
 
     public boolean Sample(int x, int y) {
@@ -323,6 +340,7 @@ public class TestScreen2 implements Screen {
 
         Texture tex = sceneRenderer.GetTexture();
         TextureRegion reg = new TextureRegion(tex);
+        reg.flip(false, true);
         batch.draw(reg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         batch.setProjectionMatrix(camera.combined);
@@ -335,7 +353,7 @@ public class TestScreen2 implements Screen {
 
         batch.end();
 
-        if (!ScriptUtils.tempPrimitives.isEmpty()) {
+        if (!ScriptUtils.tempPrimitives.isEmpty() && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             if (renderer == null)
                 renderer = new ShapeRenderer();
             renderer.setProjectionMatrix(camera.combined);
@@ -344,8 +362,8 @@ public class TestScreen2 implements Screen {
             renderer.end();
         }
 
-        debugRenderer.render(physicsSystem.World(), camera.combined.cpy()
-                .scl(PhysicsSystem.physicsToScreen));
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
+            debugRenderer.render(physicsSystem.World(), camera.combined.cpy().scl(PhysicsSystem.physicsToScreen));
 
     }
 

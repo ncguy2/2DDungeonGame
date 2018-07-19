@@ -38,6 +38,11 @@ public class EntityComponent {
         this.name = name;
     }
 
+    public void RemoveFromParent() {
+        if(owningComponent != null)
+            owningComponent.Remove(this);
+    }
+
     public void _OnAddToComponent(SceneComponent component) {
         owningComponent = component;
     }
@@ -75,4 +80,12 @@ public class EntityComponent {
     public void Update(float delta) {
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    public void Destroy() {
+        RemoveFromParent();
+    }
 }

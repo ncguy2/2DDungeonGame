@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -16,6 +15,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
+import net.ncguy.util.ReloadableShader;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
 import net.ncguy.world.Engine;
@@ -25,14 +25,14 @@ import java.util.List;
 public class DeferredRenderer extends BaseRenderer {
 
     FBO gBuffer;
-    ShaderProgram gBufferShader;
+    ReloadableShader gBufferShader;
     FBO occludersFBO;
     FBO lightingBuffer;
-    ShaderProgram lightingShader;
+    ReloadableShader lightingShader;
 
     FBO shadowBuffer;
-    ShaderProgram shadowShader;
-    ShaderProgram screenShader;
+    ReloadableShader shadowShader;
+    ReloadableShader screenShader;
 
     OrthographicCamera lightingCamera;
     int lightSize = 256;
@@ -50,13 +50,13 @@ public class DeferredRenderer extends BaseRenderer {
         lightingTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         lightingTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-        gBufferShader = new ShaderProgram(Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
-        lightingShader = new ShaderProgram(Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting.frag"));
+        gBufferShader = new ReloadableShader("DeferredRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
+        lightingShader = new ReloadableShader("DeferredRenderer::Lighting", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting.frag"));
 
         lightingCamera = new OrthographicCamera();
 
-        shadowShader = new ShaderProgram(Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowMap.frag"));
-        screenShader = new ShaderProgram(Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
+        shadowShader = new ReloadableShader("DeferredRenderer::Shadow", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowMap.frag"));
+        screenShader = new ReloadableShader("DeferredRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class DeferredRenderer extends BaseRenderer {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         batch.setProjectionMatrix(camera.combined);
-        batch.setShader(gBufferShader);
+        batch.setShader(gBufferShader.Program());
         batch.begin();
 
         //noinspection unchecked
@@ -89,7 +89,6 @@ public class DeferredRenderer extends BaseRenderer {
         entities.forEach(this::Accept);
 
         Vector2 pos = new Vector2();
-
         entities = engine.world.GetFlattenedEntitiesWithComponents(PrimitiveCircleComponent.class);
         for (Entity entity : entities) {
             List<PrimitiveCircleComponent> circles = entity.GetComponents(PrimitiveCircleComponent.class, true);
@@ -134,7 +133,7 @@ public class DeferredRenderer extends BaseRenderer {
 
         lightingBuffer.begin();
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, lightingBuffer.getWidth(), lightingBuffer.getHeight()));
-        batch.setShader(lightingShader);
+        batch.setShader(lightingShader.Program());
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -151,11 +150,11 @@ public class DeferredRenderer extends BaseRenderer {
             Texture texture = gBuffer.getTextureAttachments()
                     .get(i);
             texture.bind(unit);
-            lightingShader.setUniformi(texNames[i], unit);
+            lightingShader.Program().setUniformi(texNames[i], unit);
         }
         Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
 
-        lightingShader.setUniformf("u_resolution", lightSize, lightSize);
+        lightingShader.Program().setUniformf("u_resolution", lightSize, lightSize);
 
 
         batch.draw(occludersFBO.getTextureAttachments().get(0), 0, 0, lightSize, lightingBuffer.getHeight());
@@ -165,11 +164,11 @@ public class DeferredRenderer extends BaseRenderer {
 
         shadowBuffer.begin();
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, shadowBuffer.getWidth(), shadowBuffer.getHeight()));
-        batch.setShader(shadowShader);
+        batch.setShader(shadowShader.Program());
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        shadowShader.setUniformf("u_resolution", lightSize, lightSize);
+        shadowShader.Program().setUniformf("u_resolution", lightSize, lightSize);
 
         entities = engine.world.GetFlattenedEntitiesWithComponents(LightComponent.class);
         Vector3 vec3 = new Vector3();
@@ -188,15 +187,15 @@ public class DeferredRenderer extends BaseRenderer {
         shadowBuffer.end();
 
         screenBuffer.begin();
-        batch.setShader(screenShader);
+        batch.setShader(screenShader.Program());
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, screenBuffer.getWidth(), screenBuffer.getHeight()));
 
         gBuffer.getTextureAttachments().get(0).bind(4);
-        screenShader.setUniformi("u_BaseColour", 4);
+        screenShader.Program().setUniformi("u_BaseColour", 4);
         shadowBuffer.getTextureAttachments().get(0).bind(5);
-        screenShader.setUniformi("u_Shadows", 5);
+        screenShader.Program().setUniformi("u_Shadows", 5);
 
         Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
         batch.draw(gBuffer.getTextureAttachments().get(0), 0, 0);
@@ -205,41 +204,13 @@ public class DeferredRenderer extends BaseRenderer {
         screenBuffer.end();
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.R))
-            Gdx.app.postRunnable(() -> {
-                ShaderProgram s = new ShaderProgram(Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
-                System.out.println(s.getLog());
-                if (!s.isCompiled())
-                    return;
-                gBufferShader.dispose();
-                gBufferShader = s;
-            });
+            gBufferShader.Reload();
         if(Gdx.input.isKeyJustPressed(Input.Keys.T))
-            Gdx.app.postRunnable(() -> {
-                ShaderProgram s = new ShaderProgram(Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting.frag"));
-                System.out.println(s.getLog());
-                if (!s.isCompiled())
-                    return;
-                lightingShader.dispose();
-                lightingShader = s;
-            });
+            lightingShader.Reload();
         if(Gdx.input.isKeyJustPressed(Input.Keys.Y))
-            Gdx.app.postRunnable(() -> {
-                ShaderProgram s = new ShaderProgram(Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowMap.frag"));
-                System.out.println(s.getLog());
-                if (!s.isCompiled())
-                    return;
-                shadowShader.dispose();
-                shadowShader = s;
-            });
+            shadowShader.Reload();
         if(Gdx.input.isKeyJustPressed(Input.Keys.U))
-            Gdx.app.postRunnable(() -> {
-                ShaderProgram s = new ShaderProgram(Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
-                System.out.println(s.getLog());
-                if (!s.isCompiled())
-                    return;
-                screenShader.dispose();
-                screenShader = s;
-            });
+            screenShader.Reload();
 
         batch.end();
         batch.setShader(null);

@@ -22,16 +22,16 @@ public class HealthUIComponent extends UIComponent<HealthComponent> {
             texture = new Texture(Gdx.files.internal("textures/progressbar.png"));
 
         ShaderProgram shader = batch.getShader();
-        batch.setShader(Shaders.progressBarShader);
-        Shaders.progressBarShader.setUniformf("u_colours.Empty", 1, 1, 1, .4f);
-        Shaders.progressBarShader.setUniformf("u_colours.Full", 0, 1, 0, 1);
-        Shaders.progressBarShader.setUniformf("u_colours.Overfill", 1, 0, 1, 1);
+        batch.setShader(Shaders.progressBarShader.Program());
+        Shaders.progressBarShader.Program().setUniformf("u_colours.Empty", 1, 1, 1, .4f);
+        Shaders.progressBarShader.Program().setUniformf("u_colours.Full", 0, 1, 0, 1);
+        Shaders.progressBarShader.Program().setUniformf("u_colours.Overfill", 1, 0, 1, 1);
 
         float percValue = targetComponent.health.health / targetComponent.health.maxHealth;
         float overfill = targetComponent.health.tempHealth / targetComponent.health.maxHealth;
 
-        Shaders.progressBarShader.setUniformf("value", percValue);
-        Shaders.progressBarShader.setUniformf("overfill", overfill);
+        Shaders.progressBarShader.Program().setUniformf("value", percValue);
+        Shaders.progressBarShader.Program().setUniformf("overfill", overfill);
 
         float x = 0;
         float y = 40;

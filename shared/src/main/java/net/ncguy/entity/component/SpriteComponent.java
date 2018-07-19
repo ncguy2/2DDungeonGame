@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
 
@@ -39,10 +40,17 @@ public class SpriteComponent extends RenderComponent {
 
     @Override
     public void Render(SpriteBatch batch) {
-        batch.getShader().setUniformi("u_castShadow", castShadow ? 1 : 0);
+        ShaderProgram shader = batch.getShader();
+        shader.setUniformi("u_castShadow", castShadow ? 1 : 0);
         if(sprite != null)
             sprite.draw(batch);
         // TODO remove when possible
         batch.flush();
+    }
+
+    @Override
+    public void RenderShadow(SpriteBatch batch) {
+        if(castShadow)
+            super.RenderShadow(batch);
     }
 }

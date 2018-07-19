@@ -4,7 +4,7 @@ import net.ncguy.world.EntityWorld;
 
 public abstract class BaseSystem {
 
-    protected EntityWorld operatingWorld;
+    protected final EntityWorld operatingWorld;
 
     public BaseSystem(EntityWorld operatingWorld) {
         this.operatingWorld = operatingWorld;
