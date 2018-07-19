@@ -23,7 +23,7 @@ public class GameLauncher extends Game {
         Shaders.Init();
 
         Box2D.init();
-        setScreen(new TestScreen());
+        setScreen(new TestScreen2());
     }
 
     @Override

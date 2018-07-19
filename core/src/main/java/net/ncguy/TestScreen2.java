@@ -1,7 +1,6 @@
 package net.ncguy;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,16 +10,18 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import net.ncguy.ability.AbilityRegistry;
-import net.ncguy.asset.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
+import net.ncguy.render.BaseRenderer;
+import net.ncguy.render.LightRenderer;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
@@ -29,19 +30,17 @@ import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
 import java.util.List;
+import java.util.Random;
 
 import static net.ncguy.system.PhysicsSystem.screenToPhysics;
 
 /**
  * First screen of the application. Displayed after the application is created.
  */
-public class TestScreen implements Screen {
+public class TestScreen2 implements Screen {
 
-    ShaderProgram shader;
     SpriteBatch batch;
     OrthographicCamera camera;
-    Texture texture;
-    TextureRegion textureRegion;
 
     boolean[][] solidMap;
 
@@ -49,12 +48,15 @@ public class TestScreen implements Screen {
     Texture wallTex;
     Box2DDebugRenderer debugRenderer;
     ShapeRenderer renderer;
-    Body player;
 
     Engine engine;
     ThreadedEngine omtEngine;
-    Entity playerEntity;
     PhysicsSystem physicsSystem;
+    String wallTexPath;
+    String floorTexPath;
+
+
+    BaseRenderer sceneRenderer;
 
     @Override
     public void show() {
@@ -63,7 +65,6 @@ public class TestScreen implements Screen {
 //        World.setVelocityThreshold(10);
 //        world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
-
 
         omtEngine = new ThreadedEngine();
 
@@ -77,18 +78,14 @@ public class TestScreen implements Screen {
                 .PhysicsSystem(physicsSystem)
                 .World(physicsSystem.World());
 
-        shader = new ShaderProgram(Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
-        System.out.println(shader.getLog());
-
         camera = new OrthographicCamera();
         batch = new SpriteBatch();
-        texture = new Texture(Gdx.files.internal("textures/connected/debug.png"));
 
-        floorTex = new Texture(Gdx.files.internal("textures/wood.png"));
-        wallTex = new Texture(Gdx.files.internal("textures/wall.jpg"));
+//        sceneRenderer = new DeferredRenderer(engine, batch, camera);
+        sceneRenderer = new LightRenderer(engine, batch, camera);
 
-        textureRegion = new TextureRegion(texture);
-        textureRegion.setV2(.4f);
+        floorTex = new Texture(Gdx.files.internal(floorTexPath = "textures/wood.png"));
+        wallTex = new Texture(Gdx.files.internal(wallTexPath = "textures/wall.jpg"));
 
         solidMap = new boolean[12][9];
 
@@ -123,7 +120,15 @@ public class TestScreen implements Screen {
 
         for (int x = 0; x < solidMap.length; x++) {
             for (int y = 0; y < solidMap[x].length; y++) {
+
+                Entity mapEntity = new Entity();
+                mapEntity.SetRootComponent(new SpriteComponent("Sprite")).spriteRef = (solidMap[x][y] ? wallTexPath : floorTexPath);
+                ((SpriteComponent) mapEntity.GetRootComponent()).castShadow = solidMap[x][y];
+                mapEntity.Transform().translation.set(width * x, height * y);
+                mapEntity.Transform().scale.set(width, height);
+
                 if (solidMap[x][y]) {
+
                     BodyDef def = new BodyDef();
                     def.type = BodyDef.BodyType.StaticBody;
                     def.position.set((x * width) + halfWidth, (y * height) + halfHeight)
@@ -140,13 +145,18 @@ public class TestScreen implements Screen {
                     fixDef.restitution = 0.0f;
 
                     SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
-                    task.OnFinish(body -> shape.dispose());
+                    task.OnFinish(body -> {
+                        mapEntity.AddComponent(new CollisionComponent("Collision")).body = body;
+                        shape.dispose();
+                    });
                     physicsSystem.Foreman().Post(task);
                 }
+
+                engine.world.Add(mapEntity);
             }
         }
 
-        playerEntity = new Entity();
+        Entity playerEntity = new Entity();
         CollisionComponent collision = playerEntity.SetRootComponent(new CollisionComponent("Collision"));
 
         BodyDef def = new BodyDef();
@@ -166,9 +176,7 @@ public class TestScreen implements Screen {
         SpawnEntityTask task = new SpawnEntityTask(def, fixtureDef);
         task.OnFinish(body -> {
             ((PhysicsUserObject) body.getUserData()).entity = playerEntity;
-            collision.bodyDef = def;
-            collision.fixtureDefs.add(fixtureDef);
-            collision.body = player = body;
+            collision.body = body;
             shape.dispose();
         });
         physicsSystem.Foreman().Post(task);
@@ -206,6 +214,9 @@ public class TestScreen implements Screen {
         HealthComponent health = new HealthComponent("Health");
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
+        LightComponent light = playerEntity.AddComponent(new LightComponent("Light"));
+        light.colour.set(1, 1, 1, 1);
+        light.radius = 250;
 
         AbilityRegistry.instance()
                 .Get("Blink")
@@ -249,6 +260,10 @@ public class TestScreen implements Screen {
         HealthComponent healthComponent = new HealthComponent("Health");
         otherEntity.AddComponent(healthComponent);
         otherEntity.AddComponent(new HealthUIComponent("UI/Health", healthComponent));
+        Random random = new Random();
+        LightComponent light = otherEntity.AddComponent(new LightComponent("Light"));
+        light.colour.set(random.nextInt()).a = 1f;
+        light.radius = 250;
 
         BodyDef otherDef = new BodyDef();
         otherDef.type = BodyDef.BodyType.DynamicBody;
@@ -300,39 +315,17 @@ public class TestScreen implements Screen {
 //        player.setTransform(playerEntity.rootComponent.transform.translation, playerEntity.rootComponent.transform.RotationRad());
 
         // Draw your screen here. "delta" is the time since last render in seconds.
-        batch.setProjectionMatrix(camera.combined);
-        batch.setShader(null);
+
+        sceneRenderer.Render(delta);
+
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         batch.begin();
 
-        textureRegion.setV2(.2f);
+        Texture tex = sceneRenderer.GetTexture();
+        TextureRegion reg = new TextureRegion(tex);
+        batch.draw(reg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        float width = 64;
-        float height = 64;
-
-        for (int x = 0; x < solidMap.length; x++) {
-            for (int y = 0; y < solidMap[x].length; y++) {
-                Texture t = solidMap[x][y] ? wallTex : floorTex;
-                batch.draw(t, width * x, height * y, width, height);
-            }
-        }
-
-        Vector2 pos = new Vector2();
-//        if(player != null)
-//            pos.set(this.player.getPosition()).scl(physicsToScreen);
-
-        List<Entity> entities = engine.world.GetFlattenedEntitiesWithComponents(PrimitiveCircleComponent.class);
-        for (Entity entity : entities) {
-            List<PrimitiveCircleComponent> circles = entity.GetComponents(PrimitiveCircleComponent.class, true);
-            for (PrimitiveCircleComponent circle : circles) {
-                circle.transform.WorldTransform().getTranslation(pos);
-                Sprites.Ball()
-                        .setBounds(pos.x - 32, pos.y - 32, 64, 64);
-                Sprites.Ball()
-                        .setColor(circle.colour);
-                Sprites.Ball()
-                        .draw(batch);
-            }
-        }
+        batch.setProjectionMatrix(camera.combined);
 
         List<Entity> uiEntities = engine.world.GetFlattenedEntitiesWithComponents(UIComponent.class);
         for (Entity uiEntity : uiEntities) {
@@ -354,20 +347,13 @@ public class TestScreen implements Screen {
         debugRenderer.render(physicsSystem.World(), camera.combined.cpy()
                 .scl(PhysicsSystem.physicsToScreen));
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            ShaderProgram shader = new ShaderProgram(Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
-            System.out.println(shader.getLog());
-            if (shader.isCompiled()) {
-                this.shader.dispose();
-                this.shader = shader;
-            }
-        }
     }
 
     @Override
     public void resize(int width, int height) {
         // Resize your screen here. The parameters represent the new window size.
         camera.setToOrtho(false, width, height);
+        sceneRenderer.Resize(width, height);
     }
 
     @Override

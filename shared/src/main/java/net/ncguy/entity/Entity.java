@@ -110,7 +110,10 @@ public class Entity {
 
     public <T extends EntityComponent> List<T> GetComponents(Class<T> type, boolean searchDescendants) {
         List<T> list = new ArrayList<>();
-        GetRootComponent().GetComponents(type, searchDescendants, list);
+        SceneComponent root = GetRootComponent();
+        if(type.isInstance(root))
+            list.add((T) root);
+        root.GetComponents(type, searchDescendants, list);
         return list;
     }
 
