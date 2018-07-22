@@ -27,8 +27,11 @@ public class AbilityComponent extends EntityComponent {
 
     public void SetAbility(Ability ability) {
         this.ability = ability;
-        script = new AbilityScript(Gdx.files.internal(this.ability.scriptPath).readString());
-        script.Parse();
+        if(ability != null) {
+            script = new AbilityScript(Gdx.files.internal(this.ability.scriptPath)
+                    .readString());
+            script.Parse();
+        }else script = null;
     }
 
     public Optional<Ability> GetAbility() {

@@ -205,35 +205,43 @@ public class TestScreen implements Screen {
 //                });
 
         playerEntity.AddComponent(new InputComponent("Input"));
-        playerEntity.AddComponent(new MovementComponent("Movement"));
+        playerEntity.AddComponent(new MovementComponent("Movement")).resetAfterCheck = true;
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
         playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
         HealthComponent health = new HealthComponent("Health");
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
 
-        AbilityRegistry.instance()
-                .Get("Blink")
-                .ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Ability/Blink"))
-                        .SlotIdx(0)
-                        .SetAbility(blink));
-        AbilityRegistry.instance()
-                .Get("Heal")
-                .ifPresent(heal -> playerEntity.AddComponent(new AbilityComponent("Ability/Heal"))
-                        .SlotIdx(1)
-                        .SetAbility(heal));
+        AbilitiesComponent abilities = playerEntity.AddComponent(new AbilitiesComponent("Abilities"));
+        AbilityRegistry.instance().GiveAll(abilities);
 
-        AbilityRegistry.instance()
-                .Get("Hurt")
-                .ifPresent(hurt -> playerEntity.AddComponent(new AbilityComponent("Ability/Hurt"))
-                        .SlotIdx(2)
-                        .SetAbility(hurt));
+        playerEntity.AddComponent(new AbilityComponent("Ability/0")).SlotIdx(0);
+        playerEntity.AddComponent(new AbilityComponent("Ability/1")).SlotIdx(1);
+        playerEntity.AddComponent(new AbilityComponent("Ability/2")).SlotIdx(2);
+        playerEntity.AddComponent(new AbilityComponent("Ability/3")).SlotIdx(3);
 
-        AbilityRegistry.instance()
-                .Get("Bladestorm")
-                .ifPresent(bladestorm -> playerEntity.AddComponent(new AbilityComponent("Ability/Bladestorm"))
-                        .SlotIdx(3)
-                        .SetAbility(bladestorm));
+//        AbilityRegistry.instance()
+//                .Get("Blink")
+//                .ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Ability/Blink"))
+//                        .SlotIdx(0)
+//                        .SetAbility(blink));
+//        AbilityRegistry.instance()
+//                .Get("Heal")
+//                .ifPresent(heal -> playerEntity.AddComponent(new AbilityComponent("Ability/Heal"))
+//                        .SlotIdx(1)
+//                        .SetAbility(heal));
+//
+//        AbilityRegistry.instance()
+//                .Get("Hurt")
+//                .ifPresent(hurt -> playerEntity.AddComponent(new AbilityComponent("Ability/Hurt"))
+//                        .SlotIdx(2)
+//                        .SetAbility(hurt));
+//
+//        AbilityRegistry.instance()
+//                .Get("Bladestorm")
+//                .ifPresent(bladestorm -> playerEntity.AddComponent(new AbilityComponent("Ability/Bladestorm"))
+//                        .SlotIdx(3)
+//                        .SetAbility(bladestorm));
 
         engine.world.Add(playerEntity);
 

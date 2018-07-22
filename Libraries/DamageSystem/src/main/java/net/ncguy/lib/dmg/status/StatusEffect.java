@@ -18,15 +18,14 @@ public abstract class StatusEffect {
      * @param life The life of the status effect
      */
     public StatusEffect(Health target, float life) {
-        this.target = target;
-
         stackCount = 1;
-
-        if(target != null)
-            target._AddStatusEffect(this);
         this.maxLife = life;
         SetLife(life);
+        Attach(target);
     }
+
+    public void OnAttach(Health target) {}
+    public void OnRemove(Health target) {}
 
     /**
      * Attaches the status effect to the provided target, detaching itself from the current target if it exists
@@ -36,8 +35,10 @@ public abstract class StatusEffect {
         if(this.target != null)
             _Remove();
         this.target = target;
-        if(this.target != null)
+        if(this.target != null) {
             this.target._AddStatusEffect(this);
+            OnAttach(target);
+        }
     }
 
     /**
@@ -161,8 +162,10 @@ public abstract class StatusEffect {
     }
 
     public void _Remove() {
-        if(target != null)
+        if(target != null) {
+            OnRemove(target);
             target._Remove(this);
+        }
         target = null;
     }
 

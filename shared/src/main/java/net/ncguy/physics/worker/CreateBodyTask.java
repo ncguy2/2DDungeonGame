@@ -16,8 +16,8 @@ public class CreateBodyTask extends PhysicsTask<Body> {
     public Body Run() {
         int i = service.QueueCreateBody(def);
         Body body;
-        while((body = service.ObtainBody(i)) == null) Sleep(1);
-        body.setUserData(PhysicsUserObject.Scriptable());
+        while ((body = service.ObtainBody(i)) == null) Sleep(1);
+        body.setUserData(PhysicsUserObject.Scriptable(body));
         return body;
     }
 

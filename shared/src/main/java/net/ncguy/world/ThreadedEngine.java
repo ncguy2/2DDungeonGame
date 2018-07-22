@@ -3,12 +3,15 @@ package net.ncguy.world;
 import net.ncguy.system.BaseSystem;
 import net.ncguy.util.DeltaCalculator;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class ThreadedEngine {
+
+    public static final List<WeakReference<ThreadedEngine>> registry = new ArrayList<>();
 
     public final List<BaseSystem> systems;
     public boolean alive;
@@ -17,6 +20,7 @@ public class ThreadedEngine {
 
     public ThreadedEngine() {
         super();
+        registry.add(new WeakReference<>(this));
         systems = new ArrayList<>();
         deltaTimer = new DeltaCalculator();
     }

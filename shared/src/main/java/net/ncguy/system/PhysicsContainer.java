@@ -54,45 +54,35 @@ public class PhysicsContainer {
     }
 
     public void Update(float delta) {
-        System.out.println("PhysicsContainer.Update 1");
-        service.Execute();
-        System.out.println("PhysicsContainer.Update 2");
-        service.Remove();
-        System.out.println("PhysicsContainer.Update 3");
         service.Produce();
-        System.out.println("PhysicsContainer.Update 4");
+        service.Execute();
 
         if(preStep != null)
             preStep.accept(this);
-        System.out.println("PhysicsContainer.Update 5");
 
         DoPhysicsStep(delta);
 
-        System.out.println("PhysicsContainer.Update 9");
 
         if(postStep != null)
             postStep.accept(this);
-        System.out.println("PhysicsContainer.Update 10");
+        service.Remove();
+
     }
 
     private float accumulator = 0;
     private void DoPhysicsStep(float deltaTime) {
-        System.out.println("PhysicsContainer.Update 6");
         // fixed time step
         // max frame time to avoid spiral of death (on slow devices)
         float frameTime = Math.min(deltaTime, 0.25f);
         accumulator += frameTime;
         float timeStep = 1f / 45f;
-        System.out.println("PhysicsContainer.Update 7");
         int step = 0;
         while (accumulator >= timeStep) {
-            System.out.println("PhysicsContainer.Update 8.1." + (++step));
             try {
                 world.step(timeStep, 6, 2);
             }catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("PhysicsContainer.Update 8.2." + (++step));
             accumulator -= timeStep;
         }
     }

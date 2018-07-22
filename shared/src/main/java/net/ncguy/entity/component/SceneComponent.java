@@ -3,7 +3,6 @@ package net.ncguy.entity.component;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +13,7 @@ import java.util.Set;
 public class SceneComponent extends EntityComponent {
 
     public Transform2D transform;
-    public Set<EntityComponent> childrenComponents;
+    public final Set<EntityComponent> childrenComponents;
     public transient Entity owningEntity;
 
     public SceneComponent(String name) {
@@ -114,21 +113,25 @@ public class SceneComponent extends EntityComponent {
         }
     }
 
-    private synchronized Set<EntityComponent> GetComponents() {
-        return new LinkedHashSet<>(childrenComponents);
+    private Set<EntityComponent> GetComponents() {
+        synchronized (childrenComponents) {
+            return new LinkedHashSet<>(childrenComponents);
+        }
     }
 
     @Override
     public void Update(float delta) {
         super.Update(delta);
-        for (EntityComponent childrenComponent : childrenComponents)
+        for (EntityComponent childrenComponent : GetComponents())
             childrenComponent.Update(delta);
     }
 
     @Override
     public void Destroy() {
-        new ArrayList<>(childrenComponents).forEach(EntityComponent::Destroy);
-        childrenComponents.clear();
+        GetComponents().forEach(EntityComponent::Destroy);
+        synchronized (childrenComponents) {
+            childrenComponents.clear();
+        }
         super.Destroy();
     }
 }

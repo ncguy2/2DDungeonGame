@@ -13,7 +13,7 @@ function Create(worldName, x, y) {
     var collision = new CollisionComponent("Script/Collision");
     entity.SetRootComponent(collision);
     entity.AddComponent(new PrimitiveCircleComponent("Script/Circle")).colour.set(Utils.RandomColour()).a = 1.0;
-    var healthComponent = HealthComponent.SingleHealthComponent("Script/Health", 10);
+    var healthComponent = HealthComponent.SingleHealthComponent("Script/Health", 250);
     entity.AddComponent(healthComponent);
     entity.AddComponent(new HealthUIComponent("UI/Health", healthComponent));
 

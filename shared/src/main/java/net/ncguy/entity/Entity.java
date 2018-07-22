@@ -150,6 +150,14 @@ public class Entity {
 
         if(parent != null)
             parent.RemoveEntity(this);
-        else world.Remove(this);
+        else {
+
+            if(world == null) {
+                System.err.println("Orphaned entity detected, no reference to owning world");
+            }else {
+                world.Remove(this);
+            }
+
+        }
     }
 }

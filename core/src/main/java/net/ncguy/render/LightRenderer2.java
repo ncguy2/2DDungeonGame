@@ -11,6 +11,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
+import net.ncguy.render.post.PostProcessor;
 import net.ncguy.util.ReloadableShader;
 import net.ncguy.viewport.FBO;
 import net.ncguy.world.Engine;
@@ -27,6 +28,8 @@ public class LightRenderer2 extends BaseRenderer {
     ReloadableShader shadowShader;
     ReloadableShader applicationShader;
     ReloadableShader screenShader;
+    List<PostProcessor> processors;
+    Texture postProcessedTexture;
     int lightSize = 1024;
     float lightScale = 4;
 
@@ -39,6 +42,7 @@ public class LightRenderer2 extends BaseRenderer {
         super(engine, batch, camera);
 
         cam = new OrthographicCamera();
+        processors = new ArrayList<>();
 
         occluderFBO = new FBO(Pixmap.Format.RGBA8888, lightSize, lightSize, false);
         Texture occluderTex = occluderFBO.getColorBufferTexture();
@@ -64,6 +68,8 @@ public class LightRenderer2 extends BaseRenderer {
         System.out.println(shadowShader.getLog());
         System.out.println(applicationShader.getLog());
         baseRenderer = new DeferredRenderer(engine, batch, camera);
+
+//        processors.add(new DistortionPostProcessor(engine));
     }
 
     public void ResizeBuffers(int lightSize, boolean actuallyResize) {
@@ -86,11 +92,12 @@ public class LightRenderer2 extends BaseRenderer {
         super.Resize(width, height);
         baseRenderer.Resize(width, height);
         lightMapFBO.Resize(width, height);
+        processors.forEach(p -> p.Resize(width, height));
     }
 
     @Override
     public Texture GetTexture() {
-        return screenBuffer.getColorBufferTexture();
+        return postProcessedTexture;
     }
 
     @Override
@@ -116,6 +123,7 @@ public class LightRenderer2 extends BaseRenderer {
 
         collectedLights.stream().sorted((l1, l2) -> Float.compare(l1.radius, l2.radius)).forEach(this::RenderLight);
 
+
         cam.setToOrtho(true);
         screenBuffer.begin();
         screenBuffer.clear(0, 0, 0, 1, false);
@@ -132,6 +140,10 @@ public class LightRenderer2 extends BaseRenderer {
 //        batch.draw(lightMapFBO.getColorBufferTexture(), 0, 0, screenBuffer.getWidth(), screenBuffer.getHeight());
         batch.end();
         screenBuffer.end();
+
+        postProcessedTexture = screenBuffer.getColorBufferTexture();
+        for (PostProcessor p : processors)
+            postProcessedTexture = p.Render(batch, camera, postProcessedTexture, delta);
     }
 
     void RenderLight(LightComponent light) {

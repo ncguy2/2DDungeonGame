@@ -12,8 +12,7 @@ public class PhysicsFactoryImpl extends PhysicsFactory {
     @Override
     public Body CreateBody(BodyDef def) {
         Body body = world.createBody(def);
-//        body.setUserData(new PhysicsUserObject());
-        body.setUserData(PhysicsUserObject.Scriptable());
+        body.setUserData(PhysicsUserObject.Scriptable(body));
         return body;
     }
 

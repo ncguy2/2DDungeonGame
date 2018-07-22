@@ -3,9 +3,14 @@ package net.ncguy;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Box2D;
+import com.kotcrab.vis.ui.VisUI;
 import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.util.DeferredCalls;
 import net.ncguy.util.Shaders;
+import net.ncguy.world.ThreadedEngine;
+
+import java.lang.ref.Reference;
+import java.util.Objects;
 
 import static net.ncguy.script.ScriptUtils.tempPrimitives;
 
@@ -17,6 +22,7 @@ public class GameLauncher extends Game {
         String xml = Gdx.files.internal("metadata/abilities/AbilitySet1.xml")
                 .readString();
         AbilityRegistry.instance().Load(xml);
+        VisUI.load();
 
         DeferredCalls.Instance();
 
@@ -41,6 +47,15 @@ public class GameLauncher extends Game {
 
     @Override
     public void dispose() {
+
+        ThreadedEngine.registry.stream()
+                .filter(Objects::nonNull)
+                .map(Reference::get)
+                .filter(Objects::nonNull)
+                .forEach(ThreadedEngine::Shutdown);
+
+        ThreadedEngine.registry.clear();
+
         super.dispose();
         Shaders.Dispose();
     }

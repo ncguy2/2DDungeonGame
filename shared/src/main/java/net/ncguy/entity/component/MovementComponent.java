@@ -9,6 +9,7 @@ public class MovementComponent extends EntityComponent {
 
     public final Vector2 velocity = new Vector2();
     public float movementSpeed = 370;
+    public boolean resetAfterCheck = false;
 
     public MovementComponent(String name) {
         super(name);

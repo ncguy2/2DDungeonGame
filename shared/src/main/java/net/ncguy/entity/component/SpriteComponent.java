@@ -16,24 +16,37 @@ public class SpriteComponent extends RenderComponent {
     public transient Sprite sprite;
     public boolean castShadow = true;
     public String spriteRef;
+    public final Vector2 spriteScaleOverride = new Vector2(-1, -1);
 
     public SpriteComponent(String name) {
         super(name);
         spriteRef = "";
     }
 
+    public void Build() {
+        Texture texture = new Texture(Gdx.files.internal(spriteRef));
+        sprite = new Sprite(texture);
+        sprite.setSize(1, 1);
+    }
+
     @Override
     public void Update(float delta) {
         if(sprite == null) {
-            sprite = new Sprite(new Texture(Gdx.files.internal(spriteRef)));
+            Build();
         }else {
             Matrix3 transform = this.transform.WorldTransform();
-            Vector2 vec = new Vector2();
-            transform.getTranslation(vec);
-            sprite.setPosition(vec.x, vec.y);
+            Vector2 pos = new Vector2();
+            Vector2 size = new Vector2();
+            transform.getTranslation(pos);
+            transform.getScale(size);
+
+            if(spriteScaleOverride.x > -1 && spriteScaleOverride.y > -1)
+                size.set(spriteScaleOverride);
+
+            pos.sub(size.cpy().scl(.5f));
+            sprite.setPosition(pos.x, pos.y);
             sprite.setRotation(transform.getRotation());
-            transform.getScale(vec);
-            sprite.setSize(vec.x, vec.y);
+            sprite.setSize(size.x, size.y);
         }
         super.Update(delta);
     }

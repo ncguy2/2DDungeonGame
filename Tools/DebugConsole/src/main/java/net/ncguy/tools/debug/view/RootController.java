@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
 
 public class RootController implements Initializable {
 
-    ObservableList<Item> items;
+    ObservableList<FXMLItem> items;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -24,16 +24,17 @@ public class RootController implements Initializable {
 
         Items.setItems(items);
 
-        AddItem("Shaders", "/fxml/pages/shaders.fxml");
+        AddItem("Abilities", "/fxml/pages/abilities.fxml");
         AddItem("Entities", "/fxml/pages/entities.fxml");
+        AddItem("Shaders", "/fxml/pages/shaders.fxml");
     }
 
     void AddItem(String name, String fxmlPath) {
-        items.add(new Item(name, fxmlPath));
+        items.add(new FXMLItem(name, fxmlPath));
     }
 
     @FXML
-    public ListView<Item> Items;
+    public ListView<FXMLItem> Items;
     @FXML
     public AnchorPane Content;
 
@@ -41,7 +42,7 @@ public class RootController implements Initializable {
         ObservableList<Node> children = Content.getChildren();
         children.clear();
 
-        Item item = Items.getSelectionModel()
+        FXMLItem item = Items.getSelectionModel()
                 .getSelectedItem();
         if(item == null)
             return;
@@ -55,21 +56,6 @@ public class RootController implements Initializable {
             AnchorPane.setRightAnchor(node, 0.0);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    public static class Item {
-        public String name;
-        public String fxmlPath;
-
-        public Item(String name, String fxmlPath) {
-            this.name = name;
-            this.fxmlPath = fxmlPath;
-        }
-
-        @Override
-        public String toString() {
-            return name;
         }
     }
 

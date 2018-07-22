@@ -3,6 +3,7 @@ package net.ncguy.lib.dmg.hp;
 import net.ncguy.lib.dmg.status.StatusEffect;
 import net.ncguy.lib.dmg.types.DamageType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -96,8 +97,7 @@ public class Health {
     public void _Update(float delta) {
         if (healCooldown > 0)
             healCooldown -= delta;
-        statusEffectMap.values()
-                .forEach(e -> e._Update(delta));
+        new ArrayList<>(statusEffectMap.values()).forEach(e -> e._Update(delta));
     }
 
     public void _AddStatusEffect(StatusEffect effect) {

@@ -1,10 +1,12 @@
 package net.ncguy.ability;
 
 import net.ncguy.ability.loader.AbilityXmlLoader;
+import net.ncguy.entity.component.AbilitiesComponent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AbilityRegistry {
 
@@ -33,9 +35,21 @@ public class AbilityRegistry {
         return new ArrayList<>(abilities);
     }
 
+    public List<String> Names() {
+        return abilities.stream().map(a -> a.name).collect(Collectors.toList());
+    }
+
     public void Load(String xml) {
         AbilityXmlLoader loader = new AbilityXmlLoader(xml);
         abilities.addAll(loader.Parse());
+    }
+
+    public void Give(String abilityName, AbilitiesComponent abilities) {
+        Get(abilityName).ifPresent(abilities::GrantAbility);
+    }
+
+    public void GiveAll(AbilitiesComponent abilities) {
+        this.abilities.forEach(abilities::GrantAbility);
     }
 
 }

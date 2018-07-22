@@ -26,13 +26,15 @@ public class EntityWorld {
     }
 
     public void Update(float delta) {
-        for (Entity entity : entities)
+        for (Entity entity : getEntities())
             entity.Update(delta);
 
         if(tasks.isEmpty())
             return;
 
-        tasks.forEach(Runnable::run);
+        for (Runnable task : new ArrayList<>(tasks)) {
+            task.run();
+        }
         tasks.clear();
     }
 
@@ -63,8 +65,8 @@ public class EntityWorld {
     }
 
     public synchronized void Add(Entity entity) {
-        this.entities.add(entity);
         entity.SetWorld(this);
+        this.entities.add(entity);
     }
 
     public boolean Alive(Entity entity) {

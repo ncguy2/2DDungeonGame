@@ -14,6 +14,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
@@ -28,6 +31,7 @@ import net.ncguy.script.SpawnerScriptObject;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsSystem;
+import net.ncguy.ui.character.CharacterUI;
 import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
@@ -57,7 +61,11 @@ public class TestScreen2 implements Screen {
     PhysicsSystem physicsSystem;
     String wallTexPath;
     String floorTexPath;
+    CharacterUI characterUI;
 
+    Stage stage;
+    Viewport stageViewport;
+    OrthographicCamera stageCamera;
 
     BaseRenderer sceneRenderer;
 
@@ -68,6 +76,10 @@ public class TestScreen2 implements Screen {
 //        World.setVelocityThreshold(10);
 //        world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
+
+        stageCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stageViewport = new ScreenViewport(stageCamera);
+        stage = new Stage(stageViewport);
 
         omtEngine = new ThreadedEngine();
 
@@ -134,7 +146,7 @@ public class TestScreen2 implements Screen {
 
                     BodyDef def = new BodyDef();
                     def.type = BodyDef.BodyType.StaticBody;
-                    def.position.set((x * width) + halfWidth, (y * height) + halfHeight)
+                    def.position.set((x * width), (y * height))
                             .scl(screenToPhysics);
 
 //                    Body body = physicsSystem.World().createBody(def);
@@ -160,6 +172,7 @@ public class TestScreen2 implements Screen {
         }
 
         Entity playerEntity = new Entity();
+
         CollisionComponent collision = playerEntity.SetRootComponent(new CollisionComponent("Collision"));
 
         BodyDef def = new BodyDef();
@@ -213,38 +226,46 @@ public class TestScreen2 implements Screen {
 
 
         playerEntity.AddComponent(new InputComponent("Input"));
-        playerEntity.AddComponent(new MovementComponent("Movement"));
+        playerEntity.AddComponent(new MovementComponent("Movement")).resetAfterCheck = true;
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
         playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
         HealthComponent health = new HealthComponent("Health");
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
+        playerEntity.AddComponent(new DistortionComponent("Distortion")).spriteRef = "textures/CloudMask.png";
+        AbilitiesComponent abilities = playerEntity.AddComponent(new AbilitiesComponent("Abilities"));
+        AbilityRegistry.instance().GiveAll(abilities);
 //        LightComponent light = playerEntity.AddComponent(new LightComponent("Light"));
 //        light.colour.set(1, 1, 1, 1);
 //        light.radius = (1 << (new Random().nextInt(10-6) + 6));
 
-        AbilityRegistry.instance()
-                .Get("Blink")
-                .ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Ability/Blink"))
-                        .SlotIdx(0)
-                        .SetAbility(blink));
-        AbilityRegistry.instance()
-                .Get("Heal")
-                .ifPresent(heal -> playerEntity.AddComponent(new AbilityComponent("Ability/Heal"))
-                        .SlotIdx(1)
-                        .SetAbility(heal));
+        characterUI = new CharacterUI(playerEntity);
+        stage.addActor(characterUI);
 
-        AbilityRegistry.instance()
-                .Get("Hurt")
-                .ifPresent(hurt -> playerEntity.AddComponent(new AbilityComponent("Ability/Hurt"))
-                        .SlotIdx(2)
-                        .SetAbility(hurt));
+        Gdx.input.setInputProcessor(stage);
 
-        AbilityRegistry.instance()
-                .Get("Bladestorm")
-                .ifPresent(bladestorm -> playerEntity.AddComponent(new AbilityComponent("Ability/Bladestorm"))
-                        .SlotIdx(3)
-                        .SetAbility(bladestorm));
+//        AbilityRegistry.instance()
+//                .Get("Blink")
+//                .ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Ability/Blink"))
+//                        .SlotIdx(0)
+//                        .SetAbility(blink));
+//        AbilityRegistry.instance()
+//                .Get("Heal")
+//                .ifPresent(heal -> playerEntity.AddComponent(new AbilityComponent("Ability/Heal"))
+//                        .SlotIdx(1)
+//                        .SetAbility(heal));
+//
+//        AbilityRegistry.instance()
+//                .Get("Hurt")
+//                .ifPresent(hurt -> playerEntity.AddComponent(new AbilityComponent("Ability/Hurt"))
+//                        .SlotIdx(2)
+//                        .SetAbility(hurt));
+//
+//        AbilityRegistry.instance()
+//                .Get("Bladestorm")
+//                .ifPresent(bladestorm -> playerEntity.AddComponent(new AbilityComponent("Ability/Bladestorm"))
+//                        .SlotIdx(3)
+//                        .SetAbility(bladestorm));
 
         engine.world.Add(playerEntity);
 
@@ -365,6 +386,13 @@ public class TestScreen2 implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
             debugRenderer.render(physicsSystem.World(), camera.combined.cpy().scl(PhysicsSystem.physicsToScreen));
 
+
+        characterUI.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        stage.setDebugAll(false);
+
+        stage.act(delta);
+        stage.draw();
     }
 
     @Override
@@ -372,6 +400,7 @@ public class TestScreen2 implements Screen {
         // Resize your screen here. The parameters represent the new window size.
         camera.setToOrtho(false, width, height);
         sceneRenderer.Resize(width, height);
+        stageViewport.update(width, height, true);
     }
 
     @Override

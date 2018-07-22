@@ -14,11 +14,13 @@ import net.ncguy.entity.component.HealthComponent;
 import net.ncguy.physics.worker.DestroyBodyTask;
 import net.ncguy.physics.worker.SetTransformTask;
 import net.ncguy.physics.worker.SpawnEntityTask;
+import net.ncguy.system.PhysicsContainer;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.world.Engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -32,9 +34,11 @@ public class ScriptUtils {
     }
 
     private ScriptUtils() {
+        entityFactory = new EntityFactory(this);
         ScriptHost.AddGlobalBinding("Utils", this);
     }
 
+    public EntityFactory entityFactory;
     protected Engine engine;
     protected World collisionWorld;
     protected PhysicsSystem physicsSystem;
@@ -52,7 +56,9 @@ public class ScriptUtils {
         return this;
     }
 
+    @Deprecated
     public World World() { return physicsSystem.World(); }
+    public Optional<PhysicsContainer> Container(String worldName) { return physicsSystem.GetContainer(worldName); }
     @Deprecated
     public ScriptUtils World(World collisionWorld) {
         this.collisionWorld = collisionWorld;
@@ -168,12 +174,24 @@ public class ScriptUtils {
         return new Vector2(unproject.x, unproject.y);
     }
 
-    public void CreateCircularSensor(Vector2 point, float radius, Consumer<Body> task) {
+    public PhysicsContainer GetPhysicsContainer(String name) {
+        return physicsSystem.GetContainer(name).orElse(null);
+    }
 
+    public void CreateCircularSensor(Vector2 point, float radius, Consumer<Body> task) {
+        CreateCircularSensor(point, radius, BodyDef.BodyType.KinematicBody, task);
+    }
+    public void CreateCircularSensor(Vector2 point, float radius, BodyDef.BodyType type, Consumer<Body> task) {
+        CreateCircularSensor("Overworld", point, radius, type, task);
+    }
+    public void CreateCircularSensor(String worldName, Vector2 point, float radius, BodyDef.BodyType type, Consumer<Body> task) {
+        PhysicsSystem().GetContainer(worldName).ifPresent(c -> CreateCircularSensor(c, point, radius, type, task));
+    }
+    public void CreateCircularSensor(PhysicsContainer world, Vector2 point, float radius, BodyDef.BodyType type, Consumer<Body> task) {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.KinematicBody;
+        bodyDef.type = type;
         bodyDef.position.set(point);
-        bodyDef.allowSleep = false;
+//        bodyDef.allowSleep = false;
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.isSensor = true;
@@ -181,13 +199,15 @@ public class ScriptUtils {
         shape.setRadius(radius);
         fixtureDef.shape = shape;
 
+        fixtureDef.density = type.equals(BodyDef.BodyType.DynamicBody) ? 1f : 0f;
+
         SpawnEntityTask dispatchedTask = new SpawnEntityTask(bodyDef, fixtureDef);
         dispatchedTask.OnFinish(b -> {
             shape.dispose();
             if(task != null)
                 task.accept(b);
         });
-        PhysicsSystem().Foreman().Post(dispatchedTask);
+        world.foreman.Post(dispatchedTask);
     }
 
     public Body GetOtherBody(Contact contact, Body body) {

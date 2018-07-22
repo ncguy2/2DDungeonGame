@@ -71,9 +71,10 @@ public class PhysicsSystem extends BaseSystem {
                     MovementComponent movement = entity.GetComponent(MovementComponent.class, true);
 
                     if (collision.body != null)
-                        collision.body.setLinearVelocity(movement.velocity.scl(screenToPhysics));
+                        collision.body.setLinearVelocity(movement.velocity.cpy().scl(screenToPhysics));
 
-                    movement.velocity.setZero();
+                    if(movement.resetAfterCheck)
+                        movement.velocity.setZero();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -124,9 +125,8 @@ public class PhysicsSystem extends BaseSystem {
                 .map(c -> (Runnable) () -> c.Update(delta))
                 .toArray(Runnable[]::new);
 
-        for (Runnable task : tasks) {
+        for (Runnable task : tasks)
             task.run();
-        }
 
 //        try {
 //            SpinThreads(tasks);

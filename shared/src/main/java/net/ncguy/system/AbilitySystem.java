@@ -41,25 +41,30 @@ public class AbilitySystem extends BaseSystem {
     }
     
     void InvokeEnabled(Entity entity, AbilityComponent component, float delta) {
-        component.script.InvokeActiveUpdate(entity, delta);
+        if(component.script != null)
+            component.script.InvokeActiveUpdate(entity, delta);
     }
     
     void InvokeJustEnabled(Entity entity, AbilityComponent component) {
-        component.script.InvokeEnabled(entity);
+        if(component.script != null)
+            component.script.InvokeEnabled(entity);
         component.SetState(AbilityComponent.AbilityState.Enabled);
     }
 
     void InvokeDisabled(Entity entity, AbilityComponent component, float delta) {
-        component.script.InvokeInactiveUpdate(entity, delta);
+        if(component.script != null)
+            component.script.InvokeInactiveUpdate(entity, delta);
     }
 
     void InvokeJustDisabled(Entity entity, AbilityComponent component) {
-        component.script.InvokeDisabled(entity);
+        if(component.script != null)
+            component.script.InvokeDisabled(entity);
         component.SetState(AbilityComponent.AbilityState.Disabled);
     }
 
     void InvokeUpdate(Entity entity, AbilityComponent component, float delta) {
-        component.script.InvokeUpdate(entity, delta);
+        if(component.script != null)
+            component.script.InvokeUpdate(entity, delta);
     }
 
     @Override

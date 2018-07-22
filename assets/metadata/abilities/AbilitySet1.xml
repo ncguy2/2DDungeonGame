@@ -3,7 +3,7 @@
     <AbilityGroup Name="Cantrips">
         <Ability>
             <Name>Blink</Name>
-            <Icon></Icon>
+            <Icon>textures/icons/blink.png</Icon>
             <Level>Cantrip</Level>
             <Script>scripts/abilities/blink.js</Script>
             <Cost />
@@ -14,10 +14,25 @@
                 <LevelRequirement>1</LevelRequirement>
             </Requirements>
         </Ability>
+
+        <Ability>
+            <Name>Fireball</Name>
+            <Icon>textures/icons/fireball.png</Icon>
+            <Level>Cantrip</Level>
+            <Script>scripts/abilities/fireball.js</Script>
+            <Cost />
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Sorcerer</Class>
+                    <Class>Wizard</Class>
+                </ClassRequirement>
+                <LevelRequirement>1</LevelRequirement>
+            </Requirements>
+        </Ability>
 `
         <Ability>
             <Name>Heal</Name>
-            <Icon></Icon>
+            <Icon>textures/icons/heal.png</Icon>
             <Level>Cantrip</Level>
             <Script>scripts/abilities/heal.js</Script>
             <Cost>
@@ -38,7 +53,7 @@
 
         <Ability>
             <Name>Hurt</Name>
-            <Icon></Icon>
+            <Icon>textures/icons/hurt.png</Icon>
             <Level>Cantrip</Level>
             <Script>scripts/abilities/hurt.js</Script>
             <Cost>
@@ -64,7 +79,7 @@
     <AbilityGroup Name="Level 7">
         <Ability>
             <Name>Bladestorm</Name>
-            <Icon></Icon>
+            <Icon>textures/icons/bladestorm.png</Icon>
             <Level>Level_7</Level>
             <Script>scripts/abilities/bladestorm.js</Script>
             <Cost>

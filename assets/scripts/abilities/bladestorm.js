@@ -100,7 +100,7 @@ function GetTargetPos(idx) {
 }
 
 function DamageEntity(target) {
-    var dmg = Damage.Of(new DmgTypeHeal(), -40);
+    var dmg = Damage.Of(new DmgTypeHeal(), -500);
     var cls = HealthComponent.class;
     if(target.HasComponent(cls)) {
         var healthComp = target.GetComponent(cls, true);
