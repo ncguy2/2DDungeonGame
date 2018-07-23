@@ -1,10 +1,12 @@
 package net.ncguy.system;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Transform;
 import com.badlogic.gdx.physics.box2d.World;
 import net.ncguy.entity.Entity;
+import net.ncguy.entity.Transform2D;
 import net.ncguy.entity.component.CollisionComponent;
 import net.ncguy.entity.component.MovementComponent;
 import net.ncguy.physics.PhysicsService;
@@ -70,8 +72,14 @@ public class PhysicsSystem extends BaseSystem {
 
                     MovementComponent movement = entity.GetComponent(MovementComponent.class, true);
 
-                    if (collision.body != null)
-                        collision.body.setLinearVelocity(movement.velocity.cpy().scl(screenToPhysics));
+                    if (collision.body != null) {
+                        Vector2 vel;
+                        if(collision.useOverrideVelocity) {
+                            vel = collision.overrideVelocity;
+                            System.out.println(vel);
+                        }else vel = movement.velocity;
+                        collision.body.setLinearVelocity(vel.cpy().scl(screenToPhysics));
+                    }
 
                     if(movement.resetAfterCheck)
                         movement.velocity.setZero();
@@ -89,10 +97,16 @@ public class PhysicsSystem extends BaseSystem {
                 CollisionComponent collision = entity.GetComponent(CollisionComponent.class, true);
                 if (!container.WorldContains(collision))
                     continue;
-                Transform transform = collision.body.getTransform();
-                collision.transform.translation.set(transform.getPosition())
-                        .scl(physicsToScreen);
-                collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
+
+                if(collision.useComponentTransform) {
+                    Transform2D transform = collision.transform;
+                    collision.body.setTransform(transform.WorldTranslation(), transform.WorldRotationRad());
+                }else {
+                    Transform transform = collision.body.getTransform();
+                    collision.transform.translation.set(transform.getPosition())
+                            .scl(physicsToScreen);
+                    collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
+                }
             }
         }
     }

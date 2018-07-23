@@ -1,5 +1,8 @@
 package net.ncguy.script;
 
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenEquation;
+import aurelienribon.tweenengine.TweenEquations;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -16,6 +19,10 @@ import net.ncguy.physics.worker.SetTransformTask;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.system.PhysicsContainer;
 import net.ncguy.system.PhysicsSystem;
+import net.ncguy.tween.TweenCore;
+import net.ncguy.tween.accessors.BodyTweenAccessor;
+import net.ncguy.tween.accessors.TransformTweenAccessor;
+import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.Engine;
 
 import java.util.ArrayList;
@@ -27,6 +34,7 @@ import java.util.function.Consumer;
 public class ScriptUtils {
 
     private static ScriptUtils instance;
+
     public static ScriptUtils instance() {
         if (instance == null)
             instance = new ScriptUtils();
@@ -43,30 +51,44 @@ public class ScriptUtils {
     protected World collisionWorld;
     protected PhysicsSystem physicsSystem;
 
-    public Engine Engine() { return engine; }
+    public Engine Engine() {
+        return engine;
+    }
+
     public ScriptUtils Engine(Engine engine) {
         this.engine = engine;
         return this;
     }
 
 
-    public PhysicsSystem PhysicsSystem() { return physicsSystem; }
+    public PhysicsSystem PhysicsSystem() {
+        return physicsSystem;
+    }
+
     public ScriptUtils PhysicsSystem(PhysicsSystem physicsSystem) {
         this.physicsSystem = physicsSystem;
         return this;
     }
 
     @Deprecated
-    public World World() { return physicsSystem.World(); }
-    public Optional<PhysicsContainer> Container(String worldName) { return physicsSystem.GetContainer(worldName); }
+    public World World() {
+        return physicsSystem.World();
+    }
+
+    public Optional<PhysicsContainer> Container(String worldName) {
+        return physicsSystem.GetContainer(worldName);
+    }
+
     @Deprecated
     public ScriptUtils World(World collisionWorld) {
         this.collisionWorld = collisionWorld;
         return this;
     }
+
     public float PhysicsToScreen() {
         return PhysicsSystem.physicsToScreen;
     }
+
     public float ScreenToPhysics() {
         return PhysicsSystem.screenToPhysics;
     }
@@ -77,6 +99,7 @@ public class ScriptUtils {
         tempPrimitives.add(e);
         return e;
     }
+
     public Primitive DebugCircle(Vector2 point, float radius, float duration) {
         Circle e = new Circle(duration);
         e.point.set(point);
@@ -84,6 +107,7 @@ public class ScriptUtils {
         tempPrimitives.add(e);
         return e;
     }
+
     public Primitive DebugLine(Vector2 start, Vector2 end, float duration) {
         Line e = new Line(duration);
         e.start.set(start);
@@ -91,6 +115,7 @@ public class ScriptUtils {
         tempPrimitives.add(e);
         return e;
     }
+
     public Primitive DebugRect(Vector2 pos, Vector2 size, float duration) {
         Rect e = new Rect(duration);
         e.pos.set(pos);
@@ -102,6 +127,7 @@ public class ScriptUtils {
     public Vector2 RandomDirection() {
         return new Vector2().setToRandomDirection();
     }
+
     public float RandomFloat() {
         return new Random().nextFloat();
     }
@@ -117,8 +143,10 @@ public class ScriptUtils {
         CollisionComponent collision = entity.GetComponent(CollisionComponent.class, false);
 //        collision.body.setTransform(x * PhysicsSystem.screenToPhysics, y * PhysicsSystem.screenToPhysics, transform.RotationRad());
         SetTransformTask task = new SetTransformTask(collision.body, new Vector2(x, y).scl(ScreenToPhysics()), transform.RotationRad());
-        physicsSystem.GetContainer("Overworld").ifPresent(w -> w.foreman.Post(task));
+        physicsSystem.GetContainer("Overworld")
+                .ifPresent(w -> w.foreman.Post(task));
     }
+
     public void SetEntityRelativeLocation(Entity entity, Vector2 pos) {
         SetEntityRelativeLocation(entity, pos.x, pos.y);
     }
@@ -126,17 +154,19 @@ public class ScriptUtils {
     public Intersection LineTrace(float startX, float startY, float endX, float endY) {
         return LineTrace(new Vector2(startX, startY), new Vector2(endX, endY));
     }
+
     public Intersection LineTrace(Vector2 start, Vector2 end) {
         Intersection intersection = new Intersection();
         Trace((fixture, point, normal, fraction) -> {
             intersection.hit = true;
-            intersection.point.set(point).scl(PhysicsSystem.physicsToScreen);
+            intersection.point.set(point)
+                    .scl(PhysicsSystem.physicsToScreen);
             intersection.normal.set(normal);
             return 0;
         }, start, end);
 
         List<Intersection> intersections = MultiLineTrace(start, end);
-        if(intersections.isEmpty()) {
+        if (intersections.isEmpty()) {
             System.out.println("Empty");
             return intersection;
         }
@@ -148,7 +178,8 @@ public class ScriptUtils {
         Trace((fixture, point, normal, fraction) -> {
             Intersection intersection = new Intersection();
             intersection.hit = true;
-            intersection.point.set(point).scl(PhysicsSystem.physicsToScreen);
+            intersection.point.set(point)
+                    .scl(PhysicsSystem.physicsToScreen);
             intersection.normal.set(normal);
             intersections.add(intersection);
             return 1;
@@ -157,8 +188,33 @@ public class ScriptUtils {
         return intersections;
     }
 
+    public void SetBodyVelocity(Entity entity, Vector2 direction, float speed, float duration) {
+        SetBodyVelocity(entity, direction.cpy()
+                .nor()
+                .scl(speed), duration);
+    }
+
+    public void SetBodyVelocity(Entity entity, Vector2 velocity, float duration) {
+        CollisionComponent c = entity.GetComponent(CollisionComponent.class, true);
+        c.useOverrideVelocity = true;
+        c.overrideVelocity.set(velocity);
+        DeferredCalls.Instance()
+                .Post(duration, () -> {
+                    c.useOverrideVelocity = false;
+                    c.overrideVelocity.setZero();
+                });
+//                .stream()
+//                .filter(c -> c.body != null)
+//                .map(c -> c.body)
+//                .map(b -> new SetLinearVelocityTask(b, velocity))
+//                .forEach(t -> physicsSystem.GetContainer(t.body)
+//                        .ifPresent(w -> w.foreman.Post(t)));
+    }
+
     public void Trace(RayCastCallback callback, Vector2 start, Vector2 end) {
-        collisionWorld.rayCast(callback, start.cpy().scl(PhysicsSystem.screenToPhysics), end.cpy().scl(PhysicsSystem.screenToPhysics));
+        collisionWorld.rayCast(callback, start.cpy()
+                .scl(PhysicsSystem.screenToPhysics), end.cpy()
+                .scl(PhysicsSystem.screenToPhysics));
     }
 
     public Vector2 GetMouseCoords() {
@@ -166,7 +222,7 @@ public class ScriptUtils {
     }
 
     public Vector2 UnprojectCoords(Entity entity, Vector2 screenCoords) {
-        if(!entity.HasComponent(CameraComponent.class))
+        if (!entity.HasComponent(CameraComponent.class))
             return screenCoords;
 
         CameraComponent camera = entity.GetComponent(CameraComponent.class, true);
@@ -175,18 +231,23 @@ public class ScriptUtils {
     }
 
     public PhysicsContainer GetPhysicsContainer(String name) {
-        return physicsSystem.GetContainer(name).orElse(null);
+        return physicsSystem.GetContainer(name)
+                .orElse(null);
     }
 
     public void CreateCircularSensor(Vector2 point, float radius, Consumer<Body> task) {
         CreateCircularSensor(point, radius, BodyDef.BodyType.KinematicBody, task);
     }
+
     public void CreateCircularSensor(Vector2 point, float radius, BodyDef.BodyType type, Consumer<Body> task) {
         CreateCircularSensor("Overworld", point, radius, type, task);
     }
+
     public void CreateCircularSensor(String worldName, Vector2 point, float radius, BodyDef.BodyType type, Consumer<Body> task) {
-        PhysicsSystem().GetContainer(worldName).ifPresent(c -> CreateCircularSensor(c, point, radius, type, task));
+        PhysicsSystem().GetContainer(worldName)
+                .ifPresent(c -> CreateCircularSensor(c, point, radius, type, task));
     }
+
     public void CreateCircularSensor(PhysicsContainer world, Vector2 point, float radius, BodyDef.BodyType type, Consumer<Body> task) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = type;
@@ -204,7 +265,7 @@ public class ScriptUtils {
         SpawnEntityTask dispatchedTask = new SpawnEntityTask(bodyDef, fixtureDef);
         dispatchedTask.OnFinish(b -> {
             shape.dispose();
-            if(task != null)
+            if (task != null)
                 task.accept(b);
         });
         world.foreman.Post(dispatchedTask);
@@ -217,21 +278,24 @@ public class ScriptUtils {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        if(body.equals(bodyA))
+        if (body.equals(bodyA))
             return bodyB;
         return bodyA;
     }
 
     public void DestroyBody(Body body) {
-        PhysicsSystem().Foreman().Post(new DestroyBodyTask(body));
+        PhysicsSystem().Foreman()
+                .Post(new DestroyBodyTask(body));
     }
 
     public void SetBodyTransformWS(Body body, Vector2 posWs, float angleDeg) {
-        SetBodyTransform(body, posWs.cpy().scl(ScreenToPhysics()), (float) Math.toRadians(angleDeg));
+        SetBodyTransform(body, posWs.cpy()
+                .scl(ScreenToPhysics()), (float) Math.toRadians(angleDeg));
     }
 
     public void SetBodyTransform(Body body, Vector2 posPS, float angleRad) {
-        PhysicsSystem().Foreman().Post(new SetTransformTask(body, posPS, angleRad));
+        PhysicsSystem().Foreman()
+                .Post(new SetTransformTask(body, posPS, angleRad));
     }
 
     public Vector2 ToDirection(Vector2 a, Vector2 b) {
@@ -239,13 +303,41 @@ public class ScriptUtils {
     }
 
     public boolean IsEntityAlive(Entity entity) {
-        if(entity == null)
+        if (entity == null)
             return false;
-        if(entity.HasComponent(HealthComponent.class)) {
+        if (entity.HasComponent(HealthComponent.class)) {
             // TODO add support for multiple health components
             return entity.GetComponent(HealthComponent.class, true).health.health > 0;
         }
         return true;
+    }
+
+    public void MoveEntityOverTime(Entity entity, Vector2 target, float time) {
+        MoveEntityOverTime(entity, target, time, TweenEquations.easeNone);
+    }
+
+    public void MoveEntityOverTime(Entity entity, Vector2 target, float time, TweenEquation interp) {
+        Tween.to(entity.Transform(), TransformTweenAccessor.Translation, time)
+                .target(target.x, target.y)
+                .ease(interp)
+                .start(TweenCore.instance().tweenManager);
+    }
+
+    public void MoveBodyOverTime(Entity entity, Vector2 target, float time) {
+        MoveBodyOverTime(entity, target, time, TweenEquations.easeNone);
+    }
+
+    public void MoveBodyOverTime(Entity entity, Vector2 target, float time, TweenEquation interp) {
+        List<CollisionComponent> collisionComponents = entity.GetComponents(CollisionComponent.class, true);
+        collisionComponents.stream()
+                .filter(c -> c.body != null)
+                .map(c -> c.body)
+                .forEach(b -> {
+                    Tween.to(b, BodyTweenAccessor.Translation, time)
+                            .target(target.x, target.y)
+                            .ease(interp)
+                            .start(TweenCore.instance().tweenManager);
+                });
     }
 
     public static class Intersection {
@@ -272,10 +364,11 @@ public class ScriptUtils {
         }
 
         public void _Render(ShapeRenderer renderer) {
-            if(colour != null)
+            if (colour != null)
                 renderer.setColor(colour);
             Render(renderer);
         }
+
         public abstract void Render(ShapeRenderer renderer);
     }
 

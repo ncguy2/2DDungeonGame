@@ -35,12 +35,13 @@ public class DeferredCalls {
         if (calls.isEmpty())
             return;
 
-        calls.stream()
+
+        List<Call> collect = calls.stream()
                 .peek(c -> c.delay -= delta)
                 .filter(c -> c.delay <= 0)
-                .peek(c -> c.task.run())
-                .collect(Collectors.toList())
-                .forEach(calls::remove);
+                .collect(Collectors.toList());
+        collect.forEach(c -> c.task.run());
+        calls.removeAll(collect);
     }
 
     public static class Call {

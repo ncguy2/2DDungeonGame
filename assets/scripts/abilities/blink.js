@@ -18,7 +18,6 @@ function OnEnabled() {
     var direction = Utils.ToDirection(origin, target);
 
     var range = 500;
-
     var distanceToTarget = target.dst(origin);
     if(range > distanceToTarget)
         range = distanceToTarget;

@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class EntityComponent {
 
+    public boolean enabled = true;
     public String name;
     public SceneComponent owningComponent;
 

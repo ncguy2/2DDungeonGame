@@ -27,14 +27,15 @@ function Create(worldName, x, y) {
     shape.setRadius(32 * screenToPhysics);
     var fixtureDef = new FixtureDef();
     fixtureDef.shape = shape;
-    fixtureDef.density = 0;
-    fixtureDef.friction = 0;
+    fixtureDef.density = 1;
+    fixtureDef.friction = 1;
     fixtureDef.restitution = 0;
 
     var container = PhysicsSystem.GetContainer(worldName).orElse(null);
 
     var spawnTask = new SpawnEntityTask(bodyDef, fixtureDef);
     spawnTask.OnFinish(function(body) {
+        body.setLinearDamping(100);
         body.getUserData().entity = entity;
         collision.body = body;
         collision.container = container;

@@ -72,8 +72,24 @@
             </Requirements>
         </Ability>
     </AbilityGroup>
-    <AbilityGroup Name="Level 1">
 
+    <AbilityGroup Name="Level 2">
+        <Ability>
+            <Name>Bull Rush</Name>
+            <Icon>textures/icons/shield-bash.png</Icon>
+            <Level>Level_2</Level>
+            <Script>scripts/abilities/shieldBash.js</Script>
+            <Cost/>
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Barbarian</Class>
+                    <Class>Cleric</Class>
+                    <Class>Fighter</Class>
+                    <Class>Paladin</Class>
+                </ClassRequirement>
+                <LevelRequirement>4</LevelRequirement>
+            </Requirements>
+        </Ability>
     </AbilityGroup>
 
     <AbilityGroup Name="Level 7">

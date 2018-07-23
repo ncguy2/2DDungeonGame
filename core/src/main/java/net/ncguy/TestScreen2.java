@@ -274,7 +274,8 @@ public class TestScreen2 implements Screen {
         light.colour.set(1, 1, 0, 1);
         light.radius = 256;
         EntitySpawnerComponent spawner = new EntitySpawnerComponent("Spawner");
-        spawner.spawnInterval = .1f;
+        spawner.spawnInterval = 2.5f;
+        spawner.spawnAmount = 3;
         spawner.spawnerScript = new SpawnerScriptObject(Gdx.files.internal("scripts/spawner.alpha.js").readString());
         spawner.spawnerScript.Parse();
         entity.AddComponent(spawner);

@@ -56,4 +56,23 @@ public class Transform2D {
         translation.add(vec);
         Update();
     }
+
+    protected final Vector2 worldTranslation = new Vector2();
+    protected final Vector2 worldScale = new Vector2(1, 1);
+
+    public Vector2 WorldTranslation() {
+        WorldTransform().getTranslation(worldTranslation);
+        return worldTranslation;
+    }
+    public float WorldRotation() {
+        return WorldTransform().getRotation();
+    }
+    public Vector2 WorldScale() {
+        WorldTransform().getScale(worldScale);
+        return worldScale;
+    }
+
+    public float WorldRotationRad() {
+        return (float) Math.toRadians(WorldRotation());
+    }
 }

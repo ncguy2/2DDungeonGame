@@ -26,6 +26,8 @@ public class InputSystem extends BaseSystem {
         List<Entity> entities = operatingWorld.GetFlattenedEntitiesWithComponents(InputComponent.class, MovementComponent.class);
         entities.forEach(e -> {
             InputComponent input = e.GetComponent(InputComponent.class, true);
+            if(!input.enabled)
+                return;
             MovementComponent movement = e.GetComponent(MovementComponent.class, true);
 
             movement.velocity.x += InputManager.Scale(movement.movementSpeed, input.keyRight);
