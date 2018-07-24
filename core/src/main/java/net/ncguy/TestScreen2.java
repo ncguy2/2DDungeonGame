@@ -22,8 +22,11 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
+import net.ncguy.lib.gen.tile.TileWorldElement;
+import net.ncguy.lib.gen.tile.TileWorldGenerator;
 import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
+import net.ncguy.profile.ProfilerHost;
 import net.ncguy.render.BaseRenderer;
 import net.ncguy.render.LightRenderer2;
 import net.ncguy.script.ScriptUtils;
@@ -32,10 +35,10 @@ import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.ui.character.CharacterUI;
-import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -48,8 +51,6 @@ public class TestScreen2 implements Screen {
 
     SpriteBatch batch;
     OrthographicCamera camera;
-
-    boolean[][] solidMap;
 
     Texture floorTex;
     Texture wallTex;
@@ -68,113 +69,119 @@ public class TestScreen2 implements Screen {
     OrthographicCamera stageCamera;
 
     BaseRenderer sceneRenderer;
-
+    Entity entity;
     @Override
     public void show() {
+
+        ProfilerHost.Start("TestScreen2");
+
         // Prepare your screen here.
         ShaderProgram.pedantic = false;
 //        World.setVelocityThreshold(10);
 //        world = new World(new Vector2(0, 0), true);
+        ProfilerHost.Start("Initialization");
         debugRenderer = new Box2DDebugRenderer();
-
+        ProfilerHost.Start("Stage");
         stageCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stageViewport = new ScreenViewport(stageCamera);
         stage = new Stage(stageViewport);
+        ProfilerHost.End("Stage");
 
-        omtEngine = new ThreadedEngine();
+        ProfilerHost.End("Initialization");
 
-
+        ProfilerHost.Start("Engines");
+        ProfilerHost.Start("Main Engine");
         engine = new Engine();
         engine.AddSystem(new InputSystem(engine.world));
         engine.AddSystem(new AbilitySystem(engine.world));
+        ProfilerHost.End("Main engine");
+        ProfilerHost.Start("OMT engine");
+        omtEngine = new ThreadedEngine();
         omtEngine.AddSystem(physicsSystem = new PhysicsSystem(engine.world));
+        ProfilerHost.End("OMT engine");
+        ProfilerHost.Start("Script engine");
         ScriptUtils.instance()
                 .Engine(engine)
                 .PhysicsSystem(physicsSystem)
                 .World(physicsSystem.World());
+        ProfilerHost.End("Script engine");
+        ProfilerHost.End("Engines");
 
         camera = new OrthographicCamera();
         batch = new SpriteBatch();
 
 //        sceneRenderer = new DeferredRenderer(engine, batch, camera);
+        ProfilerHost.Start("Renderer");
         sceneRenderer = new LightRenderer2(engine, batch, camera);
+        ProfilerHost.End("Renderer");
 
+        ProfilerHost.Start("Textures");
         floorTex = new Texture(Gdx.files.internal(floorTexPath = "textures/wood.png"));
         wallTex = new Texture(Gdx.files.internal(wallTexPath = "textures/wall.jpg"));
+        ProfilerHost.End("Textures");
 
-        solidMap = new boolean[12][9];
-
-        for (int i = 0; i < solidMap.length; i++) {
-            for (int j = 0; j < solidMap[i].length; j++) {
-
-                if (i == 0 || i == solidMap.length - 1) {
-                    solidMap[i][j] = true;
-                    continue;
-                }
-                if (j == 0 || j == solidMap[i].length - 1) {
-                    solidMap[i][j] = true;
-                    continue;
-                }
-                solidMap[i][j] = false;
-            }
-        }
-
-        solidMap[3][3] = true;
-        solidMap[3][4] = true;
-        solidMap[3][5] = true;
-
-        solidMap[4][3] = true;
-        solidMap[4][4] = true;
-        solidMap[4][5] = true;
-
+        ProfilerHost.Start("Map");
         float width = 64;
         float height = 64;
 
         float halfWidth = width * .5f;
         float halfHeight = height * .5f;
 
-        for (int x = 0; x < solidMap.length; x++) {
-            for (int y = 0; y < solidMap[x].length; y++) {
+        ProfilerHost.Start("World generation");
+        TileWorldGenerator generator = new TileWorldGenerator();
+        Collection<TileWorldElement> elements = generator.GetElements();
+        ProfilerHost.End("World generation");
 
-                Entity mapEntity = new Entity();
-                mapEntity.SetRootComponent(new SpriteComponent("Sprite")).spriteRef = (solidMap[x][y] ? wallTexPath : floorTexPath);
-                ((SpriteComponent) mapEntity.GetRootComponent()).castShadow = solidMap[x][y];
-                mapEntity.Transform().translation.set(width * x, height * y);
-                mapEntity.Transform().scale.set(width, height);
+        ProfilerHost.Start("World composition [" + elements.size() + "]");
+        for (TileWorldElement element : elements) {
 
-                if (solidMap[x][y]) {
+            int x = element.x;
+            int y = element.y;
+            boolean solid = element.solid;
 
-                    BodyDef def = new BodyDef();
-                    def.type = BodyDef.BodyType.StaticBody;
-                    def.position.set((x * width), (y * height))
-                            .scl(screenToPhysics);
+            Entity mapEntity = new Entity();
+            mapEntity.SetRootComponent(new SpriteComponent("Sprite")).spriteRef = (solid ? wallTexPath : floorTexPath);
+            ((SpriteComponent) mapEntity.GetRootComponent()).castShadow = solid;
+            mapEntity.Transform().translation.set(width * x, height * y);
+            mapEntity.Transform().scale.set(width, height);
 
-//                    Body body = physicsSystem.World().createBody(def);
-                    PolygonShape shape = new PolygonShape();
-                    shape.setAsBox(halfWidth * screenToPhysics, halfHeight * screenToPhysics);
+            if (solid) {
+                BodyDef def = new BodyDef();
+                def.type = BodyDef.BodyType.StaticBody;
+                def.position.set((x * width), (y * height))
+                        .scl(screenToPhysics);
 
-                    FixtureDef fixDef = new FixtureDef();
-                    fixDef.shape = shape;
-                    fixDef.density = 0;
-                    fixDef.friction = 0f;
-                    fixDef.restitution = 0.0f;
+                PolygonShape shape = new PolygonShape();
+                shape.setAsBox(halfWidth * screenToPhysics, halfHeight * screenToPhysics);
 
-                    SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
-                    task.OnFinish(body -> {
-                        mapEntity.AddComponent(new CollisionComponent("Collision")).body = body;
-                        shape.dispose();
-                    });
-                    physicsSystem.Foreman().Post(task);
-                }
+                FixtureDef fixDef = new FixtureDef();
+                fixDef.shape = shape;
+                fixDef.density = 0;
+                fixDef.friction = 0f;
+                fixDef.restitution = 0.0f;
 
-                engine.world.Add(mapEntity);
+                SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
+                task.OnFinish(body -> {
+                    mapEntity.AddComponent(new CollisionComponent("Collision")).body = body;
+                    shape.dispose();
+                });
+
+                physicsSystem.GetContainer("Overworld")
+                        .map(w -> w.foreman)
+                        .ifPresent(f -> f.Post(task));
             }
+
+            engine.world.Add(mapEntity);
         }
+        ProfilerHost.End("World composition");
+        ProfilerHost.End("Map");
 
+
+        ProfilerHost.Start("Entities");
+        ProfilerHost.Start("Player");
         Entity playerEntity = new Entity();
-
+        ProfilerHost.Start("Physics");
         CollisionComponent collision = playerEntity.SetRootComponent(new CollisionComponent("Collision"));
-
         BodyDef def = new BodyDef();
         def.type = BodyDef.BodyType.DynamicBody;
         def.position.set(400, 300)
@@ -189,6 +196,7 @@ public class TestScreen2 implements Screen {
         fixtureDef.restitution = 0.0f;
 //        player.createFixture(fixtureDef);
 
+        ProfilerHost.Start("Dispatch");
         SpawnEntityTask task = new SpawnEntityTask(def, fixtureDef);
         task.OnFinish(body -> {
             ((PhysicsUserObject) body.getUserData()).entity = playerEntity;
@@ -196,35 +204,10 @@ public class TestScreen2 implements Screen {
             shape.dispose();
         });
         physicsSystem.Foreman().Post(task);
+        ProfilerHost.End("Dispatch");
+        ProfilerHost.End("Physics");
 
-//        physicsSystem.Foreman()
-//                .Post(new PhysicsTask.VoidPhysicsTask() {
-//                    @Override
-//                    public void Task() {
-//                        BodyDef def = new BodyDef();
-//                        def.type = BodyDef.BodyType.DynamicBody;
-//                        def.position.set(400, 300)
-//                                .scl(screenToPhysics);
-//
-//                        CircleShape shape = new CircleShape();
-//                        shape.setRadius(32f * screenToPhysics);
-//                        FixtureDef fixtureDef = new FixtureDef();
-//                        fixtureDef.shape = shape;
-//                        fixtureDef.density = 0f;
-//                        fixtureDef.friction = 0f;
-//                        fixtureDef.restitution = 0.0f;
-//
-//                        PhysicsService service = physicsSystem.Service();
-//                        service.AddListener(Body.class, l1 -> {
-//                            player = service.ObtainBody(l1.id);
-//                            service.AddListener(Fixture.class, l2 -> service.ObtainFixture(l2.id)).id = service.QueueCreateFixture(player, fixtureDef);
-//                            collision.body = player;
-//                        }).id = service.QueueCreateBody(def);
-//                    }
-//                });
-
-
-
+        ProfilerHost.Start("Components");
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement")).resetAfterCheck = true;
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
@@ -233,64 +216,53 @@ public class TestScreen2 implements Screen {
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
         playerEntity.AddComponent(new DistortionComponent("Distortion")).spriteRef = "textures/CloudMask.png";
+        ProfilerHost.End("Components");
+        ProfilerHost.Start("Abilities");
         AbilitiesComponent abilities = playerEntity.AddComponent(new AbilitiesComponent("Abilities"));
         AbilityRegistry.instance().GiveAll(abilities);
-//        LightComponent light = playerEntity.AddComponent(new LightComponent("Light"));
-//        light.colour.set(1, 1, 1, 1);
-//        light.radius = (1 << (new Random().nextInt(10-6) + 6));
+        ProfilerHost.End("Abilities");
+        ProfilerHost.End("Player");
 
+        ProfilerHost.Start("UI");
         characterUI = new CharacterUI(playerEntity);
         stage.addActor(characterUI);
+        ProfilerHost.End("UI");
 
         Gdx.input.setInputProcessor(stage);
 
-//        AbilityRegistry.instance()
-//                .Get("Blink")
-//                .ifPresent(blink -> playerEntity.AddComponent(new AbilityComponent("Ability/Blink"))
-//                        .SlotIdx(0)
-//                        .SetAbility(blink));
-//        AbilityRegistry.instance()
-//                .Get("Heal")
-//                .ifPresent(heal -> playerEntity.AddComponent(new AbilityComponent("Ability/Heal"))
-//                        .SlotIdx(1)
-//                        .SetAbility(heal));
-//
-//        AbilityRegistry.instance()
-//                .Get("Hurt")
-//                .ifPresent(hurt -> playerEntity.AddComponent(new AbilityComponent("Ability/Hurt"))
-//                        .SlotIdx(2)
-//                        .SetAbility(hurt));
-//
-//        AbilityRegistry.instance()
-//                .Get("Bladestorm")
-//                .ifPresent(bladestorm -> playerEntity.AddComponent(new AbilityComponent("Ability/Bladestorm"))
-//                        .SlotIdx(3)
-//                        .SetAbility(bladestorm));
-
         engine.world.Add(playerEntity);
 
-        Entity entity = new Entity();
+        ProfilerHost.Start("Spawner entity");
+        ProfilerHost.Start("Creation");
+
+        entity = new Entity();
         LightComponent light = entity.AddComponent(new LightComponent("Light"));
         light.colour.set(1, 1, 0, 1);
         light.radius = 256;
         EntitySpawnerComponent spawner = new EntitySpawnerComponent("Spawner");
         spawner.spawnInterval = 2.5f;
         spawner.spawnAmount = 3;
-        spawner.spawnerScript = new SpawnerScriptObject(Gdx.files.internal("scripts/spawner.alpha.js").readString());
+        spawner.spawnerScript = new SpawnerScriptObject(Gdx.files.internal("scripts/spawner.alpha.js")
+                .readString());
         spawner.spawnerScript.Parse();
         entity.AddComponent(spawner);
         entity.Transform().translation.set(400, 250);
-        DeferredCalls.Instance().Post(10, () -> engine.world.Add(entity));
-//        Entity entity = AddEntity(400, 250);
-//        AddEntity(250, 500);
-//        AddEntity(550, 500);
+        ProfilerHost.End("Creation");
+        ProfilerHost.Start("Dispatch");
+        engine.world.Add(entity);
+        ProfilerHost.End("Dispatch");
+        ProfilerHost.End("Spawner entity");
+        ProfilerHost.End("Entities");
 
         omtEngine.start();
+
+        ProfilerHost.End("TestScreen2");
     }
 
     Entity AddEntity(Vector2 pos) {
         return AddEntity(pos.x, pos.y);
     }
+
     Entity AddEntity(float x, float y) {
         Entity otherEntity = new Entity();
         CollisionComponent otherCollision = otherEntity.SetRootComponent(new CollisionComponent("Collision"));
@@ -323,77 +295,89 @@ public class TestScreen2 implements Screen {
             otherCollision.body = body;
 //            othershape.dispose();
         });
-        physicsSystem.Foreman().Post(othertask);
+        physicsSystem.Foreman()
+                .Post(othertask);
 
         engine.world.Add(otherEntity);
         return otherEntity;
     }
 
-    public boolean Sample(int x, int y) {
-        if (x < 0 || x >= solidMap.length)
-            return false;
-        if (y < 0 || y >= solidMap[x].length)
-            return false;
-
-        return solidMap[x][y];
-    }
-
-    public int Sample(int x, int y, int bit) {
-        boolean sample = Sample(x - 1, y - 1);
-        return sample ? 1 << bit : 0;
-    }
 
     @Override
     public void render(float delta) {
 
+        if(entity != null)
+            entity.GetComponent(LightComponent.class, true).radius = 1024;
+
+        ProfilerHost.Start("TestScreen2::render");
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        ProfilerHost.Start("Engine update");
         engine.Update(delta);
+        ProfilerHost.End("Engine update");
 
-//        player.setTransform(playerEntity.rootComponent.transform.translation, playerEntity.rootComponent.transform.RotationRad());
-
-        // Draw your screen here. "delta" is the time since last render in seconds.
-
+        ProfilerHost.Start("World Renderer");
         sceneRenderer.Render(delta);
+        ProfilerHost.End("World Renderer");
 
+        ProfilerHost.Start("Screen Renderer");
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         batch.begin();
 
+        ProfilerHost.Start("World quad render");
         Texture tex = sceneRenderer.GetTexture();
         TextureRegion reg = new TextureRegion(tex);
         reg.flip(false, true);
         batch.draw(reg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+        ProfilerHost.End("World quad render");
         batch.setProjectionMatrix(camera.combined);
-
+        ProfilerHost.Start("World UI Render");
         List<Entity> uiEntities = engine.world.GetFlattenedEntitiesWithComponents(UIComponent.class);
         for (Entity uiEntity : uiEntities) {
             List<UIComponent> uiComponents = uiEntity.GetComponents(UIComponent.class, true);
             uiComponents.forEach(ui -> ui.Render(batch));
         }
+        ProfilerHost.End("World UI Render");
 
         batch.end();
 
-        if (!ScriptUtils.tempPrimitives.isEmpty() && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            if (renderer == null)
-                renderer = new ShapeRenderer();
-            renderer.setProjectionMatrix(camera.combined);
-            renderer.begin(ShapeRenderer.ShapeType.Line);
-            ScriptUtils.tempPrimitives.forEach(p -> p._Render(renderer));
-            renderer.end();
+
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+
+            ProfilerHost.Start("Debug render");
+
+            ProfilerHost.Start("Temporary primitives");
+            if (!ScriptUtils.tempPrimitives.isEmpty()) {
+                if (renderer == null)
+                    renderer = new ShapeRenderer();
+                renderer.setProjectionMatrix(camera.combined);
+                renderer.begin(ShapeRenderer.ShapeType.Line);
+                ScriptUtils.tempPrimitives.forEach(p -> p._Render(renderer));
+                renderer.end();
+            }
+            ProfilerHost.End("Temporary primitives");
+
+            ProfilerHost.Start("Box2dDebugRenderer");
+            debugRenderer.render(physicsSystem.World(), camera.combined.cpy()
+                    .scl(PhysicsSystem.physicsToScreen));
+            ProfilerHost.End("Box2dDebugRenderer");
+            ProfilerHost.End("Debug render");
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
-            debugRenderer.render(physicsSystem.World(), camera.combined.cpy().scl(PhysicsSystem.physicsToScreen));
+        ProfilerHost.End("Screen Renderer");
 
-
+        ProfilerHost.Start("Stage");
+        ProfilerHost.Start("Update");
         characterUI.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        stage.setDebugAll(false);
-
         stage.act(delta);
+        ProfilerHost.End("Update");
+        ProfilerHost.Start("Render");
         stage.draw();
+        ProfilerHost.End("Render");
+        ProfilerHost.End("Stage");
+
+        ProfilerHost.End("TestScreen2::render");
     }
 
     @Override

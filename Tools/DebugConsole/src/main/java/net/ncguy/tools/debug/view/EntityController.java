@@ -20,6 +20,12 @@ public class EntityController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         focusedWorld = EntityWorld.instance;
+
+        Container.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null)
+                Select(newValue.getValue());
+        });
+
         Rebuild();
     }
 

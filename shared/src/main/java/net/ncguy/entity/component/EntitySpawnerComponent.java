@@ -31,9 +31,9 @@ public class EntitySpawnerComponent extends SceneComponent {
             Entity entity = GetOwningEntity();
             EntityWorld entityWorld = entity.GetWorld();
             for (int i = 0; i < spawnAmount; i++) {
-                spawnerScript.InvokeCreate(entity, "Overworld", pos).ifPresent(e -> {
-                    entityWorld.PostRunnable(() -> entityWorld.Add(e));
-                });
+//                spawnerScript.InvokeCreate(entity, "Overworld", pos).ifPresent(e -> {
+//                    entityWorld.PostRunnable(() -> entityWorld.Add(e));
+//                });
             }
         }
     }

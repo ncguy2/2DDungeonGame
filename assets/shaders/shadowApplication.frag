@@ -8,7 +8,7 @@ in vec4 Colour;
 
 uniform sampler2D u_texture;
 uniform vec2 u_resolution;
-
+uniform float u_lightScale;
 
 float Sample(vec2 coord, float r) {
     return step(r, texture(u_texture, coord).r);
@@ -26,20 +26,23 @@ void main() {
     float center = Sample(tc, r);
 
     // Blur for softer shadows
-	float blur = (1.0 / u_resolution.x) * smoothstep(0.0, 1.0, r);
-    float sum = 0.0;
 
-    sum += Sample(vec2(tc.x - 4.0 * blur, tc.y), r) * 0.05;
-    sum += Sample(vec2(tc.x - 3.0 * blur, tc.y), r) * 0.09;
-    sum += Sample(vec2(tc.x - 2.0 * blur, tc.y), r) * 0.12;
-    sum += Sample(vec2(tc.x - 1.0 * blur, tc.y), r) * 0.15;
+    vec2 res = u_resolution;
 
-    sum += center * 0.16;
+	float blur = (1.0 / res.x) * smoothstep(0.0, 1.0, r);
+    float sum = center;
 
-    sum += Sample(vec2(tc.x + 1.0 * blur, tc.y), r) * 0.15;
-    sum += Sample(vec2(tc.x + 2.0 * blur, tc.y), r) * 0.12;
-    sum += Sample(vec2(tc.x + 3.0 * blur, tc.y), r) * 0.09;
-    sum += Sample(vec2(tc.x + 4.0 * blur, tc.y), r) * 0.05;
+//    sum += Sample(vec2(tc.x - 4.0 * blur, tc.y), r) * 0.05;
+//    sum += Sample(vec2(tc.x - 3.0 * blur, tc.y), r) * 0.09;
+//    sum += Sample(vec2(tc.x - 2.0 * blur, tc.y), r) * 0.12;
+//    sum += Sample(vec2(tc.x - 1.0 * blur, tc.y), r) * 0.15;
+//
+//    sum += center * 0.16;
+//
+//    sum += Sample(vec2(tc.x + 1.0 * blur, tc.y), r) * 0.15;
+//    sum += Sample(vec2(tc.x + 2.0 * blur, tc.y), r) * 0.12;
+//    sum += Sample(vec2(tc.x + 3.0 * blur, tc.y), r) * 0.09;
+//    sum += Sample(vec2(tc.x + 4.0 * blur, tc.y), r) * 0.05;
 
     // Application
     float dst = texture(u_texture, TexCoords).r;

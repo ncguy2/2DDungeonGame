@@ -1,7 +1,6 @@
 package net.ncguy.render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,6 +14,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
+import net.ncguy.profile.ProfilerHost;
 import net.ncguy.util.ReloadableShader;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
@@ -39,24 +39,31 @@ public class DeferredRenderer extends BaseRenderer {
 
     public DeferredRenderer(Engine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
+        ProfilerHost.Start("DeferredRenderer::DeferredRenderer");
+
+        ProfilerHost.Start("Buffer setup");
         int width = Gdx.graphics.getWidth();
         int height = Gdx.graphics.getHeight();
         gBuffer = FBOBuilder.BuildDefaultGBuffer(width, height);
         lightingBuffer = FBOBuilder.BuildLightingBuffer(lightSize, 1);
         occludersFBO = FBOBuilder.BuildScreenBuffer(lightSize, lightSize);
         shadowBuffer = FBOBuilder.BuildScreenBuffer(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        ProfilerHost.End("Buffer setup");
 
+        ProfilerHost.Start("Texture setup");
         Texture lightingTexture = lightingBuffer.getColorBufferTexture();
         lightingTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         lightingTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        ProfilerHost.End("Texture setup");
 
+        ProfilerHost.Start("Shader setup");
         gBufferShader = new ReloadableShader("DeferredRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
         lightingShader = new ReloadableShader("DeferredRenderer::Lighting", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting.frag"));
-
-        lightingCamera = new OrthographicCamera();
-
         shadowShader = new ReloadableShader("DeferredRenderer::Shadow", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowMap.frag"));
         screenShader = new ReloadableShader("DeferredRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
+        ProfilerHost.End("Shader setup");
+        lightingCamera = new OrthographicCamera();
+        ProfilerHost.End("DeferredRenderer::DeferredRenderer");
     }
 
     @Override
@@ -74,8 +81,9 @@ public class DeferredRenderer extends BaseRenderer {
 
     @Override
     public void Render(float delta) {
+        ProfilerHost.Start("DeferredRenderer::Render");
+        ProfilerHost.Start("GBuffer");
         // GBuffer
-
         gBuffer.begin();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -85,11 +93,14 @@ public class DeferredRenderer extends BaseRenderer {
         batch.begin();
 
         //noinspection unchecked
+        ProfilerHost.Start("Entity render");
         List<Entity> entities = engine.world.GetFlattenedEntitiesWithComponents(RenderComponent.class);
         entities.forEach(this::Accept);
+        ProfilerHost.End("Entity render");
 
         Vector2 pos = new Vector2();
         entities = engine.world.GetFlattenedEntitiesWithComponents(PrimitiveCircleComponent.class);
+        ProfilerHost.Start("Primitive render [" + entities.size() + "]");
         for (Entity entity : entities) {
             List<PrimitiveCircleComponent> circles = entity.GetComponents(PrimitiveCircleComponent.class, true);
             for (PrimitiveCircleComponent circle : circles) {
@@ -102,10 +113,13 @@ public class DeferredRenderer extends BaseRenderer {
                         .draw(batch);
             }
         }
+        ProfilerHost.End("Primitive render");
 
         batch.flush();
         gBuffer.end();
+        ProfilerHost.End("GBuffer");
 
+        ProfilerHost.Start("Occluders");
         occludersFBO.begin();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -113,6 +127,7 @@ public class DeferredRenderer extends BaseRenderer {
 
 //        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, occludersFBO.getWidth(), occludersFBO.getHeight()));
         entities = engine.world.GetFlattenedEntitiesWithComponents(LightComponent.class);
+        ProfilerHost.Start("Entity render [" + entities.size() + "]");
         lightingCamera.setToOrtho(false, occludersFBO.getWidth(), occludersFBO.getHeight());
         Vector2 vec = new Vector2();
         for (Entity entity : entities) {
@@ -128,16 +143,25 @@ public class DeferredRenderer extends BaseRenderer {
             }
         }
         batch.flush();
+        ProfilerHost.End("Entity render");
 
         occludersFBO.end();
+        ProfilerHost.End("Occluders");
 
+
+        ProfilerHost.Start("Lighting");
+        ProfilerHost.Start("Begin");
         lightingBuffer.begin();
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, lightingBuffer.getWidth(), lightingBuffer.getHeight()));
         batch.setShader(lightingShader.Program());
+        ProfilerHost.End("Begin");
 
+        ProfilerHost.Start("Clear");
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        ProfilerHost.End("Clear");
 
+        ProfilerHost.Start("Uniform binding");
         String[] texNames = new String[] {
                 "gDiffuse",
                 "gNormal",
@@ -153,15 +177,17 @@ public class DeferredRenderer extends BaseRenderer {
             lightingShader.Program().setUniformi(texNames[i], unit);
         }
         Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
-
         lightingShader.Program().setUniformf("u_resolution", lightSize, lightSize);
+        ProfilerHost.End("Uniform binding");
 
-
+        ProfilerHost.Start("Draw");
         batch.draw(occludersFBO.getTextureAttachments().get(0), 0, 0, lightSize, lightingBuffer.getHeight());
-
         batch.flush();
         lightingBuffer.end();
+        ProfilerHost.End("Draw");
+        ProfilerHost.End("Lighting");
 
+        ProfilerHost.Start("Shadow buffer");
         shadowBuffer.begin();
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, shadowBuffer.getWidth(), shadowBuffer.getHeight()));
         batch.setShader(shadowShader.Program());
@@ -171,6 +197,7 @@ public class DeferredRenderer extends BaseRenderer {
         shadowShader.Program().setUniformf("u_resolution", lightSize, lightSize);
 
         entities = engine.world.GetFlattenedEntitiesWithComponents(LightComponent.class);
+        ProfilerHost.Start("Entity render [" + entities.size() + "]");
         Vector3 vec3 = new Vector3();
         for (Entity entity : entities) {
             List<LightComponent> lights = entity.GetComponents(LightComponent.class, true);
@@ -182,38 +209,37 @@ public class DeferredRenderer extends BaseRenderer {
                 batch.draw(occludersFBO.getTextureAttachments().get(0), vec3.x, vec3.y, lightSize, lightSize);
             }
         }
+        ProfilerHost.End("Entity render");
 
         batch.flush();
         shadowBuffer.end();
+        ProfilerHost.End("Shadow buffer");
 
+        ProfilerHost.Start("Screen render");
         screenBuffer.begin();
         batch.setShader(screenShader.Program());
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, screenBuffer.getWidth(), screenBuffer.getHeight()));
 
+        ProfilerHost.Start("Uniforms");
         gBuffer.getTextureAttachments().get(0).bind(4);
         screenShader.Program().setUniformi("u_BaseColour", 4);
         shadowBuffer.getTextureAttachments().get(0).bind(5);
         screenShader.Program().setUniformi("u_Shadows", 5);
+        ProfilerHost.End("Uniforms");
 
+        ProfilerHost.Start("Draw");
         Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
         batch.draw(gBuffer.getTextureAttachments().get(0), 0, 0);
-
         batch.flush();
+        ProfilerHost.End("Draw");
         screenBuffer.end();
-
-        if(Gdx.input.isKeyJustPressed(Input.Keys.R))
-            gBufferShader.Reload();
-        if(Gdx.input.isKeyJustPressed(Input.Keys.T))
-            lightingShader.Reload();
-        if(Gdx.input.isKeyJustPressed(Input.Keys.Y))
-            shadowShader.Reload();
-        if(Gdx.input.isKeyJustPressed(Input.Keys.U))
-            screenShader.Reload();
+        ProfilerHost.End("Screen render");
 
         batch.end();
         batch.setShader(null);
+        ProfilerHost.End("DeferredRenderer::Render");
     }
 
     public void Accept(Entity entity) {

@@ -17,6 +17,7 @@ public class DebugViewer extends Application {
         launch(args);
     }
 
+
     @Override
     public void start(Stage primaryStage) {
         Parent root;
@@ -28,6 +29,7 @@ public class DebugViewer extends Application {
         }
 
         Scene scene = new Scene(root, 300, 275);
+        scene.getStylesheets().add("css/global.css");
 
         primaryStage.setTitle("Debug Viewer");
         primaryStage.setScene(scene);

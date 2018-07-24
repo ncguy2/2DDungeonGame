@@ -1,6 +1,7 @@
 package net.ncguy.script;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import net.ncguy.profile.ProfilerHost;
 
 import javax.script.*;
 import java.util.HashMap;
@@ -24,10 +25,12 @@ public class ScriptHost {
     protected ScriptContext originalContext;
 
     private ScriptHost() {
+        ProfilerHost.Start("Script host initialization");
         engine = new ScriptEngineManager().getEngineByName("nashorn");
         originalContext = engine.getContext();
         contexts = new HashMap<>();
         globalBindings = new HashMap<>();
+        ProfilerHost.End("Script host initialization");
     }
 
     public void _AddGlobalBinding(String key, Object value) {

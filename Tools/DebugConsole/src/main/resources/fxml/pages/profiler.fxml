@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.AreaChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.ncguy.tools.debug.view.ProfilerController">
+
+    <SplitPane dividerPositions="0.5" orientation="VERTICAL" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+               AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+        <AnchorPane>
+            <AnchorPane fx:id="chartPane" AnchorPane.bottomAnchor="24" AnchorPane.leftAnchor="0"
+                        AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+                <AreaChart fx:id="utilizationChart" animated="false" horizontalZeroLineVisible="false"
+                           title="Utilization" verticalGridLinesVisible="false" verticalZeroLineVisible="false"
+                           AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
+                           AnchorPane.topAnchor="0">
+                    <xAxis>
+                        <NumberAxis side="BOTTOM"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis side="LEFT"/>
+                    </yAxis>
+                </AreaChart>
+            </AnchorPane>
+            <HBox AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+                <CheckBox fx:id="captureEnabled" text="Capture?"/>
+                <CheckBox fx:id="animationEnabled" text="Animated"/>
+                <Button onAction="#ClearChart" text="Clear chart"/>
+            </HBox>
+        </AnchorPane>
+
+        <ScrollPane fitToHeight="true" fitToWidth="true">
+            <AnchorPane>
+                <ToolBar AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+                    <Button fx:id="prevFrameBtn" onAction="#SelectPreviousFrame" text="Previous frame"/>
+                    <Label fx:id="frameIdLabel" maxHeight="24" minHeight="24" prefHeight="24" text="Frame -1"/>
+                    <Button fx:id="nextFrameBtn" onAction="#SelectNextFrame" text="Next frame"/>
+                </ToolBar>
+                <SplitPane dividerPositions="0.5" AnchorPane.bottomAnchor="24" AnchorPane.leftAnchor="0"
+                           AnchorPane.rightAnchor="0" AnchorPane.topAnchor="34">
+                    <AnchorPane>
+                        <Label fx:id="CPULabel" maxHeight="24" minHeight="24" prefHeight="24" text="CPU" AnchorPane.leftAnchor="0"
+                               AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0"/>
+                        <TreeView fx:id="cpuTree" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+                                  AnchorPane.rightAnchor="0" AnchorPane.topAnchor="34"/>
+                    </AnchorPane>
+                    <AnchorPane>
+                        <Label fx:id="GPULabel" maxHeight="24" minHeight="24" prefHeight="24" text="GPU" AnchorPane.leftAnchor="0"
+                               AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0"/>
+                        <TreeView fx:id="gpuTree" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+                                  AnchorPane.rightAnchor="0" AnchorPane.topAnchor="34"/>
+                    </AnchorPane>
+                </SplitPane>
+                <GridPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints/>
+                    </rowConstraints>
+                    <Label fx:id="taskStartPath" GridPane.columnIndex="0" text="Task start"/>
+                    <Label fx:id="taskEndPath" GridPane.columnIndex="1" text="Task end"/>
+                </GridPane>
+            </AnchorPane>
+        </ScrollPane>
+
+    </SplitPane>
+
+</AnchorPane>

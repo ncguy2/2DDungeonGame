@@ -3,6 +3,7 @@ package net.ncguy.util;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import net.ncguy.profile.ProfilerHost;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -19,11 +20,13 @@ public class ReloadableShader {
     public static List<WeakReference<ReloadableShader>> shaders = new ArrayList<>();
 
     public ReloadableShader(String name, FileHandle vertexShader, FileHandle fragmentShader) {
+        ProfilerHost.Start("ReloadableShader::ReloadableShader [" + name + "]");
         Register();
         this.name = name;
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
         ReloadImmediate();
+        ProfilerHost.End("ReloadableShader::ReloadableShader [" + name + "]");
     }
 
     private void Register() {

@@ -4,10 +4,7 @@ import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.SceneComponent;
 import net.ncguy.world.EntityWorld;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Entity {
 
@@ -15,8 +12,10 @@ public class Entity {
     public transient EntityWorld world;
     public Set<Entity> childEntities;
     public SceneComponent rootComponent;
+    public UUID uuid;
 
     public Entity() {
+        uuid = UUID.randomUUID();
         childEntities = new LinkedHashSet<>();
         SetRootComponent(new SceneComponent("Root"));
     }
@@ -159,5 +158,14 @@ public class Entity {
             }
 
         }
+    }
+
+    @Override
+    public String toString() {
+        return Id();
+    }
+
+    public String Id() {
+        return uuid.toString();
     }
 }

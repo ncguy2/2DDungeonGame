@@ -16,13 +16,14 @@ void main() {
 
     vec2 coord;
     for(float y = 0.0; y < u_resolution.y; y += 1.0) {
-        vec2 norm = vec2(TexCoords.s, y / u_resolution.y) * 2.0 - 1.0;
+        float dst = y / u_resolution.y;
+        vec2 norm = vec2(TexCoords.s, dst) * 2.0 - 1.0;
         float theta = PI * 1.5 + norm.x * PI;
         float r = (1.0 + norm.y) * 0.5;
 
         coord = vec2(-r * sin(theta), -r * cos(theta)) * 0.5 + 0.5;
+//        dst /= u_scale;
         vec4 datum = texture(u_texture, coord);
-        float dst = y / u_resolution.y / u_scale;
         float caster = 1 - datum.b;
         if(caster < THRESHOLD)
             distance = min(distance, dst);

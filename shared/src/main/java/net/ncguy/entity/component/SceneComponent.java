@@ -3,6 +3,7 @@ package net.ncguy.entity.component;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -115,7 +116,7 @@ public class SceneComponent extends EntityComponent {
 
     private Set<EntityComponent> GetComponents() {
         synchronized (childrenComponents) {
-            return new LinkedHashSet<>(childrenComponents);
+            return new HashSet<>(childrenComponents);
         }
     }
 

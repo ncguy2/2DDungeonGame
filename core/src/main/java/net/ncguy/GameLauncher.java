@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.kotcrab.vis.ui.VisUI;
 import net.ncguy.ability.AbilityRegistry;
+import net.ncguy.profile.*;
 import net.ncguy.tween.TweenCore;
 import net.ncguy.util.DeferredCalls;
 import net.ncguy.util.Shaders;
@@ -20,32 +21,84 @@ public class GameLauncher extends Game {
 
     @Override
     public void create() {
-        TweenCore.instance();
+        ProfilerHost.StartFrame();
+        ProfilerHost.Start("Loading");
+        ProfilerHost.Start("Abilities");
         String xml = Gdx.files.internal("metadata/abilities/AbilitySet1.xml")
                 .readString();
         AbilityRegistry.instance().Load(xml);
+        ProfilerHost.End("Abilities");
+        ProfilerHost.End("Loading");
+
+        ProfilerHost.Start("Initialization");
+        ProfilerHost.Start("Tween core");
+        TweenCore.instance();
+        ProfilerHost.End("Tween core");
+        ProfilerHost.Start("VisUI");
         VisUI.load();
-
+        ProfilerHost.End("VisUI");
+        ProfilerHost.Start("Deferred calls");
         DeferredCalls.Instance();
-
+        ProfilerHost.End("Deferred calls");
+        ProfilerHost.Start("Shaders");
         Shaders.Init();
+        ProfilerHost.End("Shaders");
 
+        ProfilerHost.Start("Box2D");
         Box2D.init();
+        ProfilerHost.End("Box2D");
+
+        ProfilerHost.End("Initialization");
+
+
+        ProfilerHost.Start("Screen");
         setScreen(new TestScreen2());
+        ProfilerHost.End("Screen");
+
+        ProfilerHost.EndFrame();
     }
 
     @Override
     public void render() {
 
+        ProfilerHost.StartFrame();
+        ProfilerHost.Start("Frame preamble");
         float delta = Gdx.graphics.getDeltaTime();
+        ProfilerHost.Start("Tween manager");
         TweenCore.instance().tweenManager.update(delta);
+        ProfilerHost.End();
         Gdx.graphics.setTitle("FPS: " + Gdx.graphics.getFramesPerSecond());
+        ProfilerHost.Start("Deferred calls");
         DeferredCalls.Instance().Update(delta);
+        ProfilerHost.End();
+        ProfilerHost.End();
 
+        ProfilerHost.Start("Screen render");
         super.render();
+        ProfilerHost.End();
 
+        ProfilerHost.Start("Temp. primitives update");
         tempPrimitives.forEach(p -> p.duration -= delta);
         tempPrimitives.removeIf(p -> p.duration <= 0);
+        ProfilerHost.End();
+        ProfilerHost.EndFrame();
+
+        ProfilerHost.Clear();
+
+        GPUTaskProfile tp;
+        while((tp = GPUProfiler.GetFrameResults()) != null) {
+            ProfilerHost.Post(new TaskStats(tp));
+            GPUProfiler.Recycle(tp);
+        }
+
+        CPUTaskProfile cp;
+        while((cp = CPUProfiler.GetFrameResults()) != null) {
+            ProfilerHost.Post(new TaskStats(cp));
+            CPUProfiler.Recycle(cp);
+        }
+
+        ProfilerHost.instance().NotifyListeners();
+
     }
 
     @Override
