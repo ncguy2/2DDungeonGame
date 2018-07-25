@@ -3,14 +3,14 @@ package net.ncguy.render.post;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.world.Engine;
 
 public abstract class PostProcessor {
 
     FBO frameBuffer;
-    ReloadableShader shader;
+    ReloadableShaderProgram shader;
 
     Engine engine;
 

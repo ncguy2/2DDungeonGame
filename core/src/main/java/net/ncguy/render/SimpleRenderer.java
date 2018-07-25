@@ -11,7 +11,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
 import net.ncguy.profile.ProfilerHost;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
 import net.ncguy.world.Engine;
@@ -21,7 +21,7 @@ import java.util.List;
 public class SimpleRenderer extends BaseRenderer {
 
     FBO gBuffer;
-    ReloadableShader gBufferShader;
+    ReloadableShaderProgram gBufferShader;
 
     public SimpleRenderer(Engine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
@@ -37,7 +37,7 @@ public class SimpleRenderer extends BaseRenderer {
         ProfilerHost.End("Texture setup");
 
         ProfilerHost.Start("Shader setup");
-        gBufferShader = new ReloadableShader("SimpleRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
+        gBufferShader = new ReloadableShaderProgram("SimpleRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
         ProfilerHost.End("Shader setup");
         ProfilerHost.End("SimpleRenderer::SimpleRenderer");
     }

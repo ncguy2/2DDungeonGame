@@ -13,7 +13,7 @@ import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.render.post.PostProcessor;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.world.Engine;
 
@@ -25,10 +25,10 @@ public class LightRenderer2 extends BaseRenderer {
     FBO occluderFBO;
     FBO shadowmapFBO;
     FBO lightMapFBO;
-    ReloadableShader occluderShader;
-    ReloadableShader shadowShader;
-    ReloadableShader applicationShader;
-    ReloadableShader screenShader;
+    ReloadableShaderProgram occluderShader;
+    ReloadableShaderProgram shadowShader;
+    ReloadableShaderProgram applicationShader;
+    ReloadableShaderProgram screenShader;
     List<PostProcessor> processors;
     Texture postProcessedTexture;
     int lightSize = 1024;
@@ -70,10 +70,10 @@ public class LightRenderer2 extends BaseRenderer {
         ProfilerHost.End("FrameBuffer objects");
 
         ProfilerHost.Start("Shaders");
-        occluderShader = new ReloadableShader("LightRenderer2::Occluder", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/occluder.frag"));
-        shadowShader = new ReloadableShader("LightRenderer2::Shadow", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting2.frag"));
-        applicationShader = new ReloadableShader("LightRenderer2::Application", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowApplication.frag"));
-        screenShader = new ReloadableShader("LightRenderer2::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screenLighting.frag"));
+        occluderShader = new ReloadableShaderProgram("LightRenderer2::Occluder", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/occluder.frag"));
+        shadowShader = new ReloadableShaderProgram("LightRenderer2::Shadow", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting2.frag"));
+        applicationShader = new ReloadableShaderProgram("LightRenderer2::Application", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowApplication.frag"));
+        screenShader = new ReloadableShaderProgram("LightRenderer2::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screenLighting.frag"));
         ProfilerHost.End("Shaders");
 
         System.out.println(occluderShader.getLog());

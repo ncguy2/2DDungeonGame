@@ -24,17 +24,22 @@ import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.lib.gen.tile.TileWorldElement;
 import net.ncguy.lib.gen.tile.TileWorldGenerator;
+import net.ncguy.particles.AbstractParticleSystem;
+import net.ncguy.particles.BurstParticleSystem;
+import net.ncguy.particles.ParticleManager;
 import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.render.BaseRenderer;
 import net.ncguy.render.LightRenderer2;
+import net.ncguy.render.ParticleRenderer;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.script.SpawnerScriptObject;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.ui.character.CharacterUI;
+import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
@@ -69,7 +74,11 @@ public class TestScreen2 implements Screen {
     OrthographicCamera stageCamera;
 
     BaseRenderer sceneRenderer;
+    ParticleRenderer particleRenderer;
     Entity entity;
+
+    AbstractParticleSystem particles;
+
     @Override
     public void show() {
 
@@ -256,6 +265,20 @@ public class TestScreen2 implements Screen {
 
         omtEngine.start();
 
+        Runnable[] spawnTask = new Runnable[1];
+
+        spawnTask[0] = () -> {
+            if(particles != null)
+                particles.Finish();
+//            particles = new TemporalParticleSystem(10240, 3f);
+            particles = new BurstParticleSystem(10240);
+            DeferredCalls.Instance().Post(1, spawnTask[0]);
+        };
+
+        spawnTask[0].run();
+
+        particleRenderer = new ParticleRenderer(engine, batch, camera);
+
         ProfilerHost.End("TestScreen2");
     }
 
@@ -306,8 +329,10 @@ public class TestScreen2 implements Screen {
     @Override
     public void render(float delta) {
 
-        if(entity != null)
-            entity.GetComponent(LightComponent.class, true).radius = 1024;
+        ParticleManager.instance().Update(delta);
+
+//        if(entity != null)
+//            entity.GetComponent(LightComponent.class, true).radius = 1024;
 
         ProfilerHost.Start("TestScreen2::render");
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -321,6 +346,10 @@ public class TestScreen2 implements Screen {
         sceneRenderer.Render(delta);
         ProfilerHost.End("World Renderer");
 
+        ProfilerHost.Start("Particle renderer");
+        particleRenderer.Render(delta);
+        ProfilerHost.End("Particle renderer");
+
         ProfilerHost.Start("Screen Renderer");
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         batch.begin();
@@ -330,6 +359,11 @@ public class TestScreen2 implements Screen {
         TextureRegion reg = new TextureRegion(tex);
         reg.flip(false, true);
         batch.draw(reg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        TextureRegion partReg = new TextureRegion(particleRenderer.GetTexture());
+        partReg.flip(false, true);
+        batch.draw(partReg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         ProfilerHost.End("World quad render");
         batch.setProjectionMatrix(camera.combined);
         ProfilerHost.Start("World UI Render");
@@ -341,7 +375,6 @@ public class TestScreen2 implements Screen {
         ProfilerHost.End("World UI Render");
 
         batch.end();
-
 
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
 
@@ -386,6 +419,7 @@ public class TestScreen2 implements Screen {
         camera.setToOrtho(false, width, height);
         sceneRenderer.Resize(width, height);
         stageViewport.update(width, height, true);
+        particleRenderer.Resize(width, height);
     }
 
     @Override

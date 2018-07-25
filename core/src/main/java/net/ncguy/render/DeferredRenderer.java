@@ -15,7 +15,7 @@ import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
 import net.ncguy.profile.ProfilerHost;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
 import net.ncguy.world.Engine;
@@ -25,14 +25,14 @@ import java.util.List;
 public class DeferredRenderer extends BaseRenderer {
 
     FBO gBuffer;
-    ReloadableShader gBufferShader;
+    ReloadableShaderProgram gBufferShader;
     FBO occludersFBO;
     FBO lightingBuffer;
-    ReloadableShader lightingShader;
+    ReloadableShaderProgram lightingShader;
 
     FBO shadowBuffer;
-    ReloadableShader shadowShader;
-    ReloadableShader screenShader;
+    ReloadableShaderProgram shadowShader;
+    ReloadableShaderProgram screenShader;
 
     OrthographicCamera lightingCamera;
     int lightSize = 256;
@@ -57,10 +57,10 @@ public class DeferredRenderer extends BaseRenderer {
         ProfilerHost.End("Texture setup");
 
         ProfilerHost.Start("Shader setup");
-        gBufferShader = new ReloadableShader("DeferredRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
-        lightingShader = new ReloadableShader("DeferredRenderer::Lighting", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting.frag"));
-        shadowShader = new ReloadableShader("DeferredRenderer::Shadow", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowMap.frag"));
-        screenShader = new ReloadableShader("DeferredRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
+        gBufferShader = new ReloadableShaderProgram("DeferredRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
+        lightingShader = new ReloadableShaderProgram("DeferredRenderer::Lighting", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/lighting.frag"));
+        shadowShader = new ReloadableShaderProgram("DeferredRenderer::Shadow", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/shadowMap.frag"));
+        screenShader = new ReloadableShaderProgram("DeferredRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
         ProfilerHost.End("Shader setup");
         lightingCamera = new OrthographicCamera();
         ProfilerHost.End("DeferredRenderer::DeferredRenderer");

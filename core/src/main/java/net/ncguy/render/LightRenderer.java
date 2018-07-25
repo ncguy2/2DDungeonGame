@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.world.Engine;
 
@@ -22,16 +22,16 @@ import static com.badlogic.gdx.graphics.GL30.GL_MAX;
 
 public class LightRenderer extends BaseRenderer {
 
-    ReloadableShader lightingShader;
-    ReloadableShader screenShader;
+    ReloadableShaderProgram lightingShader;
+    ReloadableShaderProgram screenShader;
     FBO lightingFBO;
     Mesh mesh;
     DeferredRenderer baseRenderer;
 
     public LightRenderer(Engine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
-        lightingShader = new ReloadableShader("LightRenderer::Lighting", Gdx.files.internal("shaders/lights.vert"), Gdx.files.internal("shaders/lights.frag"));
-        screenShader = new ReloadableShader("LightRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
+        lightingShader = new ReloadableShaderProgram("LightRenderer::Lighting", Gdx.files.internal("shaders/lights.vert"), Gdx.files.internal("shaders/lights.frag"));
+        screenShader = new ReloadableShaderProgram("LightRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));
         System.out.println(lightingShader.getLog());
         mesh = new Mesh(true, 4, 6, VertexAttribute.Position(), VertexAttribute.TexCoords(0));
         mesh.setVertices(new float[] {

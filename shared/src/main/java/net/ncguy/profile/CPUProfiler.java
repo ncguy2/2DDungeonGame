@@ -8,7 +8,7 @@ import java.util.Queue;
 
 public class CPUProfiler {
 
-    public static final boolean PROFILING_ENABLED = false;
+    public static final boolean PROFILING_ENABLED = true;
 
     public static Pool<CPUTaskProfile> taskPool;
     public static int frameCounter;

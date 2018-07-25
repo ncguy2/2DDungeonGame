@@ -1,31 +1,23 @@
 package net.ncguy.util;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import net.ncguy.profile.ProfilerHost;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReloadableShader {
+public abstract class ReloadableShader<T> {
 
-    private final String name;
-    private final FileHandle vertexShader;
-    private final FileHandle fragmentShader;
+    protected final String name;
+    protected T program;
 
-    private ShaderProgram program;
+    public static List<WeakReference<ReloadableShader<?>>> shaders = new ArrayList<>();
 
-    public static List<WeakReference<ReloadableShader>> shaders = new ArrayList<>();
-
-    public ReloadableShader(String name, FileHandle vertexShader, FileHandle fragmentShader) {
+    public ReloadableShader(String name) {
         ProfilerHost.Start("ReloadableShader::ReloadableShader [" + name + "]");
         Register();
         this.name = name;
-        this.vertexShader = vertexShader;
-        this.fragmentShader = fragmentShader;
-        ReloadImmediate();
         ProfilerHost.End("ReloadableShader::ReloadableShader [" + name + "]");
     }
 
@@ -37,29 +29,17 @@ public class ReloadableShader {
         Gdx.app.postRunnable(this::ReloadImmediate);
     }
 
-    public void ReloadImmediate() {
-        ShaderProgram program = new ShaderProgram(vertexShader, fragmentShader);
-        System.out.println(program.getLog());
-        if(program.isCompiled()) {
-            if(this.program != null)
-                this.program.dispose();
-            this.program = program;
-            return;
-        }
-        System.out.println(name + " could not compile");
-    }
+    public abstract void ReloadImmediate();
 
-    public ShaderProgram Program() {
+    public T Program() {
         return program;
     }
 
-    public String getLog() {
-        if(program != null)
-            return program.getLog();
-        return "No program";
-    }
+    public abstract String getLog();
 
     public String Name() {
         return name;
     }
+
+    public abstract void Shutdown();
 }

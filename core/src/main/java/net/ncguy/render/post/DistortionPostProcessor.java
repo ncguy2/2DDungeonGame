@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Matrix4;
 import net.ncguy.asset.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.DistortionComponent;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.world.Engine;
 
@@ -19,7 +19,7 @@ import java.util.List;
 public class DistortionPostProcessor extends PostProcessor {
 
     FBO applicationBuffer;
-    ReloadableShader applicationShader;
+    ReloadableShaderProgram applicationShader;
 
     public DistortionPostProcessor(Engine engine) {
         super(engine);
@@ -29,10 +29,10 @@ public class DistortionPostProcessor extends PostProcessor {
     @Override
     public void Init() {
         frameBuffer = new FBO(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
-        shader = new ReloadableShader("Distortion", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/distortionMap.frag"));
+        shader = new ReloadableShaderProgram("Distortion", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/distortionMap.frag"));
 
         applicationBuffer = new FBO(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
-        applicationShader = new ReloadableShader("Distortion Application", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/distortionApplication.frag"));
+        applicationShader = new ReloadableShaderProgram("Distortion Application", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/distortionApplication.frag"));
     }
 
     @Override

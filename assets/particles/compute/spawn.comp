@@ -1,0 +1,60 @@
+#version 450
+#define M_PI 3.1415926535897932384626433832795
+#define M_TAU (M_PI * 2)
+#define MAX_PARTICLES 5000
+
+layout (local_size_x = 1) in;
+
+struct ParticleData {
+    vec2 Position;
+    float Life;
+    uint Type;
+    vec4 Colour;
+    vec2 Velocity;
+    vec2 Scale;
+};
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+// 128MB+
+layout(std430, binding = 0) buffer Particles {
+    ParticleData Data[];
+};
+//
+//layout(std430, binding = 1) buffer DeadPool {
+//    uint LastIdx;
+//    int[] DeadIndices;
+//};
+
+uniform int u_workload = 360;
+
+
+void main() {
+    uint invocationIdx = gl_GlobalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
+                        gl_GlobalInvocationID.y * gl_WorkGroupSize.x +
+                        gl_GlobalInvocationID.x;
+
+    int id = abs(int(invocationIdx)) * u_workload;
+
+    int particleId = -1;
+    for(int i = 0; i < u_workload; i++) {
+        particleId = id + i;
+        ParticleData datum = Data[particleId];
+
+        // TODO create particle data based on uniforms
+
+        datum.Position = vec2(0.0);
+//        float angle = i / u_workload;
+        float angle = rand(vec2(gl_GlobalInvocationID.x, i));
+        angle = radians(angle * 360);
+        datum.Velocity = normalize(vec2(cos(angle), sin(angle)));
+        datum.Colour = vec4(1.0);
+        datum.Life = 1f;
+        datum.Type = 0;
+        datum.Scale = vec2(1.0);
+
+        Data[particleId] = datum;
+    }
+}

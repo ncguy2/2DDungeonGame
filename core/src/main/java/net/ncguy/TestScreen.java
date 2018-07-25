@@ -26,7 +26,7 @@ import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsContainer;
 import net.ncguy.system.PhysicsSystem;
-import net.ncguy.util.ReloadableShader;
+import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
@@ -39,7 +39,7 @@ import static net.ncguy.system.PhysicsSystem.screenToPhysics;
  */
 public class TestScreen implements Screen {
 
-    ReloadableShader shader;
+    ReloadableShaderProgram shader;
     SpriteBatch batch;
     OrthographicCamera camera;
     Texture texture;
@@ -79,7 +79,7 @@ public class TestScreen implements Screen {
                 .PhysicsSystem(physicsSystem)
                 .World(physicsSystem.World());
 
-        shader = new ReloadableShader("TestScreen::CoreShader", Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
+        shader = new ReloadableShaderProgram("TestScreen::CoreShader", Gdx.files.internal("shaders/tile/tile.vert"), Gdx.files.internal("shaders/tile/tile.frag"));
         System.out.println(shader.getLog());
 
         camera = new OrthographicCamera();
