@@ -8,7 +8,9 @@ import net.ncguy.world.EntityWorld;
 public class EntitySpawnerComponent extends SceneComponent {
 
     public SpawnerScriptObject spawnerScript;
+    @EntityProperty(Type = Float.class, Category = "Spawner", Description = "Amount of seconds between spawning entities", Name = "Spawn interval")
     public float spawnInterval;
+    @EntityProperty(Type = Integer.class, Category = "Spawner", Description = "Amount of entities to spawn at each interval", Name = "Spawn amount")
     public int spawnAmount;
 
     float currentInterval;

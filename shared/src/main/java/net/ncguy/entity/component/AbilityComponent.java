@@ -12,7 +12,9 @@ public class AbilityComponent extends EntityComponent {
 
     public transient Ability ability;
     public transient AbilityScript script;
+    @EntityProperty(Type = String.class, Category = "Ability", Description = "Reference to the ability stored in this component", Name = "Ability reference")
     public String abilityRef;
+    @EntityProperty(Type = Integer.class, Category = "Ability", Description = "Slot index for the ability stored in this component", Name = "Slot index")
     public int slotIdx;
     public AbilityState state = AbilityState.Disabled;
 

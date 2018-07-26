@@ -250,14 +250,12 @@ public class ProfilerController implements Initializable {
         cpuUtil = new Series<>();
         gpuUtil = new Series<>();
 
-        cpuUtil.setName("CPU %");
-        gpuUtil.setName("GPU %");
+        cpuUtil.setName("CPU ms");
+        gpuUtil.setName("GPU ms");
 
         utilizationChart.getData()
                 .addAll(cpuUtil, gpuUtil);
 
-        utilizationChart.setHorizontalZeroLineVisible(false);
-        utilizationChart.setVerticalZeroLineVisible(false);
         Axis xAxis = utilizationChart.getXAxis();
         if(xAxis instanceof NumberAxis) {
             NumberAxis axis = (NumberAxis) xAxis;

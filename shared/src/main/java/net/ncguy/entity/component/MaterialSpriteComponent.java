@@ -10,6 +10,7 @@ public class MaterialSpriteComponent extends SpriteComponent {
 
     public static IMaterialResolver resolver;
 
+    @EntityProperty(Type = String.class, Category = "Material", Description = "Material reference", Name = "Material reference")
     public String materialRef;
 
     public String MaterialRef() {

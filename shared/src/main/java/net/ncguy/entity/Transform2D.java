@@ -75,4 +75,17 @@ public class Transform2D {
     public float WorldRotationRad() {
         return (float) Math.toRadians(WorldRotation());
     }
+
+    public void LerpLocalToWorld(Transform2D target, float alpha) {
+        translation.lerp(target.WorldTranslation(), alpha);
+        rotationDegrees = rotationDegrees + (target.WorldRotation() - rotationDegrees) * alpha;
+        scale.lerp(target.WorldScale(), alpha);
+    }
+
+    public void LerpLocalToLocal(Transform2D target, float alpha) {
+        translation.lerp(target.translation, alpha);
+        rotationDegrees = rotationDegrees + (target.rotationDegrees - rotationDegrees) * alpha;
+        scale.lerp(target.scale, alpha);
+    }
+
 }

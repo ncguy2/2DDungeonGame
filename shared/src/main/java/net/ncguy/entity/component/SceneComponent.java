@@ -13,6 +13,7 @@ import java.util.Set;
  */
 public class SceneComponent extends EntityComponent {
 
+    @EntityProperty(Type = Transform2D.class, Category = "Scene", Description = "The transformation of this component", Name = "Transform")
     public Transform2D transform;
     public final Set<EntityComponent> childrenComponents;
     public transient Entity owningEntity;
@@ -124,7 +125,7 @@ public class SceneComponent extends EntityComponent {
     public void Update(float delta) {
         super.Update(delta);
         for (EntityComponent childrenComponent : GetComponents())
-            childrenComponent.Update(delta);
+            childrenComponent._Update(delta);
     }
 
     @Override

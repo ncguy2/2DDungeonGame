@@ -20,8 +20,11 @@ public class CollisionComponent extends SceneComponent {
     public BodyDef bodyDef;
     public List<FixtureDef> fixtureDefs;
     public String bodyRef;
+    @EntityProperty(Type = Boolean.class, Category = "Collision", Description = "Should the attached body use the component transform", Name = "Use component transform")
     public boolean useComponentTransform;
+    @EntityProperty(Type = Boolean.class, Category = "Collision", Description = "Should the attached body use the override velocity", Name = "Use override velocity")
     public boolean useOverrideVelocity;
+    @EntityProperty(Type = Vector2.class, Category = "Collision", Description = "The override velocity to apply to the attached body, if enabled", Name = "Override velocity")
     public Vector2 overrideVelocity = new Vector2();
 
     public CollisionComponent(String name) {

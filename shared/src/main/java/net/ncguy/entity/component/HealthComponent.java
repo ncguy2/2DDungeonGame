@@ -5,6 +5,7 @@ import net.ncguy.lib.dmg.hp.Health;
 
 public class HealthComponent extends EntityComponent {
 
+    @EntityProperty(Type = Health.class, Category = "Health", Description = "Health object", Name = "Health")
     public final Health health;
 
     public HealthComponent(String name) {

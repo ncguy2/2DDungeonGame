@@ -12,7 +12,9 @@ import java.util.List;
  */
 public class EntityComponent {
 
+    @EntityProperty(Type = Boolean.class, Category = "Internal", Description = "Enabled state of the component", Name = "Enabled")
     public boolean enabled = true;
+    @EntityProperty(Type = String.class, Category = "Internal", Description = "Name of the component", Name = "Name")
     public String name;
     public SceneComponent owningComponent;
 
@@ -77,6 +79,10 @@ public class EntityComponent {
     public <T extends EntityComponent> void GetComponents(Class<T> type, boolean searchDescendants, List<T> componentList) {
     }
 
+    public void _Update(float delta) {
+        if(enabled)
+            Update(delta);
+    }
 
     public void Update(float delta) {
     }

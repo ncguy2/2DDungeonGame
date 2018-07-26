@@ -22,7 +22,7 @@ public class Entity {
 
     public void Update(float delta) {
         if(this.rootComponent != null)
-            rootComponent.Update(delta);
+            rootComponent._Update(delta);
         for (Entity entity : childEntities)
             entity.Update(delta);
     }

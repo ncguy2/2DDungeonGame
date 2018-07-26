@@ -13,6 +13,11 @@ public class UIComponent<T extends EntityComponent> extends SceneComponent {
         this.targetComponent = targetComponent;
     }
 
+    public void _Render(SpriteBatch batch) {
+        if(enabled)
+            Render(batch);
+    }
+
     public void Render(SpriteBatch batch) {
 
     }

@@ -8,9 +8,13 @@ public abstract class RenderComponent extends SceneComponent {
         super(name);
     }
 
+    public void _Render(SpriteBatch batch) {
+        if(enabled)
+            Render(batch);
+    }
     public abstract void Render(SpriteBatch batch);
     public void RenderShadow(SpriteBatch batch) {
-        Render(batch);
+        _Render(batch);
     }
 
 }

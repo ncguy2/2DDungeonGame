@@ -1,16 +1,22 @@
 package net.ncguy.tools.debug.view;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.input.MouseEvent;
+import javafx.util.Callback;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.SceneComponent;
+import net.ncguy.tools.debug.view.component.FieldPropertyDescriptor;
+import net.ncguy.tools.debug.view.component.FieldPropertyFactory;
 import net.ncguy.world.EntityWorld;
+import org.controlsfx.control.PropertySheet;
+import org.controlsfx.property.editor.PropertyEditor;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class EntityController implements Initializable {
@@ -26,7 +32,23 @@ public class EntityController implements Initializable {
                 Select(newValue.getValue());
         });
 
+        ComponentContainer.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null)
+                Select(newValue.getValue());
+        });
+
         Rebuild();
+    }
+
+    private void Select(EntityComponent value) {
+        ObservableList<PropertySheet.Item> items = ComponentDetails.getItems();
+        Callback<PropertySheet.Item, PropertyEditor<?>> factory = ComponentDetails.getPropertyEditorFactory();
+
+        items.clear();
+        if(value == null)
+            return;
+        List<FieldPropertyDescriptor> propertyDescriptors = FieldPropertyFactory.GetDescriptors(value);
+        items.setAll(propertyDescriptors);
     }
 
     boolean Valid() {
@@ -77,12 +99,7 @@ public class EntityController implements Initializable {
     private TreeView<Entity> Container;
     @FXML
     private TreeView<EntityComponent> ComponentContainer;
+    @FXML
+    private PropertySheet ComponentDetails;
 
-    public void EntitySelected(MouseEvent mouseEvent) {
-        TreeItem<Entity> item = Container.getSelectionModel()
-                .getSelectedItem();
-        if(item == null)
-            return;
-        Select(item.getValue());
-    }
 }

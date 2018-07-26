@@ -13,8 +13,11 @@ import com.badlogic.gdx.math.Vector2;
 public class SpriteComponent extends RenderComponent {
 
     public transient Sprite sprite;
+    @EntityProperty(Type = Boolean.class, Category = "Sprite", Description = "Does this sprite cast a shadow", Name = "Cast shadow")
     public boolean castShadow = true;
+    @EntityProperty(Type = String.class, Category = "Sprite", Description = "Reference of the sprite to use", Name = "Sprite reference")
     public String spriteRef;
+    @EntityProperty(Type = Vector2.class, Category = "Sprite", Description = "The override for the sprite size, ignored if either axis is -1", Name = "Sprite scale override")
     public final Vector2 spriteScaleOverride = new Vector2(-1, -1);
     protected transient boolean isBuildingSprite = false;
 

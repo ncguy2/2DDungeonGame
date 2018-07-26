@@ -218,7 +218,11 @@ public class TestScreen2 implements Screen {
         ProfilerHost.Start("Components");
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement")).resetAfterCheck = true;
-        playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
+        CameraComponent camComponent = new CameraComponent("Camera");
+        camComponent.camera = this.camera;
+        LinearLaggingArmComponent cameraArm = new LinearLaggingArmComponent("Camera arm");
+        cameraArm.Add(camComponent);
+        playerEntity.AddComponent(cameraArm);
 //        playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
 
         MaterialSpriteComponent body = playerEntity.AddComponent(new MaterialSpriteComponent("Body"));
@@ -283,7 +287,7 @@ public class TestScreen2 implements Screen {
 
         spawnTask[0].run();
 
-        particleRenderer = new ParticleRenderer(engine, batch, camera);
+        particleRenderer = new ParticleRenderer(engine, batch, this.camera);
 
         ProfilerHost.End("TestScreen2");
     }
@@ -376,7 +380,7 @@ public class TestScreen2 implements Screen {
         List<Entity> uiEntities = engine.world.GetFlattenedEntitiesWithComponents(UIComponent.class);
         for (Entity uiEntity : uiEntities) {
             List<UIComponent> uiComponents = uiEntity.GetComponents(UIComponent.class, true);
-            uiComponents.forEach(ui -> ui.Render(batch));
+            uiComponents.forEach(ui -> ui._Render(batch));
         }
         ProfilerHost.End("World UI Render");
 
