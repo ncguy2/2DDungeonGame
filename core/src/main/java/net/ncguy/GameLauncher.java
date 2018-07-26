@@ -27,6 +27,9 @@ public class GameLauncher extends Game {
 
     @Override
     public void create() {
+
+        ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED = GPUProfiler.PROFILING_ENABLED = false;
+
         ProfilerHost.StartFrame();
         ProfilerHost.Start("Loading");
 
