@@ -8,7 +8,8 @@ import java.util.Queue;
 
 public class CPUProfiler {
 
-    public static final boolean PROFILING_ENABLED = true;
+    public static boolean PROFILING_ENABLED = true;
+    private static boolean profilingEnabled;
 
     public static Pool<CPUTaskProfile> taskPool;
     public static int frameCounter;
@@ -27,18 +28,24 @@ public class CPUProfiler {
         completedFrames = new ArrayList<>();
     }
 
+    public static void setFrameCounter(int frame) {
+        frameCounter = frame;
+    }
 
     public static void StartFrame() {
+
+        profilingEnabled = PROFILING_ENABLED;
+
         if(currentTask != null)
             throw new IllegalStateException("Previous frame not ended properly");
-        if(PROFILING_ENABLED) {
+        if(profilingEnabled) {
             int i = frameCounter++;
             currentTask = taskPool.obtain().Init(null, "Frame " + i, i);
         }
     }
 
     public static void Start(String name) {
-        if(PROFILING_ENABLED && currentTask != null)
+        if(profilingEnabled && currentTask != null)
             currentTask = taskPool.obtain().Init(currentTask, name, frameCounter);
     }
 
@@ -46,13 +53,13 @@ public class CPUProfiler {
         End();
     }
     public static void End() {
-        if(PROFILING_ENABLED && currentTask != null)
+        if(profilingEnabled && currentTask != null)
             currentTask = currentTask.end();
     }
 
     public static void EndFrame() {
 
-        if(!PROFILING_ENABLED)
+        if(!profilingEnabled)
             return;
 
         if(currentTask.getParent() != null)

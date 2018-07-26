@@ -1,4 +1,4 @@
-package net.ncguy.asset;
+package net.ncguy.assets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -19,6 +19,21 @@ public class Sprites {
         return pixel;
     }
 
+    protected static Sprite defTex;
+    public static Sprite Default() {
+        if (defTex == null) {
+            Pixmap map = new Pixmap(2, 2, Pixmap.Format.RGBA8888);
+            map.setColor(Color.BLACK);
+            map.drawRectangle(0, 0, 2, 2);
+            map.setColor(Color.MAGENTA);
+            map.drawPixel(1, 0);
+            map.drawPixel(0, 1);
+            defTex = new Sprite(new Texture(map));
+            map.dispose();
+        }
+        return defTex;
+    }
+
     protected static Sprite ball;
     public static Sprite Ball() {
         if (ball == null) {
@@ -35,6 +50,14 @@ public class Sprites {
         if(pixel != null) {
             pixel.getTexture().dispose();
             pixel = null;
+        }
+        if(defTex != null) {
+            defTex.getTexture().dispose();
+            defTex = null;
+        }
+        if(ball != null) {
+            ball.getTexture().dispose();
+            ball = null;
         }
     }
 

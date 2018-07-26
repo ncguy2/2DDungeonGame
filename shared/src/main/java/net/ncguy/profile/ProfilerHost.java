@@ -1,5 +1,7 @@
 package net.ncguy.profile;
 
+import com.badlogic.gdx.Gdx;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -12,10 +14,9 @@ import java.util.stream.Collectors;
 
 public class ProfilerHost {
 
-    public static final Object mutex = new Object();
-
     private static ProfilerHost instance;
-    public static final boolean profilerEnabled = true;
+    public static boolean PROFILER_ENABLED = true;
+    private static boolean profilerEnabled;
 
     public List<Runnable> onNotify;
 
@@ -63,9 +64,7 @@ public class ProfilerHost {
     }
 
     public static void Clear() {
-        synchronized (mutex) {
-            instance().taskStats.clear();
-        }
+        instance().taskStats.clear();
     }
 
     public String GetFullDump() {
@@ -75,10 +74,7 @@ public class ProfilerHost {
     }
 
     public Optional<TaskStats> GetLatestOfType(String type) {
-        ArrayList<TaskStats> stats;
-        synchronized (mutex) {
-            stats = new ArrayList<>(taskStats);
-        }
+        ArrayList<TaskStats> stats = new ArrayList<>(taskStats);
         return stats.stream()
                 .filter(s -> s.type.equalsIgnoreCase(type))
                 .findFirst();
@@ -119,20 +115,22 @@ public class ProfilerHost {
         return stream.toString();
     }
 
-
     public static void StartFrame() {
-        if(!profilerEnabled)
+
+        profilerEnabled = PROFILER_ENABLED;
+
+        if (!profilerEnabled)
             return;
 
-        synchronized (mutex) {
-//            Clear();
-            CPUProfiler.StartFrame();
-            GPUProfiler.StartFrame();
-        }
+        CPUProfiler.setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
+        GPUProfiler.setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
+
+        CPUProfiler.StartFrame();
+        GPUProfiler.StartFrame();
     }
 
     public static void Start(String name) {
-        if(!profilerEnabled)
+        if (!profilerEnabled)
             return;
         CPUProfiler.Start(name);
         GPUProfiler.Start(name);
@@ -143,19 +141,17 @@ public class ProfilerHost {
     }
 
     public static void End() {
-        if(!profilerEnabled)
+        if (!profilerEnabled)
             return;
         CPUProfiler.End();
         GPUProfiler.End();
     }
 
     public static void EndFrame() {
-        if(!profilerEnabled)
+        if (!profilerEnabled)
             return;
-        synchronized (mutex) {
-            CPUProfiler.EndFrame();
-            GPUProfiler.EndFrame();
-        }
+        CPUProfiler.EndFrame();
+        GPUProfiler.EndFrame();
     }
 
 }

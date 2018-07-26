@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Matrix4;
-import net.ncguy.asset.Sprites;
+import net.ncguy.assets.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.DistortionComponent;
 import net.ncguy.util.ReloadableShaderProgram;

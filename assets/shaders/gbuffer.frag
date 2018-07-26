@@ -15,9 +15,11 @@ uniform sampler2D u_texture;
 uniform int u_castShadow;
 uniform float u_alphaTest = .1;
 
+uniform vec4 u_diffuseColour;
+
 void main() {
 
-	Diffuse = texture(u_texture, fs_in.TexCoords) * fs_in.Colour;
+	Diffuse = texture(u_texture, fs_in.TexCoords) * fs_in.Colour * u_diffuseColour;
 
 	if(Diffuse.a <= u_alphaTest)
 	    discard;

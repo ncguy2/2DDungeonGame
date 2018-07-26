@@ -2,9 +2,15 @@ package net.ncguy;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.kotcrab.vis.ui.VisUI;
 import net.ncguy.ability.AbilityRegistry;
+import net.ncguy.entity.component.MaterialSpriteComponent;
+import net.ncguy.material.ColourAttribute;
+import net.ncguy.material.Material;
+import net.ncguy.material.MaterialResolver;
+import net.ncguy.material.MaterialResolverWithDefault;
 import net.ncguy.profile.*;
 import net.ncguy.tween.TweenCore;
 import net.ncguy.util.DeferredCalls;
@@ -23,6 +29,15 @@ public class GameLauncher extends Game {
     public void create() {
         ProfilerHost.StartFrame();
         ProfilerHost.Start("Loading");
+
+        Material defMtl = new Material("Default");
+
+        MaterialResolver resolver = new MaterialResolverWithDefault(defMtl);
+        MaterialSpriteComponent.resolver = resolver;
+        Material mtl = new Material("mtl_01");
+        mtl.Add(new ColourAttribute(ColourAttribute.ColourType.Diffuse, Color.RED));
+        resolver.Register(mtl);
+
         ProfilerHost.Start("Abilities");
         String xml = Gdx.files.internal("metadata/abilities/AbilitySet1.xml")
                 .readString();

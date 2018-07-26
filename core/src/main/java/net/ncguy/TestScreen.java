@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import net.ncguy.ability.AbilityRegistry;
-import net.ncguy.asset.Sprites;
+import net.ncguy.assets.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;

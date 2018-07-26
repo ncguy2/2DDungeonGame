@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
 
@@ -17,6 +16,7 @@ public class SpriteComponent extends RenderComponent {
     public boolean castShadow = true;
     public String spriteRef;
     public final Vector2 spriteScaleOverride = new Vector2(-1, -1);
+    protected transient boolean isBuildingSprite = false;
 
     public SpriteComponent(String name) {
         super(name);
@@ -53,12 +53,8 @@ public class SpriteComponent extends RenderComponent {
 
     @Override
     public void Render(SpriteBatch batch) {
-        ShaderProgram shader = batch.getShader();
-        shader.setUniformi("u_castShadow", castShadow ? 1 : 0);
         if(sprite != null)
             sprite.draw(batch);
-        // TODO remove when possible
-        batch.flush();
     }
 
     @Override

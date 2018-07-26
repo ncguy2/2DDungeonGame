@@ -10,6 +10,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.Axis;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.*;
@@ -24,6 +26,7 @@ import net.ncguy.profile.GPUProfiler;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.profile.TaskStats;
 import net.ncguy.tools.debug.utils.ColourCurve;
+import org.controlsfx.control.CheckComboBox;
 
 import java.net.URL;
 import java.util.*;
@@ -33,14 +36,14 @@ public class ProfilerController implements Initializable {
 
     public Label CPULabel;
     public Label GPULabel;
+    public CheckComboBox captureOptions;
     ColourCurve colourCurve;
 
-//    public LineChart utilizationChart;
+    //    public LineChart utilizationChart;
     public AreaChart<Integer, Long> utilizationChart;
     public Label frameIdLabel;
     public TreeView<TaskStats> cpuTree;
     public TreeView<TaskStats> gpuTree;
-    public CheckBox captureEnabled;
     public CheckBox animationEnabled;
     public Button prevFrameBtn;
     public Button nextFrameBtn;
@@ -63,11 +66,32 @@ public class ProfilerController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        Runnable updateGlobalProfilerState = () -> ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED || GPUProfiler.PROFILING_ENABLED;
+
+        captureOptions.getItems()
+                .addAll("CPU Profiling", "GPU Profiling");
+
+        captureOptions.getItemBooleanProperty(0).setValue(CPUProfiler.PROFILING_ENABLED);
+        captureOptions.getItemBooleanProperty(1).setValue(GPUProfiler.PROFILING_ENABLED);
+
+        captureOptions.getItemBooleanProperty(0)
+                .addListener((observable, oldValue, newValue) -> {
+                    CPUProfiler.PROFILING_ENABLED = newValue;
+                    updateGlobalProfilerState.run();
+                });
+        captureOptions.getItemBooleanProperty(1)
+                .addListener((observable, oldValue, newValue) -> {
+                    GPUProfiler.PROFILING_ENABLED = newValue;
+                    updateGlobalProfilerState.run();
+                });
+
         selectedFrameId = new SimpleObjectProperty<>(-1);
-        frameIdLabel.textProperty().bind(selectedFrameId.asString("Frame %d"));
+        frameIdLabel.textProperty()
+                .bind(selectedFrameId.asString("Frame %d"));
         selectedFrameId.addListener((observable, oldValue, newValue) -> SelectFrame(oldValue, newValue));
 
-        utilizationChart.animatedProperty().bind(animationEnabled.selectedProperty());
+        utilizationChart.animatedProperty()
+                .bind(animationEnabled.selectedProperty());
 
         colourCurve = new ColourCurve();
         colourCurve.Add(Color.web("#377D36"), 0);
@@ -78,12 +102,12 @@ public class ProfilerController implements Initializable {
         colourCurve.Add(Color.web("#7D2C2C"), 16f);
 //        colourCurve.Add(Color.web("#71237A"), 16);
 
-        if(!CPUProfiler.PROFILING_ENABLED)
+        if (!CPUProfiler.PROFILING_ENABLED)
             CPULabel.setText("CPU (Profiling disabled)");
-        if(!GPUProfiler.PROFILING_ENABLED)
+        if (!GPUProfiler.PROFILING_ENABLED)
             GPULabel.setText("GPU (Profiling disabled)");
 
-        if(CPUProfiler.PROFILING_ENABLED && GPUProfiler.PROFILING_ENABLED) {
+        if (CPUProfiler.PROFILING_ENABLED && GPUProfiler.PROFILING_ENABLED) {
             Runnable bindScrollbars = () -> {
                 Set<Node> nodes = cpuTree.lookupAll(".scroll-bar");
                 List<ScrollBar> cpuScrollbars = nodes.stream()
@@ -99,7 +123,8 @@ public class ProfilerController implements Initializable {
                 for (int i = 0; i < cpuScrollbars.size(); i++) {
                     ScrollBar cpuScrollbar = cpuScrollbars.get(i);
                     ScrollBar gpuScrollbar = gpuScrollbars.get(i);
-                    cpuScrollbar.valueProperty().bindBidirectional(gpuScrollbar.valueProperty());
+                    cpuScrollbar.valueProperty()
+                            .bindBidirectional(gpuScrollbar.valueProperty());
                 }
             };
 
@@ -108,22 +133,28 @@ public class ProfilerController implements Initializable {
             cpuTree.setOnMouseClicked(event -> bindScrollbars.run());
             gpuTree.setOnMouseClicked(event -> bindScrollbars.run());
 
-            cpuTree.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-                if(lock.get())
-                    return;
-                lock.set(true);
-                gpuTree.getSelectionModel().select(newValue.intValue());
-                lock.set(false);
-                SelectTask();
-            });
-            gpuTree.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-                if(lock.get())
-                    return;
-                lock.set(true);
-                cpuTree.getSelectionModel().select(newValue.intValue());
-                lock.set(false);
-                SelectTask();
-            });
+            cpuTree.getSelectionModel()
+                    .selectedIndexProperty()
+                    .addListener((observable, oldValue, newValue) -> {
+                        if (lock.get())
+                            return;
+                        lock.set(true);
+                        gpuTree.getSelectionModel()
+                                .select(newValue.intValue());
+                        lock.set(false);
+                        SelectTask();
+                    });
+            gpuTree.getSelectionModel()
+                    .selectedIndexProperty()
+                    .addListener((observable, oldValue, newValue) -> {
+                        if (lock.get())
+                            return;
+                        lock.set(true);
+                        cpuTree.getSelectionModel()
+                                .select(newValue.intValue());
+                        lock.set(false);
+                        SelectTask();
+                    });
         }
 
         cpuStats = new TreeMap<>();
@@ -131,7 +162,8 @@ public class ProfilerController implements Initializable {
         statMap = new TreeMap<>();
         nodeMap = new TreeMap<>();
 
-        utilizationChart.getStylesheets().add("css/profiler.css");
+        utilizationChart.getStylesheets()
+                .add("css/profiler.css");
 
         Callback<TreeView<TaskStats>, TreeCell<TaskStats>> cellFactory = tv -> {
             TreeCell<TaskStats> cell = new TreeCell<TaskStats>() {
@@ -149,7 +181,8 @@ public class ProfilerController implements Initializable {
                         Color sample = colourCurve.Sample(alpha);
                         StringBuilder sb = new StringBuilder();
                         sb.append("-fx-background-color: ")
-                                .append(sample.toString().replace("0x", "#"))
+                                .append(sample.toString()
+                                        .replace("0x", "#"))
                                 .append("; ");
                         sb.append("-fx-text-fill: #ffffff;");
                         String style = sb.toString();
@@ -166,33 +199,34 @@ public class ProfilerController implements Initializable {
     }
 
     void SelectTask() {
-        
+
         TaskStats cpu = null;
         MultipleSelectionModel<TreeItem<TaskStats>> cpuModel = cpuTree.getSelectionModel();
-        if(cpuModel != null) {
+        if (cpuModel != null) {
             TreeItem<TaskStats> cpuItem = cpuModel.getSelectedItem();
-            if(cpuItem != null)
+            if (cpuItem != null)
                 cpu = cpuItem.getValue();
         }
 
         TaskStats gpu = null;
         MultipleSelectionModel<TreeItem<TaskStats>> gpuModel = gpuTree.getSelectionModel();
-        if(gpuModel != null) {
+        if (gpuModel != null) {
             TreeItem<TaskStats> gpuItem = gpuModel.getSelectedItem();
-            if(gpuItem != null)
+            if (gpuItem != null)
                 gpu = gpuItem.getValue();
         }
 
         SelectTask(cpu, gpu);
     }
+
     void SelectTask(TaskStats cpu, TaskStats gpu) {
 
         TaskStats stat;
-        if(cpu == null)
+        if (cpu == null)
             stat = gpu;
         else stat = cpu;
 
-        if(stat == null) {
+        if (stat == null) {
             taskStartPath.setText("");
             taskEndPath.setText("");
             return;
@@ -204,8 +238,10 @@ public class ProfilerController implements Initializable {
 
     private void SelectFrame(Integer oldValue, Integer newValue) {
 
-        nodeMap.getOrDefault(oldValue, new ArrayList<>()).forEach(n -> n.SetSize(HoveredThresholdNode.DeselectedSize));
-        nodeMap.getOrDefault(newValue, new ArrayList<>()).forEach(n -> n.SetSize(HoveredThresholdNode.SelectedSize));
+        nodeMap.getOrDefault(oldValue, new ArrayList<>())
+                .forEach(n -> n.SetSize(HoveredThresholdNode.DeselectedSize));
+        nodeMap.getOrDefault(newValue, new ArrayList<>())
+                .forEach(n -> n.SetSize(HoveredThresholdNode.SelectedSize));
 
         SelectFrame(newValue);
     }
@@ -217,7 +253,16 @@ public class ProfilerController implements Initializable {
         cpuUtil.setName("CPU %");
         gpuUtil.setName("GPU %");
 
-        utilizationChart.getData().addAll(cpuUtil, gpuUtil);
+        utilizationChart.getData()
+                .addAll(cpuUtil, gpuUtil);
+
+        utilizationChart.setHorizontalZeroLineVisible(false);
+        utilizationChart.setVerticalZeroLineVisible(false);
+        Axis xAxis = utilizationChart.getXAxis();
+        if(xAxis instanceof NumberAxis) {
+            NumberAxis axis = (NumberAxis) xAxis;
+            axis.setForceZeroInRange(false);
+        }
 
 //        Timer timer = new Timer();
 //        timer.scheduleAtFixedRate(new TimerTask() {
@@ -229,8 +274,7 @@ public class ProfilerController implements Initializable {
 //        }, 0, 16);
 
         ProfilerHost.Notify(() -> {
-            if(captureEnabled.isSelected())
-                Platform.runLater(ProfilerController.this::UpdateChart);
+            Platform.runLater(ProfilerController.this::UpdateChart);
         });
 
     }
@@ -242,13 +286,15 @@ public class ProfilerController implements Initializable {
 
     int GetXValue(Series series, int val) {
 
-        if(series.getData().isEmpty())
-            if(series.equals(cpuUtil)) cpuBaseLine = val;
-            else gpuBaseLine = val;
-
-        if(series.equals(cpuUtil))
-            return val - cpuBaseLine;
-        return val - gpuBaseLine;
+//        if (series.getData()
+//                .isEmpty())
+//            if (series.equals(cpuUtil)) cpuBaseLine = val;
+//            else gpuBaseLine = val;
+//
+//        if (series.equals(cpuUtil))
+//            return val - cpuBaseLine;
+//        return val - gpuBaseLine;
+        return val;
     }
 
     void UpdateChart(String type, Series series) {
@@ -258,9 +304,9 @@ public class ProfilerController implements Initializable {
         int frameId = dump.get(0).frame;
 
         // TODO abstract
-        if(type.equalsIgnoreCase("CPU"))
+        if (type.equalsIgnoreCase("CPU"))
             cpuStats.put(frameId, dump);
-        else if(type.equalsIgnoreCase("GPU"))
+        else if (type.equalsIgnoreCase("GPU"))
             gpuStats.put(frameId, dump);
 
         long time = dump.stream()
@@ -274,9 +320,10 @@ public class ProfilerController implements Initializable {
         ObservableList<Data<Integer, Long>> data = series.getData();
         HoveredThresholdNode value = new HoveredThresholdNode(this, frameId, Objects.equals(type, "CPU") ? 0 : 1, time + "ms");
 
-        if(!nodeMap.containsKey(frameId))
+        if (!nodeMap.containsKey(frameId))
             nodeMap.put(frameId, new ArrayList<>());
-        nodeMap.get(frameId).add(value);
+        nodeMap.get(frameId)
+                .add(value);
 
         datum.setNode(value);
         data.add(datum);
@@ -294,8 +341,8 @@ public class ProfilerController implements Initializable {
 
     void BuildTree(TreeView<TaskStats> tree, List<TaskStats> stats) {
         tree.setRoot(null);
-        if(stats == null) return;
-        if(stats.isEmpty()) return;
+        if (stats == null) return;
+        if (stats.isEmpty()) return;
 
         TaskStats stat = stats.get(0);
 
@@ -313,22 +360,26 @@ public class ProfilerController implements Initializable {
         id.setValue(value + 1);
         TreeItem<TaskStats> newItem = new TreeItem<>(stats);
 
-        if(statMap.containsKey(value)) {
+        if (statMap.containsKey(value)) {
             TreeItem<TaskStats> item = statMap.get(value);
-            item.expandedProperty().bindBidirectional(newItem.expandedProperty());
+            item.expandedProperty()
+                    .bindBidirectional(newItem.expandedProperty());
             statMap.remove(value);
-        }else {
+        } else {
             statMap.put(value, newItem);
         }
 
-        parentItem.getChildren().add(newItem);
+        parentItem.getChildren()
+                .add(newItem);
         for (TaskStats child : stats.children)
             BuildTree(id, newItem, child);
     }
 
     public void ClearChart(ActionEvent actionEvent) {
-        cpuUtil.getData().clear();
-        gpuUtil.getData().clear();
+        cpuUtil.getData()
+                .clear();
+        gpuUtil.getData()
+                .clear();
         cpuStats.clear();
         gpuStats.clear();
         nodeMap.clear();
@@ -388,10 +439,13 @@ public class ProfilerController implements Initializable {
             label2.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
 
-            box.getStyleClass().addAll("default-color" + id, "chart-line-symbol", "chart-series-line");
+            box.getStyleClass()
+                    .addAll("default-color" + id, "chart-line-symbol", "chart-series-line");
             box.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-            box.getChildren().add(label);
-            box.getChildren().add(label2);
+            box.getChildren()
+                    .add(label);
+            box.getChildren()
+                    .add(label2);
 
             return box;
         }

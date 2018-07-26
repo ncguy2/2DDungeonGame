@@ -13,7 +13,7 @@ import com.kotcrab.vis.ui.widget.VisImage;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;
 import net.ncguy.ability.Ability;
-import net.ncguy.asset.Sprites;
+import net.ncguy.assets.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.util.StringUtils;
 

@@ -12,7 +12,8 @@ import static org.lwjgl.opengl.GL33.glQueryCounter;
 
 public class GPUProfiler {
 
-    public static final boolean PROFILING_ENABLED = true;
+    public static boolean PROFILING_ENABLED = true;
+    private static boolean profilingEnabled;
 
     public static Pool<GPUTaskProfile> taskPool;
     public static ArrayList<Integer> queryObjects;
@@ -33,18 +34,22 @@ public class GPUProfiler {
         completedFrames = new ArrayList<>();
     }
 
+    public static void setFrameCounter(int frame) {
+        frameCounter = frame;
+    }
 
     public static void StartFrame() {
+        profilingEnabled = PROFILING_ENABLED;
         if(currentTask != null)
             throw new IllegalStateException("Previous frame not ended properly");
-        if(PROFILING_ENABLED) {
+        if(profilingEnabled) {
             int i = frameCounter++;
             currentTask = taskPool.obtain().Init(null, "Frame " + i, GetQuery(), i);
         }
     }
 
     public static void Start(String name) {
-        if(PROFILING_ENABLED && currentTask != null)
+        if(profilingEnabled && currentTask != null)
             currentTask = taskPool.obtain().Init(currentTask, name, GetQuery(), frameCounter);
     }
 
@@ -52,11 +57,15 @@ public class GPUProfiler {
         End();
     }
     public static void End() {
-        if(PROFILING_ENABLED && currentTask != null)
+        if(profilingEnabled && currentTask != null)
             currentTask = currentTask.end(GetQuery());
     }
 
     public static void EndFrame() {
+
+        if(!profilingEnabled)
+            return;
+
         if(currentTask.getParent() != null)
             throw new IllegalStateException("Error ending frame, not all tasks finished. Current task name: " + currentTask.name);
         currentTask.end(GetQuery());

@@ -3,7 +3,6 @@ package net.ncguy;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -149,8 +148,8 @@ public class TestScreen2 implements Screen {
             boolean solid = element.solid;
 
             Entity mapEntity = new Entity();
-            mapEntity.SetRootComponent(new SpriteComponent("Sprite")).spriteRef = (solid ? wallTexPath : floorTexPath);
-            ((SpriteComponent) mapEntity.GetRootComponent()).castShadow = solid;
+            mapEntity.SetRootComponent(new MaterialSpriteComponent("Sprite")).spriteRef = (solid ? wallTexPath : floorTexPath);
+            ((MaterialSpriteComponent) mapEntity.GetRootComponent()).castShadow = solid;
             mapEntity.Transform().translation.set(width * x, height * y);
             mapEntity.Transform().scale.set(width, height);
 
@@ -220,7 +219,14 @@ public class TestScreen2 implements Screen {
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement")).resetAfterCheck = true;
         playerEntity.AddComponent(new CameraComponent("Camera")).camera = camera;
-        playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
+//        playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
+
+        MaterialSpriteComponent body = playerEntity.AddComponent(new MaterialSpriteComponent("Body"));
+        body.spriteRef = "textures/kenney.nl/particlePack/spark_02.png";
+        body.materialRef = "mtl_01";
+        body.spriteScaleOverride.set(64, 64);
+
+
         HealthComponent health = new HealthComponent("Health");
         playerEntity.AddComponent(health);
         playerEntity.AddComponent(new HealthUIComponent("UI/Health", health));
