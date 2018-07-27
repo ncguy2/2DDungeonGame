@@ -18,6 +18,9 @@ public class TaskStats {
     public final StackTraceElement startLocation;
     public final StackTraceElement endLocation;
 
+    public final long approximateOverhead;
+    public final long totalLocationDiscoveryCost;
+
     public TaskStats(final GPUTaskProfile task) {
         this("GPU", task);
     }
@@ -36,11 +39,43 @@ public class TaskStats {
         this.depth = task.depth;
         this.startLocation = task.startLocation;
         this.endLocation = task.endLocation;
+        this.approximateOverhead = task.approximateOverhead;
+        this.totalLocationDiscoveryCost = task.totalLocationDiscoveryCost;
 
         task.getChildren()
                 .stream()
                 .map(t -> new TaskStats(type, t))
                 .forEach(this.children::add);
+    }
+
+    public float GetOverheadMs() {
+        return approximateOverhead * 0.000001f;
+    }
+    public float GetLocationCostMs() {
+        return totalLocationDiscoveryCost * 0.000001f;
+    }
+
+    public float CalculateOverheadRatio() {
+        float msTaken = getMsTaken();
+        return GetOverheadMs() / msTaken;
+    }
+
+    public String GetOverheadRatioString() {
+        DecimalFormat formatter = new DecimalFormat("#0.00");
+        return formatter.format(CalculateOverheadRatio() * 100) + "%";
+    }
+
+    public String GetOverheadString() {
+        DecimalFormat formatter = new DecimalFormat("#0.0000");
+        return formatter.format(GetOverheadMs());
+    }
+    public String GetLocationCostString() {
+        DecimalFormat formatter = new DecimalFormat("#0.0000");
+        return formatter.format(GetLocationCostMs());
+    }
+
+    public float getMsTaken() {
+        return getTimeTaken() * 0.000001f;
     }
 
     public long getTimeTaken() {

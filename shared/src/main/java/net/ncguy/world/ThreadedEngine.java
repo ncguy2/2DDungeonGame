@@ -27,7 +27,7 @@ public class ThreadedEngine {
 
     public void Schedule() {
         if(alive)
-            executor.schedule(this::ScheduleStep, 20, TimeUnit.MILLISECONDS);
+            executor.schedule(this::ScheduleStep, 16, TimeUnit.MILLISECONDS);
     }
     public void ScheduleStep() {
         run();

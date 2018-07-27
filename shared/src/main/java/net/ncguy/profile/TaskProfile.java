@@ -16,13 +16,19 @@ public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Pool
     public StackTraceElement startLocation;
     public StackTraceElement endLocation;
 
+    public long approximateOverhead;
+    public long totalLocationDiscoveryCost;
+
     public TaskProfile() {
         children = new ArrayList<>();
     }
 
     protected StackTraceElement DiscoverLocation() {
-        return ThreadUtils.GetFirstElementNotOfType(Thread.currentThread()
+        long start = System.nanoTime();
+        StackTraceElement stackTraceElement = ThreadUtils.GetFirstElementNotOfType(Thread.currentThread()
                 .getStackTrace(), getClass(), ProfilerHost.class, GPUProfiler.class, CPUProfiler.class, TaskProfile.class);
+        totalLocationDiscoveryCost += System.nanoTime() - start;
+        return stackTraceElement;
     }
 
     protected void StartLocation() {
@@ -34,6 +40,9 @@ public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Pool
     }
 
     public T Init(T parent, String name, int frameId) {
+        totalLocationDiscoveryCost = 0;
+        approximateOverhead = 0;
+        long start = System.nanoTime();
         this.parent = parent;
         this.name = name;
         this.frame = frameId;
@@ -43,6 +52,9 @@ public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Pool
 
         if(parent != null)
             parent.addChild((T) this);
+
+        long end = System.nanoTime();
+        approximateOverhead += end - start;
 
         return (T) this;
     }
@@ -54,7 +66,9 @@ public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Pool
 
     public abstract boolean resultsAvailable();
     public T end() {
+        long start = System.nanoTime();
         EndLocation();
+        approximateOverhead += System.nanoTime() - start;
         return parent;
     }
 

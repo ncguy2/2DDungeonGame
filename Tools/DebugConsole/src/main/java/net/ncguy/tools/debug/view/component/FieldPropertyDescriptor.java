@@ -2,7 +2,9 @@ package net.ncguy.tools.debug.view.component;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import net.ncguy.entity.component.FieldPropertyDescriptorLite;
 import org.controlsfx.control.PropertySheet;
+import org.controlsfx.property.editor.PropertyEditor;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -15,6 +17,8 @@ public class FieldPropertyDescriptor<T> implements PropertySheet.Item {
     public final String category;
     public final String name;
     public final String description;
+
+    public boolean editable = true;
 
     ObservableValue<T> value;
 
@@ -29,9 +33,19 @@ public class FieldPropertyDescriptor<T> implements PropertySheet.Item {
         value = new SimpleObjectProperty<>((T) getValue());
     }
 
+    public FieldPropertyDescriptor(FieldPropertyDescriptorLite<T> lite) {
+        this.type = lite.type;
+        this.field = lite.field;
+        this.owner = lite.owner;
+        this.category = lite.category;
+        this.name = lite.name;
+        this.description = lite.description;
+        this.editable = lite.editable;
+    }
+
     @Override
     public Class<?> getType() {
-        return field.getType();
+        return type;
     }
 
     @Override
@@ -78,4 +92,14 @@ public class FieldPropertyDescriptor<T> implements PropertySheet.Item {
         return Optional.ofNullable(value);
     }
 
+    @Override
+    public boolean isEditable() {
+        return editable;
+    }
+
+    @Override
+    public Optional<Class<? extends PropertyEditor<?>>> getPropertyEditorClass() {
+        Optional<Class<? extends PropertyEditor<?>>> aClass = FieldPropertyFactory.GetEditorClass(getType());
+        return aClass;
+    }
 }

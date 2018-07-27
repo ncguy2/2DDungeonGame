@@ -12,7 +12,10 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -21,8 +24,6 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
-import net.ncguy.lib.gen.tile.TileWorldElement;
-import net.ncguy.lib.gen.tile.TileWorldGenerator;
 import net.ncguy.particles.AbstractParticleSystem;
 import net.ncguy.particles.BurstParticleSystem;
 import net.ncguy.particles.ParticleManager;
@@ -42,7 +43,6 @@ import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.Engine;
 import net.ncguy.world.ThreadedEngine;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -128,62 +128,11 @@ public class TestScreen2 implements Screen {
         wallTex = new Texture(Gdx.files.internal(wallTexPath = "textures/wall.jpg"));
         ProfilerHost.End("Textures");
 
-        ProfilerHost.Start("Map");
-        float width = 64;
-        float height = 64;
-
-        float halfWidth = width * .5f;
-        float halfHeight = height * .5f;
-
-        ProfilerHost.Start("World generation");
-        TileWorldGenerator generator = new TileWorldGenerator();
-        Collection<TileWorldElement> elements = generator.GetElements();
-        ProfilerHost.End("World generation");
-
-        ProfilerHost.Start("World composition [" + elements.size() + "]");
-        for (TileWorldElement element : elements) {
-
-            int x = element.x;
-            int y = element.y;
-            boolean solid = element.solid;
-
-            Entity mapEntity = new Entity();
-            mapEntity.SetRootComponent(new MaterialSpriteComponent("Sprite")).spriteRef = (solid ? wallTexPath : floorTexPath);
-            ((MaterialSpriteComponent) mapEntity.GetRootComponent()).castShadow = solid;
-            mapEntity.Transform().translation.set(width * x, height * y);
-            mapEntity.Transform().scale.set(width, height);
-
-            if (solid) {
-                BodyDef def = new BodyDef();
-                def.type = BodyDef.BodyType.StaticBody;
-                def.position.set((x * width), (y * height))
-                        .scl(screenToPhysics);
-
-                PolygonShape shape = new PolygonShape();
-                shape.setAsBox(halfWidth * screenToPhysics, halfHeight * screenToPhysics);
-
-                FixtureDef fixDef = new FixtureDef();
-                fixDef.shape = shape;
-                fixDef.density = 0;
-                fixDef.friction = 0f;
-                fixDef.restitution = 0.0f;
-
-                SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
-                task.OnFinish(body -> {
-                    mapEntity.AddComponent(new CollisionComponent("Collision")).body = body;
-                    shape.dispose();
-                });
-
-                physicsSystem.GetContainer("Overworld")
-                        .map(w -> w.foreman)
-                        .ifPresent(f -> f.Post(task));
-            }
-
-            engine.world.Add(mapEntity);
-        }
-        ProfilerHost.End("World composition");
-        ProfilerHost.End("Map");
-
+        Entity mapEntity = new Entity();
+        GeneratorComponent generator = mapEntity.AddComponent(new GeneratorComponent("Generator"));
+        generator.container = physicsSystem.GetContainer("Overworld").orElse(null);
+        engine.world.Add(mapEntity);
+        generator.Generate();
 
         ProfilerHost.Start("Entities");
         ProfilerHost.Start("Player");

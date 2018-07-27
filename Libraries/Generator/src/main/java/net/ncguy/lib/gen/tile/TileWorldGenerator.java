@@ -6,6 +6,9 @@ import java.util.Collection;
 
 public class TileWorldGenerator extends WorldGenerator<TileWorldElement, TileWorld> {
 
+    public int width = 8;
+    public int height = 8;
+
     @Override
     public TileWorld GetWorld() {
         return new TileWorld();
@@ -14,8 +17,8 @@ public class TileWorldGenerator extends WorldGenerator<TileWorldElement, TileWor
     @Override
     public Collection<TileWorldElement> GetElements() {
         TileWorld tileWorld = GetWorld();
-        tileWorld.width = 8;
-        tileWorld.height = 8;
+        tileWorld.width = width;
+        tileWorld.height = height;
         tileWorld.Generate();
         return tileWorld.Elements();
     }

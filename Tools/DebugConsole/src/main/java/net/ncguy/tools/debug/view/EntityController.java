@@ -73,13 +73,16 @@ public class EntityController implements Initializable {
 
         TreeItem<EntityComponent> item = Build(null, entity.GetRootComponent());
         ComponentContainer.setRoot(item);
+
+        Select(entity.GetRootComponent());
+        ComponentContainer.getSelectionModel().select(0);
     }
 
     public void Build(TreeItem<Entity> parent, Entity entity) {
         TreeItem<Entity> item = new TreeItem<>(entity);
         parent.getChildren().add(item);
 
-        for (Entity childEntity : entity.childEntities)
+        for (Entity childEntity : entity.GetChildren())
             Build(item, childEntity);
     }
 

@@ -152,6 +152,8 @@ public class SimpleRenderer extends BaseRenderer {
     }
 
     public void Accept(RenderComponent component) {
+        if(component == null) return;
+        if(component.GetOwningEntity() == null) return;
         ProfilerHost.Start("SimpleRenderer::Accept " + component.GetOwningEntity().Id() + ": " + component.name);
         component._Render(batch);
         ProfilerHost.End("SimpleRenderer::Accept");

@@ -71,8 +71,10 @@ public class ProfilerController implements Initializable {
         captureOptions.getItems()
                 .addAll("CPU Profiling", "GPU Profiling");
 
-        captureOptions.getItemBooleanProperty(0).setValue(CPUProfiler.PROFILING_ENABLED);
-        captureOptions.getItemBooleanProperty(1).setValue(GPUProfiler.PROFILING_ENABLED);
+        captureOptions.getItemBooleanProperty(0)
+                .setValue(CPUProfiler.PROFILING_ENABLED);
+        captureOptions.getItemBooleanProperty(1)
+                .setValue(GPUProfiler.PROFILING_ENABLED);
 
         captureOptions.getItemBooleanProperty(0)
                 .addListener((observable, oldValue, newValue) -> {
@@ -107,55 +109,56 @@ public class ProfilerController implements Initializable {
         if (!GPUProfiler.PROFILING_ENABLED)
             GPULabel.setText("GPU (Profiling disabled)");
 
-        if (CPUProfiler.PROFILING_ENABLED && GPUProfiler.PROFILING_ENABLED) {
-            Runnable bindScrollbars = () -> {
-                Set<Node> nodes = cpuTree.lookupAll(".scroll-bar");
-                List<ScrollBar> cpuScrollbars = nodes.stream()
-                        .filter(n -> n instanceof ScrollBar)
-                        .map(n -> (ScrollBar) n)
-                        .collect(Collectors.toList());
+        Runnable bindScrollbars = () -> {
+            Set<Node> nodes = cpuTree.lookupAll(".scroll-bar");
+            List<ScrollBar> cpuScrollbars = nodes.stream()
+                    .filter(n -> n instanceof ScrollBar)
+                    .map(n -> (ScrollBar) n)
+                    .collect(Collectors.toList());
 
-                nodes = gpuTree.lookupAll(".scroll-bar");
-                List<ScrollBar> gpuScrollbars = nodes.stream()
-                        .filter(n -> n instanceof ScrollBar)
-                        .map(n -> (ScrollBar) n)
-                        .collect(Collectors.toList());
-                for (int i = 0; i < cpuScrollbars.size(); i++) {
-                    ScrollBar cpuScrollbar = cpuScrollbars.get(i);
-                    ScrollBar gpuScrollbar = gpuScrollbars.get(i);
-                    cpuScrollbar.valueProperty()
-                            .bindBidirectional(gpuScrollbar.valueProperty());
-                }
-            };
+            nodes = gpuTree.lookupAll(".scroll-bar");
+            List<ScrollBar> gpuScrollbars = nodes.stream()
+                    .filter(n -> n instanceof ScrollBar)
+                    .map(n -> (ScrollBar) n)
+                    .collect(Collectors.toList());
+            for (int i = 0; i < cpuScrollbars.size(); i++) {
+                ScrollBar cpuScrollbar = cpuScrollbars.get(i);
+                ScrollBar gpuScrollbar = gpuScrollbars.get(i);
+                cpuScrollbar.valueProperty()
+                        .bindBidirectional(gpuScrollbar.valueProperty());
+            }
 
-            SimpleBooleanProperty lock = new SimpleBooleanProperty();
+            SelectTask();
+        };
 
-            cpuTree.setOnMouseClicked(event -> bindScrollbars.run());
-            gpuTree.setOnMouseClicked(event -> bindScrollbars.run());
+        SimpleBooleanProperty lock = new SimpleBooleanProperty();
 
-            cpuTree.getSelectionModel()
-                    .selectedIndexProperty()
-                    .addListener((observable, oldValue, newValue) -> {
-                        if (lock.get())
-                            return;
-                        lock.set(true);
-                        gpuTree.getSelectionModel()
-                                .select(newValue.intValue());
-                        lock.set(false);
-                        SelectTask();
-                    });
-            gpuTree.getSelectionModel()
-                    .selectedIndexProperty()
-                    .addListener((observable, oldValue, newValue) -> {
-                        if (lock.get())
-                            return;
-                        lock.set(true);
-                        cpuTree.getSelectionModel()
-                                .select(newValue.intValue());
-                        lock.set(false);
-                        SelectTask();
-                    });
-        }
+        cpuTree.setOnMouseClicked(event -> bindScrollbars.run());
+        gpuTree.setOnMouseClicked(event -> bindScrollbars.run());
+
+        cpuTree.getSelectionModel()
+                .selectedIndexProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    if (lock.get())
+                        return;
+                    lock.set(true);
+                    gpuTree.getSelectionModel()
+                            .select(newValue.intValue());
+                    lock.set(false);
+                    SelectTask();
+                });
+        gpuTree.getSelectionModel()
+                .selectedIndexProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    if (lock.get())
+                        return;
+                    lock.set(true);
+                    cpuTree.getSelectionModel()
+                            .select(newValue.intValue());
+                    lock.set(false);
+                    SelectTask();
+                });
+
 
         cpuStats = new TreeMap<>();
         gpuStats = new TreeMap<>();
@@ -166,6 +169,7 @@ public class ProfilerController implements Initializable {
                 .add("css/profiler.css");
 
         Callback<TreeView<TaskStats>, TreeCell<TaskStats>> cellFactory = tv -> {
+            Tooltip tp = new Tooltip();
             TreeCell<TaskStats> cell = new TreeCell<TaskStats>() {
                 @Override
                 protected void updateItem(TaskStats item, boolean empty) {
@@ -187,6 +191,8 @@ public class ProfilerController implements Initializable {
                         sb.append("-fx-text-fill: #ffffff;");
                         String style = sb.toString();
                         setStyle(style);
+                        tp.setText("Overhead: " + item.GetOverheadString() + "ms | Location cost: " + item.GetLocationCostString() + "ms | Ratio: " + item.GetOverheadRatioString());
+                        setTooltip(tp);
                     }
                 }
             };
@@ -257,7 +263,7 @@ public class ProfilerController implements Initializable {
                 .addAll(cpuUtil, gpuUtil);
 
         Axis xAxis = utilizationChart.getXAxis();
-        if(xAxis instanceof NumberAxis) {
+        if (xAxis instanceof NumberAxis) {
             NumberAxis axis = (NumberAxis) xAxis;
             axis.setForceZeroInRange(false);
         }

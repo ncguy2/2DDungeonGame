@@ -20,12 +20,15 @@ public class RootController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         items = FXCollections.observableArrayList();
 
-        Items.setItems(items);
+        if(Items != null)
+            Items.setItems(items);
 
         AddItem("Abilities", "/fxml/pages/abilities.fxml");
         AddItem("Entities", "/fxml/pages/entities.fxml");
         AddItem("Shaders", "/fxml/pages/shaders.fxml");
         AddItem("Profile", "/fxml/pages/profiler.fxml", true);
+
+
     }
 
     void AddItem(String name, String fxmlPath) {
@@ -42,6 +45,7 @@ public class RootController implements Initializable {
     public AnchorPane Content;
 
     public void ItemsClicked(MouseEvent mouseEvent) {
+        if(Items == null) return;
         ObservableList<Node> children = Content.getChildren();
         children.clear();
 

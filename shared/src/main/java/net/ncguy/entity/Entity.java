@@ -10,20 +10,26 @@ public class Entity {
 
     public transient Entity parent;
     public transient EntityWorld world;
-    public Set<Entity> childEntities;
+    protected final Set<Entity> childEntities;
     public SceneComponent rootComponent;
     public UUID uuid;
 
     public Entity() {
         uuid = UUID.randomUUID();
-        childEntities = new LinkedHashSet<>();
+        childEntities = new HashSet<>();
         SetRootComponent(new SceneComponent("Root"));
+    }
+
+    public Set<Entity> GetChildren() {
+        synchronized (childEntities) {
+            return new HashSet<>(childEntities);
+        }
     }
 
     public void Update(float delta) {
         if(this.rootComponent != null)
             rootComponent._Update(delta);
-        for (Entity entity : childEntities)
+        for (Entity entity : GetChildren())
             entity.Update(delta);
     }
 
@@ -51,18 +57,22 @@ public class Entity {
 
     public void SetWorld(EntityWorld world) {
         this.world = world;
-        this.childEntities.forEach(e -> e.SetWorld(world));
+        this.GetChildren().forEach(e -> e.SetWorld(world));
     }
 
     public <T extends Entity> T AddEntity(T entity) {
-        childEntities.add(entity);
+        synchronized (childEntities) {
+            childEntities.add(entity);
+        }
         entity.SetWorld(world);
         entity.parent = this;
         return entity;
     }
 
     public <T extends Entity> T RemoveEntity(T entity) {
-        childEntities.remove(entity);
+        synchronized (childEntities) {
+            childEntities.remove(entity);
+        }
         entity.SetWorld(null);
         entity.parent = null;
         return entity;
@@ -141,8 +151,10 @@ public class Entity {
     }
 
     public void DestroyImmediate() {
-        childEntities.forEach(Entity::DestroyImmediate);
-        childEntities.clear();
+        synchronized (childEntities) {
+            childEntities.forEach(Entity::DestroyImmediate);
+            childEntities.clear();
+        }
 
         rootComponent.Destroy();
         rootComponent._OnRemoveFromComponent();
@@ -167,5 +179,9 @@ public class Entity {
 
     public String Id() {
         return uuid.toString();
+    }
+
+    public void AddEntities(Iterable<Entity> generatedEntities) {
+        generatedEntities.forEach(this::AddEntity);
     }
 }

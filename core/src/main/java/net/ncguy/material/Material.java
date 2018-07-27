@@ -1,14 +1,17 @@
 package net.ncguy.material;
 
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import net.ncguy.entity.component.FieldPropertyDescriptorLite;
+import net.ncguy.entity.component.IPropertyProvider;
 import net.ncguy.profile.ProfilerHost;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class Material extends EmptyMaterial {
+public class Material extends EmptyMaterial implements IPropertyProvider {
 
     protected transient MaterialBindingContext bindingContext;
 
@@ -37,10 +40,23 @@ public class Material extends EmptyMaterial {
     }
 
     public Optional<MaterialAttribute> Get(AttributeType attrType) {
-        return attributes.stream().filter(t -> t.type.equals(attrType)).findFirst();
+        return attributes.stream()
+                .filter(t -> t.type.equals(attrType))
+                .findFirst();
     }
 
     public void Using(AttributeType attrType, Consumer<MaterialAttribute> task) {
-        attributes.stream().filter(t -> t.type.equals(attrType)).findFirst().ifPresent(task);
+        attributes.stream()
+                .filter(t -> t.type.equals(attrType))
+                .findFirst()
+                .ifPresent(task);
+    }
+
+    @Override
+    public void Provide(Collection<FieldPropertyDescriptorLite> descriptors) {
+        attributes.stream()
+                .filter(a -> a instanceof IPropertyProvider)
+                .map(a -> (IPropertyProvider) a)
+                .forEach(a -> a.Provide(descriptors));
     }
 }

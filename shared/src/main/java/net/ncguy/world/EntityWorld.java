@@ -38,6 +38,16 @@ public class EntityWorld {
         tasks.clear();
     }
 
+    public synchronized List<Entity> FlattenedEntities() {
+        final ArrayList<Entity> entities = new ArrayList<>();
+        getEntities().forEach(e -> FlattenedEntities(e, entities));
+        return entities;
+    }
+    public void FlattenedEntities(Entity entity, List<Entity> entities) {
+        entities.add(entity);
+        entity.GetChildren().forEach(c -> FlattenedEntities(c, entities));
+    }
+
     public synchronized List<Entity> GetRootEntitiesOfComponent(Class<? extends EntityComponent> componentType) {
         return entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).collect(Collectors.toList());
     }
@@ -47,22 +57,22 @@ public class EntityWorld {
     }
 
     public synchronized List<Entity> GetFlattenedEntitiesOfComponent(Class<? extends EntityComponent> componentType) {
-        return entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).collect(Collectors.toList());
+        return FlattenedEntities().stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).collect(Collectors.toList());
     }
 
     public synchronized List<Entity> GetFlattenedEntitiesWithComponents(Class<? extends EntityComponent>... componentType) {
-        return entities.stream().filter(this::Alive).filter(e -> e.All(componentType)).collect(Collectors.toList());
+        return FlattenedEntities().stream().filter(this::Alive).filter(e -> e.All(componentType)).collect(Collectors.toList());
     }
 
-    public synchronized void _GetFlattenedEntitiesOfComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent> componentType) {
-        entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).forEach(entities::add);
-        entity.childEntities.forEach(e -> _GetFlattenedEntitiesOfComponent(e, entities, componentType));
-    }
-
-    public synchronized void _GetFlattenedEntitiesWithComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent>... componentType) {
-        entities.stream().filter(this::Alive).filter(e -> e.All(componentType)).forEach(entities::add);
-        entity.childEntities.forEach(e -> _GetFlattenedEntitiesWithComponent(e, entities, componentType));
-    }
+//    public synchronized void _GetFlattenedEntitiesOfComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent> componentType) {
+//        entities.stream().filter(this::Alive).filter(e -> componentType.isInstance(e.rootComponent)).forEach(entities::add);
+//        entity.childEntities.forEach(e -> _GetFlattenedEntitiesOfComponent(e, entities, componentType));
+//    }
+//
+//    public synchronized void _GetFlattenedEntitiesWithComponent(Entity entity, List<Entity> entities, Class<? extends EntityComponent>... componentType) {
+//        entities.stream().filter(this::Alive).filter(e -> e.All(componentType)).forEach(entities::add);
+//        entity.childEntities.forEach(e -> _GetFlattenedEntitiesWithComponent(e, entities, componentType));
+//    }
 
     public synchronized void Add(Entity entity) {
         entity.SetWorld(this);

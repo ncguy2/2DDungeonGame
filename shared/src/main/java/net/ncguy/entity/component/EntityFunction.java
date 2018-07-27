@@ -6,14 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface EntityProperty {
-
-    Class<?> Type();
+@Target(ElementType.METHOD)
+public @interface EntityFunction {
 
     String Name() default "";
     String Description() default "";
     String Category() default "";
-    boolean Editable() default true;
 
 }
