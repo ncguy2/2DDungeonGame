@@ -6,7 +6,6 @@ public class CameraComponent extends SceneComponent {
 
     public transient Camera camera;
 
-
     public CameraComponent(String name) {
         super(name);
     }
@@ -16,7 +15,6 @@ public class CameraComponent extends SceneComponent {
 
 //        camera.position.lerp(new Vector3(translation, 0.f), delta * 5);
         camera.position.set(transform.WorldTranslation(), 0.f);
-
         camera.update();
 
         super.Update(delta);

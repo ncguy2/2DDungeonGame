@@ -12,9 +12,6 @@ dependencies {
   compile "net.dermetfan.libgdx-utils:libgdx-utils:$utilsVersion"
   compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:$utilsBox2dVersion"
   compile "com.strongjoshua:libgdx-inGameConsole:$inGameConsoleVersion"
-
-  compile "com.esotericsoftware:kryonet:$kryonetVersion"
-
   compile project(':shared')
 }
         

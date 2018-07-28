@@ -5,10 +5,10 @@ dependencies {
     compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
     compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
 
-
     compile 'com.google.code.gson:gson:2.8.2'
     compile "org.mini2Dx:universal-tween-engine:6.3.3"
 
     compile project(':Libraries/DamageSystem')
     compile project(':Libraries/Generator')
+    compile project(':Libraries/Network')
 }
