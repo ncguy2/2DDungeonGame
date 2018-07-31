@@ -4,23 +4,22 @@ import net.ncguy.system.BaseSystem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Engine {
 
     public final List<BaseSystem> systems;
-    public final EntityWorld world;
 
     public Engine() {
-        world = new EntityWorld();
         systems = new ArrayList<>();
     }
 
     public void Update(final float delta) {
         systems.forEach(s -> s.Update(delta));
-        world.Update(delta);
     }
 
     public void AddSystem(BaseSystem system) {
+        system.SetOperatingEngine(this);
         system.Startup();
         this.systems.add(system);
     }
@@ -30,4 +29,7 @@ public class Engine {
         system.Shutdown();
     }
 
+
+    // Helper
+    public void IfIsMainEngine(Consumer<MainEngine> task) {}
 }

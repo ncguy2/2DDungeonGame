@@ -6,6 +6,10 @@ public class CameraComponent extends SceneComponent {
 
     public transient Camera camera;
 
+    public CameraComponent() {
+        this("Unnamed Scene component");
+    }
+
     public CameraComponent(String name) {
         super(name);
     }

@@ -12,7 +12,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.DistortionComponent;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class DistortionPostProcessor extends PostProcessor {
     FBO applicationBuffer;
     ReloadableShaderProgram applicationShader;
 
-    public DistortionPostProcessor(Engine engine) {
+    public DistortionPostProcessor(MainEngine engine) {
         super(engine);
         Init();
     }

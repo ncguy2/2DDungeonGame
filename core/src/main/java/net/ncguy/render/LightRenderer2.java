@@ -15,7 +15,7 @@ import net.ncguy.profile.ProfilerHost;
 import net.ncguy.render.post.PostProcessor;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class LightRenderer2 extends BaseRenderer {
     TextureRegion shadowMap1D;
     OrthographicCamera cam;
 
-    public LightRenderer2(Engine engine, SpriteBatch batch, Camera camera) {
+    public LightRenderer2(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
 
         ProfilerHost.Start("LightRenderer2::LightRenderer2");

@@ -20,6 +20,11 @@ public class MaterialSpriteComponent extends SpriteComponent implements IPropert
         return materialRef;
     }
 
+    public MaterialSpriteComponent() {
+        this("Unnamed Scene component");
+
+    }
+
     public MaterialSpriteComponent(String name) {
         super(name);
     }

@@ -16,7 +16,7 @@ import java.util.List;
 public class CollisionComponent extends SceneComponent {
 
     public transient Body body;
-    public PhysicsContainer container;
+    public transient PhysicsContainer container;
     public BodyDef bodyDef;
     public List<FixtureDef> fixtureDefs;
     public String bodyRef;
@@ -26,6 +26,10 @@ public class CollisionComponent extends SceneComponent {
     public boolean useOverrideVelocity;
     @EntityProperty(Type = Vector2.class, Category = "Collision", Description = "The override velocity to apply to the attached body, if enabled", Name = "Override velocity")
     public Vector2 overrideVelocity = new Vector2();
+
+    public CollisionComponent() {
+        this("Unnamed Scene component");
+    }
 
     public CollisionComponent(String name) {
         super(name);

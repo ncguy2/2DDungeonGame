@@ -9,6 +9,7 @@ import java.util.*;
 public class Entity {
 
     public transient Entity parent;
+    public transient boolean managed;
     public transient EntityWorld world;
     protected final Set<Entity> childEntities;
     public SceneComponent rootComponent;
@@ -18,6 +19,22 @@ public class Entity {
         uuid = UUID.randomUUID();
         childEntities = new HashSet<>();
         SetRootComponent(new SceneComponent("Root"));
+    }
+
+    public EntityComponent GetFromPath(String path) {
+        if(!path.startsWith(uuid.toString())) {
+            System.out.println("Incorrect domain");
+            return null;
+        }
+
+        String substring = path.substring(path.indexOf("://") + 3);
+
+        EntityComponent entityComponent = rootComponent.GetFromPath(substring);
+        return entityComponent;
+    }
+
+    public boolean IsManaged() {
+        return managed;
     }
 
     public Set<Entity> GetChildren() {

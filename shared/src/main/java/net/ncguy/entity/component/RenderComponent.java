@@ -4,6 +4,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public abstract class RenderComponent extends SceneComponent {
 
+    public RenderComponent() {
+        this("Unnamed Scene component");
+    }
+
     public RenderComponent(String name) {
         super(name);
     }

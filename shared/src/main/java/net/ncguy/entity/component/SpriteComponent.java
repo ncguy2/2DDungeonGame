@@ -21,6 +21,10 @@ public class SpriteComponent extends RenderComponent {
     public final Vector2 spriteScaleOverride = new Vector2(-1, -1);
     protected transient boolean isBuildingSprite = false;
 
+    public SpriteComponent() {
+        this("Unnamed Scene component");
+    }
+
     public SpriteComponent(String name) {
         super(name);
         spriteRef = "";

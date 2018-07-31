@@ -7,6 +7,10 @@ public abstract class LaggingArmComponent extends SceneComponent {
     @EntityProperty(Type = Transform2D.class, Category = "Lagging arm", Description = "The transform parent of child components", Name = "Spoofed transform")
     public Transform2D spoofedTransform;
 
+    public LaggingArmComponent() {
+        this("Unnamed Scene component");
+    }
+
     public LaggingArmComponent(String name) {
         super(name);
         spoofedTransform = new Transform2D();
@@ -21,9 +25,10 @@ public abstract class LaggingArmComponent extends SceneComponent {
     public abstract void Step(float delta);
 
     @Override
-    public void Add(EntityComponent component) {
+    public <T extends EntityComponent> T Add(T component) {
         super.Add(component);
         if(component instanceof SceneComponent)
             ((SceneComponent) component).transform.parent = spoofedTransform;
+        return component;
     }
 }

@@ -6,7 +6,7 @@ import net.ncguy.entity.component.SceneComponent;
 
 public class UIComponent<T extends EntityComponent> extends SceneComponent {
 
-    protected final T targetComponent;
+    protected transient T targetComponent;
 
     public UIComponent(String name, T targetComponent) {
         super(name);

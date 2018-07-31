@@ -15,6 +15,10 @@ public class DistortionComponent extends SceneComponent {
     public String spriteRef;
     public final Vector2 spriteScaleOverride = new Vector2(-1, -1);
 
+    public DistortionComponent() {
+        this("Unnamed Scene component");
+    }
+
     public DistortionComponent(String name) {
         super(name);
         spriteRef = "";

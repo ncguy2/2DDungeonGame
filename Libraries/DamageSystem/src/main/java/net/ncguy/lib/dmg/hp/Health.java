@@ -9,16 +9,16 @@ import java.util.Map;
 
 public class Health {
 
-    public transient Map<Class<? extends StatusEffect>, StatusEffect> statusEffectMap;
+    public Map<Class<? extends StatusEffect>, StatusEffect> statusEffectMap;
     public transient float healCooldown;
 
-    public Runnable onDeath;
+    public transient Runnable onDeath;
 
     public float health;
     public float maxHealth;
     public float tempHealth;
 
-    public Object userData;
+    public transient Object userData;
 
     public Health() {
         statusEffectMap = new HashMap<>();

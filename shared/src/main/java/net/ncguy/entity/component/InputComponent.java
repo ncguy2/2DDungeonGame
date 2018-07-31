@@ -41,6 +41,10 @@ public class InputComponent extends EntityComponent {
     @EntityProperty(Type = InputAction.class, Category = "Input", Description = "Key to use the equipped secondary attack", Name = "Key Secondary Attack")
     public InputAction keyAttackSecondary = InputAction.Button("Secondary Attack", Input.Buttons.RIGHT);
 
+    public InputComponent() {
+        this("Unnamed Scene component");
+    }
+
     public InputComponent(String name) {
         super(name);
     }

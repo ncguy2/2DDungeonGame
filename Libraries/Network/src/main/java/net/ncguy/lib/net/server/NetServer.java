@@ -9,7 +9,7 @@ import java.io.IOException;
 public class NetServer extends NetEndpoint<Server> {
 
     public NetServer() {
-        endpoint = new Server();
+        endpoint = new Server(writeBufferSize, objectBufferSize);
         BindDefaultListener();
     }
 

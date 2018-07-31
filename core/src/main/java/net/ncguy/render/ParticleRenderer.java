@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import net.ncguy.particles.ParticleManager;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.util.ReloadableShaderProgram;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 public class ParticleRenderer extends BaseRenderer {
 
@@ -17,7 +17,7 @@ public class ParticleRenderer extends BaseRenderer {
     Texture texture;
     InstancedMesh mesh;
 
-    public ParticleRenderer(Engine engine, SpriteBatch batch, Camera camera) {
+    public ParticleRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
         shader = new ReloadableShaderProgram("Particle Render", Gdx.files.internal("particles/particle.vert"), Gdx.files.internal("particles/particle.frag"));
         texture = new Texture(Gdx.files.internal("particles/particle.png"));

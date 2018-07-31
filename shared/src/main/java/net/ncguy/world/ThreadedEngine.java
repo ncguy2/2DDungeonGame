@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ThreadedEngine {
+public class ThreadedEngine extends Engine {
 
     public static final List<WeakReference<ThreadedEngine>> registry = new ArrayList<>();
 
-    public final List<BaseSystem> systems;
     public boolean alive;
     DeltaCalculator deltaTimer;
     ScheduledThreadPoolExecutor executor;
@@ -21,7 +20,6 @@ public class ThreadedEngine {
     public ThreadedEngine() {
         super();
         registry.add(new WeakReference<>(this));
-        systems = new ArrayList<>();
         deltaTimer = new DeltaCalculator();
     }
 
@@ -51,10 +49,6 @@ public class ThreadedEngine {
 
         systems.forEach(BaseSystem::Shutdown);
         systems.clear();
-    }
-
-    public void Update(final float delta) {
-        systems.forEach(sys -> sys.Update(delta));
     }
 
     public void AddSystem(BaseSystem system) {

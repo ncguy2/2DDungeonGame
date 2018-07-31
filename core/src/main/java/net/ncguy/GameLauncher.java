@@ -70,7 +70,7 @@ public class GameLauncher extends Game {
 
 
         ProfilerHost.Start("Screen");
-        setScreen(new TestScreen2());
+        setScreen(new MPTestScreen());
         ProfilerHost.End("Screen");
 
         ProfilerHost.EndFrame();

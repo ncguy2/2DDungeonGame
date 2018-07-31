@@ -13,6 +13,10 @@ public class MovementComponent extends EntityComponent {
     @EntityProperty(Type = Boolean.class, Category = "Movement", Description = "Should the velocity be reset after being used", Name = "Reset after check")
     public boolean resetAfterCheck = false;
 
+    public MovementComponent() {
+        this("Unnamed Scene component");
+    }
+
     public MovementComponent(String name) {
         super(name);
     }

@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class SpawnerScriptObject extends ScriptObject {
 
-    protected ScriptObjectMirror Function_Create;
+    protected transient ScriptObjectMirror Function_Create;
 
     public SpawnerScriptObject(String source) {
         super(source);

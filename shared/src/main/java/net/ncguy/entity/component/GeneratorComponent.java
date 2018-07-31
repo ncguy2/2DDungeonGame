@@ -3,20 +3,21 @@ package net.ncguy.entity.component;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import net.ncguy.entity.Entity;
 import net.ncguy.lib.gen.tile.TileWorldElement;
 import net.ncguy.lib.gen.tile.TileWorldGenerator;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.system.PhysicsContainer;
+import net.ncguy.system.PhysicsSystem;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static net.ncguy.system.PhysicsSystem.screenToPhysics;
 
-public class GeneratorComponent extends EntityComponent {
+public class GeneratorComponent extends SceneComponent {
 
     @EntityProperty(Type = Float.class, Name = "Tile width", Category = "Generator", Description = "Width of tiles")
     public float tileWidth = 64;
@@ -25,11 +26,17 @@ public class GeneratorComponent extends EntityComponent {
 
     @EntityProperty(Type = Integer.class, Name = "World width", Category = "Generator", Description = "Width of the world")
     public int worldWidth = 8;
-    @EntityProperty(Type = Integer.class, Name = "World height", Category = "Generator", Description = "Height of the word")
+    @EntityProperty(Type = Integer.class, Name = "World height", Category = "Generator", Description = "Height of the world")
     public int worldHeight = 8;
 
-    public PhysicsContainer container;
-    protected final List<Entity> generatedEntities;
+    @EntityProperty(Type = Integer.class, Name = "Seed", Category = "Generator", Description = "Seed for the generator")
+    public int generatorSeed = 8;
+
+    protected transient final List<SceneComponent> generatedEntities;
+
+    public GeneratorComponent() {
+        this("Unnamed Scene component");
+    }
 
     public GeneratorComponent(String name) {
         super(name);
@@ -39,7 +46,7 @@ public class GeneratorComponent extends EntityComponent {
     @EntityFunction(Name = "Generate", Description = "Regenerates the world", Category = "Generator")
     public void Generate() {
 
-        generatedEntities.forEach(Entity::Destroy);
+        generatedEntities.forEach(SceneComponent::Destroy);
         generatedEntities.clear();
 
         String wallTexPath = "textures/wall.jpg";
@@ -54,10 +61,13 @@ public class GeneratorComponent extends EntityComponent {
 
         ProfilerHost.Start("World generation");
         TileWorldGenerator generator = new TileWorldGenerator();
+        generator.seed = generatorSeed;
         generator.width = worldWidth;
         generator.height = worldHeight;
         Collection<TileWorldElement> elements = generator.GetElements();
         ProfilerHost.End("World generation");
+
+        PhysicsContainer container = PhysicsSystem.GetContainerByName("Overworld").orElse(null);
 
         ProfilerHost.Start("World composition [" + elements.size() + "]");
         for (TileWorldElement element : elements) {
@@ -66,11 +76,12 @@ public class GeneratorComponent extends EntityComponent {
             int y = element.y;
             boolean solid = element.solid;
 
-            Entity mapEntity = new Entity();
-            mapEntity.SetRootComponent(new MaterialSpriteComponent("Sprite")).spriteRef = (solid ? wallTexPath : floorTexPath);
-            ((MaterialSpriteComponent) mapEntity.GetRootComponent()).castShadow = solid;
-            mapEntity.Transform().translation.set(width * x, height * y);
-            mapEntity.Transform().scale.set(width, height);
+            MaterialSpriteComponent mapEntity = new MaterialSpriteComponent("Sprite");
+            mapEntity.materialRef = "default";
+            mapEntity.spriteRef = (solid ? wallTexPath : floorTexPath);
+            mapEntity.castShadow = solid;
+            mapEntity.transform.translation.set(width * x, height * y);
+            mapEntity.transform.scale.set(width, height);
 
             if (solid) {
                 if(container != null) {
@@ -90,7 +101,7 @@ public class GeneratorComponent extends EntityComponent {
 
                     SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
                     task.OnFinish(body -> {
-                        CollisionComponent collision = mapEntity.AddComponent(new CollisionComponent("Collision"));
+                        CollisionComponent collision = mapEntity.Add(new CollisionComponent("Collision"));
                         collision.body = body;
                         collision.container = container;
                         shape.dispose();
@@ -100,13 +111,23 @@ public class GeneratorComponent extends EntityComponent {
                 }else System.out.println("No container, physics construction cancelled");
             }
 
+            mapEntity.transform.parent = this.transform;
             generatedEntities.add(mapEntity);
-
         }
-        GetOwningEntity().AddEntities(generatedEntities);
+//        generatedEntities.forEach(owningComponent::Add);
         ProfilerHost.End("World composition");
         ProfilerHost.End("Map");
-
     }
 
+    @Override
+    public void PostReplicate() {
+        Generate();
+    }
+
+    @Override
+    public Set<EntityComponent> GetComponents() {
+        Set<EntityComponent> set = super.GetComponents();
+        set.addAll(generatedEntities);
+        return set;
+    }
 }

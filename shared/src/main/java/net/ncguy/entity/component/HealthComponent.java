@@ -8,6 +8,10 @@ public class HealthComponent extends EntityComponent {
     @EntityProperty(Type = Health.class, Category = "Health", Description = "Health object", Name = "Health")
     public final Health health;
 
+    public HealthComponent() {
+        this("Unnamed Scene component");
+    }
+
     public HealthComponent(String name) {
         super(name);
         health = new Health();

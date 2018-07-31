@@ -15,7 +15,7 @@ import net.ncguy.profile.ProfilerHost;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class SimpleRenderer extends BaseRenderer {
     FBO gBuffer;
     ReloadableShaderProgram gBufferShader;
 
-    public SimpleRenderer(Engine engine, SpriteBatch batch, Camera camera) {
+    public SimpleRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
         ProfilerHost.Start("SimpleRenderer::SimpleRenderer");
 
@@ -153,8 +153,7 @@ public class SimpleRenderer extends BaseRenderer {
 
     public void Accept(RenderComponent component) {
         if(component == null) return;
-        if(component.GetOwningEntity() == null) return;
-        ProfilerHost.Start("SimpleRenderer::Accept " + component.GetOwningEntity().Id() + ": " + component.name);
+        ProfilerHost.Start("SimpleRenderer::Accept " + component.name);
         component._Render(batch);
         ProfilerHost.End("SimpleRenderer::Accept");
     }

@@ -94,7 +94,7 @@ public class EntityController implements Initializable {
         item.setExpanded(true);
 
         if(component instanceof SceneComponent)
-            ((SceneComponent) component).childrenComponents.forEach(childComponent -> Build(item, childComponent));
+            ((SceneComponent) component).GetComponents().forEach(childComponent -> Build(item, childComponent));
         return item;
     }
 

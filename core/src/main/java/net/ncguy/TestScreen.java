@@ -27,7 +27,7 @@ import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsContainer;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.util.ReloadableShaderProgram;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 import net.ncguy.world.ThreadedEngine;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class TestScreen implements Screen {
     ShapeRenderer renderer;
     Body player;
 
-    Engine engine;
+    MainEngine engine;
     ThreadedEngine omtEngine;
     Entity playerEntity;
     PhysicsSystem physicsSystem;
@@ -70,7 +70,7 @@ public class TestScreen implements Screen {
         omtEngine = new ThreadedEngine();
 
 
-        engine = new Engine();
+        engine = new MainEngine();
         engine.AddSystem(new InputSystem(engine.world));
         engine.AddSystem(new AbilitySystem(engine.world));
         omtEngine.AddSystem(physicsSystem = new PhysicsSystem(engine.world));

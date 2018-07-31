@@ -18,6 +18,10 @@ public class AbilityComponent extends EntityComponent {
     public int slotIdx;
     public AbilityState state = AbilityState.Disabled;
 
+    public AbilityComponent() {
+        this("Unnamed Scene component");
+    }
+
     public AbilityComponent(String name) {
         super(name);
     }

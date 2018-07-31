@@ -15,6 +15,10 @@ public class EntitySpawnerComponent extends SceneComponent {
 
     float currentInterval;
 
+    public EntitySpawnerComponent() {
+        this("Unnamed Scene component");
+    }
+
     public EntitySpawnerComponent(String name) {
         super(name);
         spawnInterval = .5f;

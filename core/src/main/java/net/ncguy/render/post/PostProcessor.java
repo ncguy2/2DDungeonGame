@@ -5,16 +5,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 public abstract class PostProcessor {
 
     FBO frameBuffer;
     ReloadableShaderProgram shader;
 
-    Engine engine;
+    MainEngine engine;
 
-    public PostProcessor(Engine engine) {
+    public PostProcessor(MainEngine engine) {
         this.engine = engine;
     }
 

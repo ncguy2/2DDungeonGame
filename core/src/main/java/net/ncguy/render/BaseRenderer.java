@@ -6,16 +6,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 public abstract class BaseRenderer {
 
-    protected Engine engine;
+    protected MainEngine engine;
     protected SpriteBatch batch;
     protected Camera camera;
     protected FBO screenBuffer;
 
-    public BaseRenderer(Engine engine, SpriteBatch batch, Camera camera) {
+    public BaseRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
         this.engine = engine;
         this.batch = batch;
         this.camera = camera;

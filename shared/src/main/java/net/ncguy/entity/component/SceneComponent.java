@@ -15,8 +15,13 @@ public class SceneComponent extends EntityComponent {
 
     @EntityProperty(Type = Transform2D.class, Category = "Scene", Description = "The transformation of this component", Name = "Transform")
     public Transform2D transform;
+//    @CollectionSerializer.BindCollection(elementSerializer = ConfigurableElementSerializer.class)
     public final Set<EntityComponent> childrenComponents;
     public transient Entity owningEntity;
+
+    public SceneComponent() {
+        this("Unnamed Scene component");
+    }
 
     public SceneComponent(String name) {
         super(name);
@@ -24,9 +29,10 @@ public class SceneComponent extends EntityComponent {
         childrenComponents = new LinkedHashSet<>();
     }
 
-    public void Add(EntityComponent component) {
+    public <T extends EntityComponent> T Add(T component) {
         childrenComponents.add(component);
         component._OnAddToComponent(this);
+        return component;
     }
 
     public void Remove(EntityComponent component) {
@@ -115,7 +121,7 @@ public class SceneComponent extends EntityComponent {
         }
     }
 
-    private Set<EntityComponent> GetComponents() {
+    public Set<EntityComponent> GetComponents() {
         synchronized (childrenComponents) {
             return new HashSet<>(childrenComponents);
         }
@@ -135,5 +141,51 @@ public class SceneComponent extends EntityComponent {
             childrenComponents.clear();
         }
         super.Destroy();
+    }
+
+    public String GetLocalPath() {
+        String path = this.name;
+
+        if(owningComponent != null)
+            path = owningComponent.GetLocalPath() + "/";
+
+        return path;
+    }
+
+    public String GetDomain() {
+        return GetOwningEntity().uuid.toString();
+    }
+
+    public String GetFullPath() {
+        return GetDomain() + "://" + GetLocalPath();
+    }
+
+    public EntityComponent GetChildByName(String name) {
+        return GetComponents().stream().filter(c -> c.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
+    @Override
+    public EntityComponent GetFromPath(String path) {
+        String[] split = path.split("/");
+
+
+        if(split[0].equalsIgnoreCase(name)) {
+            if (split.length == 1)
+                return this;
+
+            String[] split2 = new String[split.length - 1];
+            System.arraycopy(split, 1, split2, 0, split2.length);
+            split = split2;
+        }
+
+        EntityComponent c = GetChildByName(split[0]);
+        if(c instanceof SceneComponent && split.length > 1) {
+            String subPath = "";
+            for (int i = 1; i < split.length; i++)
+                subPath += split[i] + "/";
+            subPath = subPath.substring(0, subPath.length() - 1);
+            c = c.GetFromPath(subPath);
+        }
+        return c;
     }
 }

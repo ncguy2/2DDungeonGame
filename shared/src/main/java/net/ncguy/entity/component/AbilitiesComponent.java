@@ -9,6 +9,10 @@ public class AbilitiesComponent extends EntityComponent {
 
     public List<Ability> abilities;
 
+    public AbilitiesComponent() {
+        this("Unnamed Scene component");
+    }
+
     public AbilitiesComponent(String name) {
         super(name);
         abilities = new ArrayList<>();

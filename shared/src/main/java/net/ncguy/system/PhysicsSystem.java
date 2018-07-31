@@ -22,6 +22,10 @@ import java.util.UUID;
 
 public class PhysicsSystem extends BaseSystem {
 
+    public static Optional<PhysicsContainer> GetContainerByName(String name) {
+        return physicsContainers.stream().filter(c -> c.name.equalsIgnoreCase(name)).findFirst();
+    }
+
     public static float screenToPhysics = .01f;
     public static float physicsToScreen = 100f;
 
@@ -33,7 +37,7 @@ public class PhysicsSystem extends BaseSystem {
     @Deprecated
     public transient PhysicsContainer overworldContainer;
 
-    List<PhysicsContainer> physicsContainers;
+    static final List<PhysicsContainer> physicsContainers = new ArrayList<>();
 
     public PhysicsSystem(EntityWorld operatingWorld) {
         super(operatingWorld);
@@ -41,7 +45,6 @@ public class PhysicsSystem extends BaseSystem {
 
     @Override
     public void Startup() {
-        physicsContainers = new ArrayList<>();
         ScriptHost.AddGlobalBinding("PhysicsSystem", this);
         ScriptHost.AddGlobalBinding("screenToPhysics", screenToPhysics);
         ScriptHost.AddGlobalBinding("physicsToScreen", physicsToScreen);

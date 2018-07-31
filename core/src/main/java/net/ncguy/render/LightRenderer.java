@@ -12,7 +12,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class LightRenderer extends BaseRenderer {
     Mesh mesh;
     DeferredRenderer baseRenderer;
 
-    public LightRenderer(Engine engine, SpriteBatch batch, Camera camera) {
+    public LightRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
         lightingShader = new ReloadableShaderProgram("LightRenderer::Lighting", Gdx.files.internal("shaders/lights.vert"), Gdx.files.internal("shaders/lights.frag"));
         screenShader = new ReloadableShaderProgram("LightRenderer::Screen", Gdx.files.internal("shaders/screen.vert"), Gdx.files.internal("shaders/screen.frag"));

@@ -14,13 +14,11 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
-import net.ncguy.material.ColourAttribute;
-import net.ncguy.material.TextureAttribute;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
-import net.ncguy.world.Engine;
+import net.ncguy.world.MainEngine;
 
 import java.util.List;
 
@@ -39,7 +37,7 @@ public class DeferredRenderer extends BaseRenderer {
     OrthographicCamera lightingCamera;
     int lightSize = 256;
 
-    public DeferredRenderer(Engine engine, SpriteBatch batch, Camera camera) {
+    public DeferredRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
         ProfilerHost.Start("DeferredRenderer::DeferredRenderer");
 

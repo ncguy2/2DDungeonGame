@@ -9,6 +9,10 @@ public class LightComponent extends SceneComponent {
     @EntityProperty(Type = Float.class, Category = "Light", Description = "Light radius", Name = "Light radius")
     public float radius;
 
+    public LightComponent() {
+        this("Unnamed Scene component");
+    }
+
     public LightComponent(String name) {
         super(name);
         colour = Color.WHITE.cpy();

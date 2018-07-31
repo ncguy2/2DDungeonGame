@@ -11,7 +11,7 @@ public class NetClient extends NetEndpoint<Client> {
     public int timeout = 5000;
 
     public NetClient() {
-        endpoint = new Client();
+        endpoint = new Client(writeBufferSize, objectBufferSize);
         BindDefaultListener();
     }
 

@@ -88,4 +88,9 @@ public class Transform2D {
         scale.lerp(target.scale, alpha);
     }
 
+    public void Set(Transform2D newTransform) {
+        translation.set(newTransform.translation);
+        rotationDegrees = newTransform.rotationDegrees;
+        scale.set(newTransform.scale);
+    }
 }
