@@ -46,8 +46,10 @@ public class GeneratorComponent extends SceneComponent {
     @EntityFunction(Name = "Generate", Description = "Regenerates the world", Category = "Generator")
     public void Generate() {
 
-        generatedEntities.forEach(SceneComponent::Destroy);
-        generatedEntities.clear();
+        synchronized (generatedEntities) {
+            generatedEntities.forEach(SceneComponent::Destroy);
+            generatedEntities.clear();
+        }
 
         String wallTexPath = "textures/wall.jpg";
         String floorTexPath = "textures/wood.png";
@@ -70,49 +72,51 @@ public class GeneratorComponent extends SceneComponent {
         PhysicsContainer container = PhysicsSystem.GetContainerByName("Overworld").orElse(null);
 
         ProfilerHost.Start("World composition [" + elements.size() + "]");
-        for (TileWorldElement element : elements) {
+        synchronized (generatedEntities) {
+            for (TileWorldElement element : elements) {
 
-            int x = element.x;
-            int y = element.y;
-            boolean solid = element.solid;
+                int x = element.x;
+                int y = element.y;
+                boolean solid = element.solid;
 
-            MaterialSpriteComponent mapEntity = new MaterialSpriteComponent("Sprite");
-            mapEntity.materialRef = "default";
-            mapEntity.spriteRef = (solid ? wallTexPath : floorTexPath);
-            mapEntity.castShadow = solid;
-            mapEntity.transform.translation.set(width * x, height * y);
-            mapEntity.transform.scale.set(width, height);
+                MaterialSpriteComponent mapEntity = new MaterialSpriteComponent("Sprite");
+                mapEntity.materialRef = "default";
+                mapEntity.spriteRef = (solid ? wallTexPath : floorTexPath);
+                mapEntity.castShadow = solid;
+                mapEntity.transform.translation.set(width * x, height * y);
+                mapEntity.transform.scale.set(width, height);
 
-            if (solid) {
-                if(container != null) {
-                    BodyDef def = new BodyDef();
-                    def.type = BodyDef.BodyType.StaticBody;
-                    def.position.set((x * width), (y * height))
-                            .scl(screenToPhysics);
+                if (solid) {
+                    if(container != null) {
+                        BodyDef def = new BodyDef();
+                        def.type = BodyDef.BodyType.StaticBody;
+                        def.position.set((x * width), (y * height))
+                                .scl(screenToPhysics);
 
-                    PolygonShape shape = new PolygonShape();
-                    shape.setAsBox(halfWidth * screenToPhysics, halfHeight * screenToPhysics);
+                        PolygonShape shape = new PolygonShape();
+                        shape.setAsBox(halfWidth * screenToPhysics, halfHeight * screenToPhysics);
 
-                    FixtureDef fixDef = new FixtureDef();
-                    fixDef.shape = shape;
-                    fixDef.density = 0;
-                    fixDef.friction = 0f;
-                    fixDef.restitution = 0.0f;
+                        FixtureDef fixDef = new FixtureDef();
+                        fixDef.shape = shape;
+                        fixDef.density = 0;
+                        fixDef.friction = 0f;
+                        fixDef.restitution = 0.0f;
 
-                    SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
-                    task.OnFinish(body -> {
-                        CollisionComponent collision = mapEntity.Add(new CollisionComponent("Collision"));
-                        collision.body = body;
-                        collision.container = container;
-                        shape.dispose();
-                    });
+                        SpawnEntityTask task = new SpawnEntityTask(def, fixDef);
+                        task.OnFinish(body -> {
+                            CollisionComponent collision = mapEntity.Add(new CollisionComponent("Collision"));
+                            collision.body = body;
+                            collision.container = container;
+                            shape.dispose();
+                        });
 
-                    container.foreman.Post(task);
-                }else System.out.println("No container, physics construction cancelled");
+                        container.foreman.Post(task);
+                    }else System.out.println("No container, physics construction cancelled");
+                }
+
+                mapEntity.transform.parent = this.transform;
+                generatedEntities.add(mapEntity);
             }
-
-            mapEntity.transform.parent = this.transform;
-            generatedEntities.add(mapEntity);
         }
 //        generatedEntities.forEach(owningComponent::Add);
         ProfilerHost.End("World composition");
@@ -127,7 +131,9 @@ public class GeneratorComponent extends SceneComponent {
     @Override
     public Set<EntityComponent> GetComponents() {
         Set<EntityComponent> set = super.GetComponents();
-        set.addAll(generatedEntities);
+        synchronized (generatedEntities) {
+            set.addAll(generatedEntities);
+        }
         return set;
     }
 }

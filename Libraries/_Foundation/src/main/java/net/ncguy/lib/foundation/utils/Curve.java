@@ -1,4 +1,4 @@
-package net.ncguy.tools.debug.utils;
+package net.ncguy.lib.foundation.utils;
 
 import java.util.ArrayList;
 import java.util.List;

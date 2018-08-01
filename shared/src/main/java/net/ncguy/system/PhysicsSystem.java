@@ -109,6 +109,7 @@ public class PhysicsSystem extends BaseSystem {
                     collision.transform.translation.set(transform.getPosition())
                             .scl(physicsToScreen);
                     collision.transform.rotationDegrees = (float) Math.toDegrees(transform.getRotation());
+                    collision.transform.Push();
                 }
             }
         }

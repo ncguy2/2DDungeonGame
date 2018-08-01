@@ -3,6 +3,7 @@ package net.ncguy.tools.debug.view;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.util.Callback;
@@ -31,6 +32,26 @@ public class EntityController implements Initializable {
             if(newValue != null)
                 Select(newValue.getValue());
         });
+
+        Callback<TreeView<Entity>, TreeCell<Entity>> cellFactory = tv -> {
+            TreeCell<Entity> cell = new TreeCell<Entity>() {
+                @Override
+                protected void updateItem(Entity item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                        setStyle(null);
+                    } else {
+                        setText(item.toString());
+                        if(item.IsManaged())
+                            setStyle("-fx-background-color: #00c3c363;");
+                        else setStyle(null);
+                    }
+                }
+            };
+            return cell;
+        };
+        Container.setCellFactory(cellFactory);
 
         ComponentContainer.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue != null)

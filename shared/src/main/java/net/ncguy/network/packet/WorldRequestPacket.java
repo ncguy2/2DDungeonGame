@@ -1,6 +1,7 @@
 package net.ncguy.network.packet;
 
 import com.esotericsoftware.kryonet.Connection;
+import net.ncguy.lib.net.shared.NetEndpoint;
 import net.ncguy.lib.net.shared.PacketInfo;
 import net.ncguy.lib.net.shared.PacketReceivedHandler;
 
@@ -9,7 +10,7 @@ public class WorldRequestPacket extends DungeonPacket {
 
     public static class WorldRequestPacketHandler extends PacketReceivedHandler<WorldRequestPacket> {
         @Override
-        public void Handle(Connection source, Side side, WorldRequestPacket packet) {
+        public void Handle(NetEndpoint endpoint, Connection source, Side side, WorldRequestPacket packet) {
             if(side != Side.Server) return;
 
             packet.engine.IfIsMainEngine(e -> {

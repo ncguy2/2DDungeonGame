@@ -4,7 +4,7 @@ import net.ncguy.entity.Transform2D;
 
 public abstract class LaggingArmComponent extends SceneComponent {
 
-    @EntityProperty(Type = Transform2D.class, Category = "Lagging arm", Description = "The transform parent of child components", Name = "Spoofed transform")
+//    @EntityProperty(Type = Transform2D.class, Category = "Lagging arm", Description = "The transform parent of child components", Name = "Spoofed transform")
     public Transform2D spoofedTransform;
 
     public LaggingArmComponent() {

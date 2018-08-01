@@ -3,6 +3,7 @@ package net.ncguy.network.packet;
 import com.esotericsoftware.kryonet.Connection;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.EntityComponent;
+import net.ncguy.lib.net.shared.NetEndpoint;
 import net.ncguy.lib.net.shared.PacketInfo;
 import net.ncguy.lib.net.shared.PacketReceivedHandler;
 import net.ncguy.world.EntityWorld;
@@ -23,7 +24,7 @@ public class WorldPacket extends DungeonPacket {
     public static class WorldPacketHandler extends PacketReceivedHandler<WorldPacket> {
 
         @Override
-        public void Handle(Connection source, Side side, WorldPacket packet) {
+        public void Handle(NetEndpoint endpoint, Connection source, Side side, WorldPacket packet) {
             if (packet.entities == null) return;
             packet.engine.IfIsMainEngine(e -> {
                 e.world.AddUniqueEntities(packet.entities);
@@ -33,6 +34,7 @@ public class WorldPacket extends DungeonPacket {
                 });
 
                 e.world.FlattenedEntities().stream().filter(Entity::IsManaged).map(EntityPacket::new).forEach(source::sendTCP);
+                e.world.onManagedEntityAdd = entity -> source.sendTCP(new EntityPacket(entity));
             });
         }
     }

@@ -1,4 +1,4 @@
-package net.ncguy.tools.debug.utils;
+package net.ncguy.lib.foundation.utils;
 
 import javafx.scene.paint.Color;
 

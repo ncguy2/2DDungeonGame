@@ -3,7 +3,6 @@ package net.ncguy.lib.net.shared;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.esotericsoftware.kryonet.Listener;
-import com.esotericsoftware.minlog.Log;
 import net.ncguy.lib.net.Network;
 
 import java.util.Collection;
@@ -18,7 +17,7 @@ public abstract class NetEndpoint<T extends EndPoint> {
     protected int objectBufferSize = 16384 * 4;
 
     public void BindDefaultListener() {
-        endpoint.addListener(new NetListener(GetSide()));
+        endpoint.addListener(new NetListener(GetSide(), this));
     }
 
     public abstract PacketReceivedHandler.Side GetSide();
@@ -42,10 +41,17 @@ public abstract class NetEndpoint<T extends EndPoint> {
     public void Register(List<Network.Entry> classes) {
         Kryo kryo = endpoint.getKryo();
         kryo.setRegistrationRequired(false);
+        kryo.setReferences(true);
         kryo.addDefaultSerializer(Collection.class, ConfigurableElementSerializer.class);
         kryo.addDefaultSerializer(Set.class, ConfigurableElementSerializer.class);
-        Log.TRACE();
+//        Log.TRACE();
         classes.forEach(e -> e.Register(kryo));
     }
 
+    public T GetInternalEndpoint() {
+        return endpoint;
+    }
+
+    public abstract void SendTCP(Object pkt);
+    public abstract void SendUDP(Object pkt);
 }

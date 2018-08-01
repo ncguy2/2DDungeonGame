@@ -44,9 +44,11 @@ public class NetClient extends NetEndpoint<Client> {
         endpoint.connect(timeout, hostname, tcpPort, udpPort);
     }
 
+    @Override
     public void SendTCP(Object object) {
         endpoint.sendTCP(object);
     }
+    @Override
     public void SendUDP(Object object) {
         endpoint.sendUDP(object);
     }

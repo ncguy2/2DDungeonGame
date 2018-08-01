@@ -54,10 +54,10 @@ public abstract class PacketReceivedHandler<T> {
         return handler;
     }
 
-    public void HandleObject(Connection source, Side side, Object obj) {
-        Handle(source, side, (T) obj);
+    public void HandleObject(NetEndpoint endpoint, Connection source, Side side, Object obj) {
+        Handle(endpoint, source, side, (T) obj);
     }
-    public abstract void Handle(Connection source, Side side, T packet);
+    public abstract void Handle(NetEndpoint endpoint, Connection source, Side side, T packet);
     public Class type;
     public Class GetType() {
         return type;

@@ -102,7 +102,8 @@ public class EntityComponent implements IReplicationConfigurable {
         return true;
     }
     @Override
-    public void PostReplicate() {}
+    public void PostReplicate() {
+    }
 
     public SceneComponent GetOwningComponent() {
         return owningComponent;

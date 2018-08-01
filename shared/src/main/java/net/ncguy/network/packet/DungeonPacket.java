@@ -1,6 +1,7 @@
 package net.ncguy.network.packet;
 
 import com.esotericsoftware.kryonet.Connection;
+import net.ncguy.lib.net.shared.NetEndpoint;
 import net.ncguy.lib.net.shared.PacketInfo;
 import net.ncguy.lib.net.shared.PacketReceivedHandler;
 import net.ncguy.world.Engine;
@@ -11,7 +12,6 @@ import java.util.UUID;
 public abstract class DungeonPacket {
 
     public final UUID packetUUID;
-
     public transient Engine engine;
 
     public DungeonPacket() {
@@ -27,7 +27,7 @@ public abstract class DungeonPacket {
         }
 
         @Override
-        public void Handle(Connection source, Side side, DungeonPacket packet) {
+        public void Handle(NetEndpoint endpoint, Connection source, Side side, DungeonPacket packet) {
             packet.engine = this.engine;
         }
     }

@@ -2,5 +2,6 @@
 eclipse.project.name = appName + '-lib-Network'
 
 dependencies {
+    compile project(":Libraries/_Foundation")
     compile "com.esotericsoftware:kryonet:$kryonetVersion"
 }

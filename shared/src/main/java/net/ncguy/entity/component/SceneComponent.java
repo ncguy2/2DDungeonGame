@@ -15,7 +15,7 @@ public class SceneComponent extends EntityComponent {
 
     @EntityProperty(Type = Transform2D.class, Category = "Scene", Description = "The transformation of this component", Name = "Transform")
     public Transform2D transform;
-//    @CollectionSerializer.BindCollection(elementSerializer = ConfigurableElementSerializer.class)
+    //    @CollectionSerializer.BindCollection(elementSerializer = ConfigurableElementSerializer.class)
     public final Set<EntityComponent> childrenComponents;
     public transient Entity owningEntity;
 
@@ -43,7 +43,7 @@ public class SceneComponent extends EntityComponent {
     @Override
     public void _OnAddToComponent(SceneComponent component) {
         super._OnAddToComponent(component);
-        if(component != null) {
+        if (component != null) {
             this.transform.parent = component.transform;
             owningEntity = null;
         }
@@ -58,7 +58,7 @@ public class SceneComponent extends EntityComponent {
 
     @Override
     public Entity GetOwningEntity() {
-        if(owningEntity != null)
+        if (owningEntity != null)
             return owningEntity;
         return super.GetOwningEntity();
     }
@@ -72,12 +72,12 @@ public class SceneComponent extends EntityComponent {
         Set<EntityComponent> childrenComponents = GetComponents();
 
         for (EntityComponent component : childrenComponents) {
-            if(type.isInstance(component))
+            if (type.isInstance(component))
                 return true;
         }
 
         for (EntityComponent component : childrenComponents) {
-            if(component.Has(type))
+            if (component.Has(type))
                 return true;
         }
 
@@ -89,11 +89,11 @@ public class SceneComponent extends EntityComponent {
         Set<EntityComponent> childrenComponents = GetComponents();
 
         for (EntityComponent component : childrenComponents) {
-            if(type.isInstance(component))
+            if (type.isInstance(component))
                 return (T) component;
         }
 
-        if(searchDescendants) {
+        if (searchDescendants) {
             for (EntityComponent component : childrenComponents) {
                 if (component.Has(type))
                     return component.GetComponent(type, searchDescendants);
@@ -109,11 +109,11 @@ public class SceneComponent extends EntityComponent {
         Set<EntityComponent> childrenComponents = GetComponents();
 
         for (EntityComponent component : childrenComponents) {
-            if(type.isInstance(component))
+            if (type.isInstance(component))
                 componentList.add((T) component);
         }
 
-        if(searchDescendants) {
+        if (searchDescendants) {
             for (EntityComponent component : childrenComponents) {
                 if (component.Has(type))
                     component.GetComponents(type, searchDescendants, componentList);
@@ -146,7 +146,7 @@ public class SceneComponent extends EntityComponent {
     public String GetLocalPath() {
         String path = this.name;
 
-        if(owningComponent != null)
+        if (owningComponent != null)
             path = owningComponent.GetLocalPath() + "/";
 
         return path;
@@ -161,7 +161,10 @@ public class SceneComponent extends EntityComponent {
     }
 
     public EntityComponent GetChildByName(String name) {
-        return GetComponents().stream().filter(c -> c.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+        return GetComponents().stream()
+                .filter(c -> c.name.equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -169,7 +172,7 @@ public class SceneComponent extends EntityComponent {
         String[] split = path.split("/");
 
 
-        if(split[0].equalsIgnoreCase(name)) {
+        if (split[0].equalsIgnoreCase(name)) {
             if (split.length == 1)
                 return this;
 
@@ -179,7 +182,7 @@ public class SceneComponent extends EntityComponent {
         }
 
         EntityComponent c = GetChildByName(split[0]);
-        if(c instanceof SceneComponent && split.length > 1) {
+        if (c instanceof SceneComponent && split.length > 1) {
             String subPath = "";
             for (int i = 1; i < split.length; i++)
                 subPath += split[i] + "/";
@@ -187,5 +190,11 @@ public class SceneComponent extends EntityComponent {
             c = c.GetFromPath(subPath);
         }
         return c;
+    }
+
+    @Override
+    public void PostReplicate() {
+        super.PostReplicate();
+        GetComponents().forEach(c -> c._OnAddToComponent(this));
     }
 }

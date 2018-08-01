@@ -41,7 +41,7 @@ public class SpriteComponent extends RenderComponent {
         if(sprite == null) {
             Build();
         }else {
-            Matrix3 transform = this.transform.WorldTransform();
+            Matrix3 transform = this.transform.Predict(delta).WorldTransform();
             Vector2 pos = new Vector2();
             Vector2 size = new Vector2();
             transform.getTranslation(pos);

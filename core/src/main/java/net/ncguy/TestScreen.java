@@ -17,6 +17,7 @@ import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.assets.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
+import net.ncguy.entity.component.net.ReplicateComponent;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.physics.PhysicsUserObject;
@@ -150,6 +151,7 @@ public class TestScreen implements Screen {
 
         playerEntity = new Entity();
         CollisionComponent collision = playerEntity.SetRootComponent(new CollisionComponent("Collision"));
+        playerEntity.AddComponent(new ReplicateComponent("Replication"));
 
         BodyDef def = new BodyDef();
         def.type = BodyDef.BodyType.DynamicBody;
@@ -243,7 +245,7 @@ public class TestScreen implements Screen {
 //                        .SlotIdx(3)
 //                        .SetAbility(bladestorm));
 
-        engine.world.Add(playerEntity);
+        engine.world.AddManagedEntity(playerEntity);
 
         AddEntity(400, 500);
         AddEntity(250, 500);

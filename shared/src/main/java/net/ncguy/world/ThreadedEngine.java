@@ -50,14 +50,4 @@ public class ThreadedEngine extends Engine {
         systems.forEach(BaseSystem::Shutdown);
         systems.clear();
     }
-
-    public void AddSystem(BaseSystem system) {
-        system.Startup();
-        this.systems.add(system);
-    }
-
-    public void RemoveSystem(BaseSystem system) {
-        this.systems.remove(system);
-        system.Shutdown();
-    }
 }

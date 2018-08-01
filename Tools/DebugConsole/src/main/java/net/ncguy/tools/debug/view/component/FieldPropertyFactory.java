@@ -1,12 +1,16 @@
 package net.ncguy.tools.debug.view.component;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
+import net.ncguy.entity.Transform2D;
 import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.EntityFunction;
 import net.ncguy.entity.component.EntityProperty;
 import net.ncguy.entity.component.IPropertyProvider;
 import net.ncguy.tools.debug.view.component.editors.ColourEditor;
 import net.ncguy.tools.debug.view.component.editors.FunctionEditor;
+import net.ncguy.tools.debug.view.component.editors.TransformEditor;
+import net.ncguy.tools.debug.view.component.editors.VectorEditor;
 import org.controlsfx.property.editor.PropertyEditor;
 
 import java.lang.reflect.Field;
@@ -71,7 +75,9 @@ public class FieldPropertyFactory {
         RegisterDefaults();
     }
     public static void RegisterDefaults() {
+        Register(Vector2.class, VectorEditor.class);
         Register(Color.class, ColourEditor.class);
+        Register(Transform2D.class, TransformEditor.class);
         Register(Runnable.class, FunctionEditor.class);
     }
     public static void Register(Class type, Class<? extends PropertyEditor<?>> editorClass) {

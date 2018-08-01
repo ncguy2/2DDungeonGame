@@ -18,16 +18,12 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.esotericsoftware.kryonet.Connection;
 import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
+import net.ncguy.entity.component.net.ReplicateComponent;
 import net.ncguy.entity.component.ui.UIComponent;
-import net.ncguy.lib.net.client.NetClient;
-import net.ncguy.lib.net.shared.NetListener;
 import net.ncguy.network.NetworkContainer;
-import net.ncguy.network.PacketClasses;
-import net.ncguy.network.packet.WorldRequestPacket;
 import net.ncguy.particles.AbstractParticleSystem;
 import net.ncguy.particles.ParticleManager;
 import net.ncguy.physics.PhysicsUserObject;
@@ -39,7 +35,7 @@ import net.ncguy.render.ParticleRenderer;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
-import net.ncguy.system.NetReplicateSystem;
+import net.ncguy.system.NetClientReplicateSystem;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.ui.character.CharacterUI;
 import net.ncguy.world.MainEngine;
@@ -72,7 +68,6 @@ public class MPTestScreen implements Screen {
 
     AbstractParticleSystem particles;
 
-    NetClient client;
 
     @Override
     public void show() {
@@ -100,11 +95,11 @@ public class MPTestScreen implements Screen {
         NetworkContainer.physics = physicsSystem;
         engine.AddSystem(new InputSystem(engine.world));
         engine.AddSystem(new AbilitySystem(engine.world));
-        engine.AddSystem(new NetReplicateSystem(engine.world));
         ProfilerHost.End("Main engine");
         ProfilerHost.Start("OMT engine");
         omtEngine = new ThreadedEngine();
         omtEngine.AddSystem(physicsSystem = new PhysicsSystem(engine.world));
+        omtEngine.AddSystem(new NetClientReplicateSystem(engine.world, "127.0.0.1", 10000, 10001, engine));
         ProfilerHost.End("OMT engine");
         ProfilerHost.Start("Script engine");
         ScriptUtils.instance()
@@ -132,6 +127,7 @@ public class MPTestScreen implements Screen {
         playerEntity.managed = true;
         ProfilerHost.Start("Physics");
         CollisionComponent collision = playerEntity.SetRootComponent(new CollisionComponent("Collision"));
+        playerEntity.AddComponent(new ReplicateComponent("Replication component"));
         BodyDef def = new BodyDef();
         def.type = BodyDef.BodyType.DynamicBody;
         def.position.set(400, 300)
@@ -182,28 +178,8 @@ public class MPTestScreen implements Screen {
         AbilitiesComponent abilities = playerEntity.AddComponent(new AbilitiesComponent("Abilities"));
         AbilityRegistry.instance().GiveAll(abilities);
         ProfilerHost.End("Abilities");
-        engine.world.Add(playerEntity);
+        engine.world.AddManagedEntity(playerEntity);
         ProfilerHost.End("Player");
-
-
-
-        ProfilerHost.Start("MP connection dispatch");
-            client = new NetClient() {
-                @Override
-                public void BindDefaultListener() {
-                    endpoint.addListener(new NetListener(GetSide()) {
-                        @Override
-                        public void connected(Connection connection) {
-                            connection.sendTCP(new WorldRequestPacket());
-                        }
-                    });
-                }
-            };
-            client.Register(PacketClasses.GetPacketClasses());
-            client.Start();
-            client.Connect("127.0.0.1", 10000, 10001);
-
-        ProfilerHost.End("MP connection");
 
         ProfilerHost.End("TestScreen2");
     }

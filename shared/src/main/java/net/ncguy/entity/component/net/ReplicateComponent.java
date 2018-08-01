@@ -13,6 +13,7 @@ public class ReplicateComponent extends EntityComponent {
     protected transient float currentUpdateTime;
 
     public ReplicateComponent() {
+        this("Unnamed replication component");
     }
 
     public ReplicateComponent(String name) {

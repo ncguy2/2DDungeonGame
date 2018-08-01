@@ -2,11 +2,12 @@ package net.ncguy.entity;
 
 import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.SceneComponent;
+import net.ncguy.lib.net.shared.IReplicationConfigurable;
 import net.ncguy.world.EntityWorld;
 
 import java.util.*;
 
-public class Entity {
+public class Entity implements IReplicationConfigurable {
 
     public transient Entity parent;
     public transient boolean managed;
@@ -200,5 +201,16 @@ public class Entity {
 
     public void AddEntities(Iterable<Entity> generatedEntities) {
         generatedEntities.forEach(this::AddEntity);
+    }
+
+    @Override
+    public boolean CanReplicate() {
+        return true;
+    }
+
+    @Override
+    public void PostReplicate() {
+        if(rootComponent != null)
+            rootComponent.owningEntity = this;
     }
 }

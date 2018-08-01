@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class EntityWorld {
@@ -16,6 +17,8 @@ public class EntityWorld {
 
     public final List<Entity> entities;
     public final List<Runnable> tasks;
+
+    public Consumer<Entity> onManagedEntityAdd;
 
     public EntityWorld() {
         instance = this;
@@ -48,19 +51,23 @@ public class EntityWorld {
         }
     }
 
+    public void AddManagedEntity(Entity entity) {
+        entity.managed = true;
+        Add(entity);
+        if(onManagedEntityAdd != null)
+            onManagedEntityAdd.accept(entity);
+    }
+
     public void AddUniqueEntity(Entity entity) {
         synchronized (this.entities) {
-            boolean shouldAdd = false;
             List<Entity> entities = new ArrayList<>(this.entities);
             for (Entity e : entities) {
                 if (e.uuid.equals(entity.uuid)) {
                     if (!e.managed) {
-                        shouldAdd = true;
                         this.entities.remove(e);
                     } else System.out.println("Attempt made to replace managed entity");
                 }
             }
-            if (shouldAdd)
                 this.entities.add(entity);
         }
     }

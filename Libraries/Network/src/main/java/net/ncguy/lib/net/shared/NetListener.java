@@ -7,9 +7,12 @@ import net.ncguy.lib.net.utils.Sorters;
 public class NetListener extends Listener {
 
     public final PacketReceivedHandler.Side side;
-    public NetListener(PacketReceivedHandler.Side side) {
+    private final NetEndpoint endPoint;
+
+    public NetListener(PacketReceivedHandler.Side side, NetEndpoint endPoint) {
         super();
         this.side = side;
+        this.endPoint = endPoint;
     }
 
     @Override
@@ -17,6 +20,6 @@ public class NetListener extends Listener {
         PacketReceivedHandler.GetAllForType(object.getClass())
                 .stream()
                 .sorted(Sorters.ClassHierarchyDescent(PacketReceivedHandler::GetType))
-                .forEach(h -> h.HandleObject(connection, side, object));
+                .forEach(h -> h.HandleObject(endPoint, connection, side, object));
     }
 }

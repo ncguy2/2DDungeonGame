@@ -39,4 +39,30 @@ public class NetServer extends NetEndpoint<Server> {
     public PacketReceivedHandler.Side GetSide() {
         return PacketReceivedHandler.Side.Server;
     }
+
+    @Override
+    public void SendTCP(Object pkt) {
+        endpoint.sendToAllTCP(pkt);
+    }
+
+    @Override
+    public void SendUDP(Object pkt) {
+        endpoint.sendToAllUDP(pkt);
+    }
+
+    public void SendTCP(int connId, Object pkt) {
+        endpoint.sendToTCP(connId, pkt);
+    }
+
+    public void SendUDP(int connId, Object pkt) {
+        endpoint.sendToUDP(connId, pkt);
+    }
+
+    public void SendTCPExclude(int connId, Object pkt) {
+        endpoint.sendToAllExceptTCP(connId, pkt);
+    }
+
+    public void SendUDPExclude(int connId, Object pkt) {
+        endpoint.sendToAllExceptUDP(connId, pkt);
+    }
 }

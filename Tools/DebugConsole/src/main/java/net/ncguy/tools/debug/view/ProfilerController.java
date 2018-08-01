@@ -25,7 +25,7 @@ import net.ncguy.profile.CPUProfiler;
 import net.ncguy.profile.GPUProfiler;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.profile.TaskStats;
-import net.ncguy.tools.debug.utils.ColourCurve;
+import net.ncguy.lib.foundation.utils.ColourCurve;
 import org.controlsfx.control.CheckComboBox;
 
 import java.net.URL;

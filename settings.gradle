@@ -1,4 +1,5 @@
 include 'core', 'desktop', 'lwjgl3', 'server', 'shared'
+include 'Libraries/_Foundation'
 include 'Libraries/DamageSystem'
 include 'Libraries/Generator'
 include 'Libraries/Network'

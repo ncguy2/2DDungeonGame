@@ -2,10 +2,18 @@ package net.ncguy.entity;
 
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
+import net.ncguy.util.TransformPredictionQueue;
 
 public class Transform2D {
 
     public Transform2D parent;
+
+    public transient TransformPredictionQueue predictionQueue;
+    public static final int TRANSFORM_PREDICTION_SIZE = 3;
+
+    public Transform2D() {
+        predictionQueue = new TransformPredictionQueue(TRANSFORM_PREDICTION_SIZE);
+    }
 
     /**
      * Whether this transform is likely to change frequently<br>
@@ -26,6 +34,15 @@ public class Transform2D {
     public final Vector2 scale = new Vector2(1, 1);
 
     public final Matrix3 transformation = new Matrix3();
+
+    public Transform2D Predict(float futureTime) {
+        if(futureTime <= 0)
+            return this;
+        Transform2D predict = predictionQueue.Predict(futureTime);
+        if(predict == null)
+            predict = this;
+        return predict;
+    }
 
     public Matrix3 Update() {
         transformation.idt();
@@ -55,6 +72,13 @@ public class Transform2D {
     public void Translate(Vector2 vec) {
         translation.add(vec);
         Update();
+    }
+
+    public Matrix3 GetParentTransformation() {
+        Matrix3 mat = new Matrix3().idt();
+        if(parent != null)
+            mat.set(parent.WorldTransform());
+        return mat;
     }
 
     protected final Vector2 worldTranslation = new Vector2();
@@ -89,8 +113,52 @@ public class Transform2D {
     }
 
     public void Set(Transform2D newTransform) {
+        Push();
         translation.set(newTransform.translation);
         rotationDegrees = newTransform.rotationDegrees;
         scale.set(newTransform.scale);
+    }
+
+    public void SetToWorld(Transform2D worldTransform) {
+        Matrix3 w = worldTransform.WorldTransform();
+        w.mul(GetParentTransformation().inv());
+        w.getTranslation(this.translation);
+        this.rotationDegrees = w.getRotation();
+        w.getScale(this.scale);
+    }
+
+    public Transform2D Copy() {
+        Transform2D t = new Transform2D();
+        Matrix3 w = this.WorldTransform();
+        w.getTranslation(t.translation);
+        t.rotationDegrees = w.getRotation();
+        w.getScale(t.scale);
+        return t;
+    }
+
+    public void Push() {
+        predictionQueue.add(Copy());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Tra: [")
+                .append(translation.x)
+                .append(", ")
+                .append(translation.y)
+                .append("] Rot: [")
+                .append(rotationDegrees)
+                .append("] Scl: [")
+                .append(scale.x)
+                .append(", ")
+                .append(scale.y)
+                .append("]");
+
+        if(this.parent != null)
+            sb.append(" Parented");
+
+        return sb.toString();
     }
 }

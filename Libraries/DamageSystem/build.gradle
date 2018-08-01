@@ -2,4 +2,5 @@
 eclipse.project.name = appName + '-lib-Damage'
 
 dependencies {
+    compile project(":Libraries/_Foundation")
 }
