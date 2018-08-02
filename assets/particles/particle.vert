@@ -3,18 +3,7 @@
 layout (location = 0) in vec3 a_position;
 layout (location = 1) in vec2 a_texCoord0;
 
-struct ParticleData {
-    vec2 Position;
-    float Life;
-    vec4 Colour;
-    vec2 Velocity;
-    vec2 Scale;
-    uint Type;
-};
-
-layout(std430, binding = 0) readonly buffer Particles {
-    ParticleData Data[];
-};
+#pragma include("compute/includes/particle.glsl")
 
 uniform mat4 u_projViewTrans;
 

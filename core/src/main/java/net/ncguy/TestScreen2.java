@@ -26,14 +26,12 @@ import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.network.NetworkContainer;
 import net.ncguy.particles.AbstractParticleSystem;
-import net.ncguy.particles.BurstParticleSystem;
 import net.ncguy.particles.ParticleManager;
 import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.render.BaseRenderer;
 import net.ncguy.render.LightRenderer2;
-import net.ncguy.render.ParticleRenderer;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.script.SpawnerScriptObject;
 import net.ncguy.system.AbilitySystem;
@@ -74,7 +72,6 @@ public class TestScreen2 implements Screen {
     OrthographicCamera stageCamera;
 
     BaseRenderer sceneRenderer;
-    ParticleRenderer particleRenderer;
     Entity entity;
 
     AbstractParticleSystem particles;
@@ -133,6 +130,8 @@ public class TestScreen2 implements Screen {
 
         Entity mapEntity = new Entity();
         GeneratorComponent generator = mapEntity.AddComponent(new GeneratorComponent("Generator"));
+        generator.worldWidth = 16;
+        generator.worldHeight = 16;
 //        generator.container = physicsSystem.GetContainer("Overworld").orElse(null);
         engine.world.Add(mapEntity);
         generator.Generate();
@@ -163,7 +162,8 @@ public class TestScreen2 implements Screen {
             collision.body = body;
             shape.dispose();
         });
-        physicsSystem.Foreman().Post(task);
+        physicsSystem.Foreman()
+                .Post(task);
         ProfilerHost.End("Dispatch");
         ProfilerHost.End("Physics");
 
@@ -190,7 +190,8 @@ public class TestScreen2 implements Screen {
         ProfilerHost.End("Components");
         ProfilerHost.Start("Abilities");
         AbilitiesComponent abilities = playerEntity.AddComponent(new AbilitiesComponent("Abilities"));
-        AbilityRegistry.instance().GiveAll(abilities);
+        AbilityRegistry.instance()
+                .GiveAll(abilities);
         ProfilerHost.End("Abilities");
         ProfilerHost.End("Player");
 
@@ -229,17 +230,55 @@ public class TestScreen2 implements Screen {
 
         Runnable[] spawnTask = new Runnable[1];
 
-        spawnTask[0] = () -> {
-            if(particles != null)
-                particles.Finish();
-//            particles = new TemporalParticleSystem(10240, 3f);
-            particles = new BurstParticleSystem(10240);
-            DeferredCalls.Instance().Post(1, spawnTask[0]);
+
+//        spawnTask[0] = () -> {
+//            if(particles != null)
+//                particles.Finish();
+////            particles = new TemporalParticleSystem(10240, 3f);
+//            particles = new TemporalParticleSystem(1_000_000, 3f);
+//            particles.Bind("u_curve", curve);
+//            particles.AddUniform("u_spawnPoint", loc -> {
+//                Vector2 mousePos = ScriptUtils.instance().GetMouseCoords();
+//                mousePos = ScriptUtils.instance().UnprojectCoords(playerEntity, mousePos);
+//                Gdx.gl.glUniform2f(loc, mousePos.x, mousePos.y);
+//            });
+//            particles.AddUniform("attractionPoint", loc -> {
+//                Vector2 pos = playerEntity.Transform()
+//                        .WorldTranslation();
+//                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
+//            });
+//            DeferredCalls.Instance().Post(15, spawnTask[0]);
+//        };
+
+//        spawnTask[0].run();
+
+        Entity particleEntity = new Entity();
+        ParticleComponent particleComponent = new ParticleComponent();
+//        particleEntity.SetRootComponent(particleComponent);
+        particleComponent.particleCount = 1_000_000;
+        particleComponent.systemType = AbstractParticleSystem.SystemType.Burst;
+        particleComponent.onInit = (comp, particles) -> {
+            particles.Bind("u_curve", comp.curve);
+            particles.AddUniform("u_spawnPoint", loc -> {
+                Vector2 pos = comp.transform.WorldTranslation();
+                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
+            });
+            particles.AddUniform("attractionPoint", loc -> {
+                Vector2 pos = playerEntity.Transform()
+                        .WorldTranslation();
+                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
+            });
         };
 
-        spawnTask[0].run();
+        engine.world.Add(particleEntity);
 
-        particleRenderer = new ParticleRenderer(engine, batch, this.camera);
+        spawnTask[0] = () -> {
+            particleComponent.Reinit();
+            DeferredCalls.Instance()
+                    .Post(particleComponent.duration, spawnTask[0]);
+        };
+//        DeferredCalls.Instance()
+//                .Post(15, spawnTask[0]);
 
         ProfilerHost.End("TestScreen2");
     }
@@ -291,7 +330,8 @@ public class TestScreen2 implements Screen {
     @Override
     public void render(float delta) {
 
-        ParticleManager.instance().Update(delta);
+        ParticleManager.instance()
+                .Update(delta);
 
 //        if(entity != null)
 //            entity.GetComponent(LightComponent.class, true).radius = 1024;
@@ -308,10 +348,6 @@ public class TestScreen2 implements Screen {
         sceneRenderer.Render(delta);
         ProfilerHost.End("World Renderer");
 
-        ProfilerHost.Start("Particle renderer");
-        particleRenderer.Render(delta);
-        ProfilerHost.End("Particle renderer");
-
         ProfilerHost.Start("Screen Renderer");
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         batch.begin();
@@ -319,12 +355,8 @@ public class TestScreen2 implements Screen {
         ProfilerHost.Start("World quad render");
         Texture tex = sceneRenderer.GetTexture();
         TextureRegion reg = new TextureRegion(tex);
-        reg.flip(false, true);
+        reg.flip(false, sceneRenderer.ShouldFlipTexture());
         batch.draw(reg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        TextureRegion partReg = new TextureRegion(particleRenderer.GetTexture());
-        partReg.flip(false, true);
-        batch.draw(partReg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         ProfilerHost.End("World quad render");
         batch.setProjectionMatrix(camera.combined);
@@ -367,9 +399,11 @@ public class TestScreen2 implements Screen {
         characterUI.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage.act(delta);
         ProfilerHost.End("Update");
-        ProfilerHost.Start("Render");
-        stage.draw();
-        ProfilerHost.End("Render");
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            ProfilerHost.Start("Render");
+            stage.draw();
+            ProfilerHost.End("Render");
+        }
         ProfilerHost.End("Stage");
 
         ProfilerHost.End("TestScreen2::render");
@@ -381,7 +415,6 @@ public class TestScreen2 implements Screen {
         camera.setToOrtho(false, width, height);
         sceneRenderer.Resize(width, height);
         stageViewport.update(width, height, true);
-        particleRenderer.Resize(width, height);
     }
 
     @Override

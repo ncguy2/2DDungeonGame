@@ -18,7 +18,7 @@ public abstract class Curve<T> {
     public Item<T> Add(T item, float value) {
         Item<T> t = new Item<>(item, value);
         items.add(t);
-        items.sort((a, b) -> Float.compare(a.value, b.value));
+        Sort();
 
         min = items.get(0).value;
         max = items.get(items.size() - 1).value;
@@ -65,6 +65,10 @@ public abstract class Curve<T> {
     }
 
     public abstract T Interp(T a, T b, float normalized);
+
+    public void Sort() {
+        items.sort((a, b) -> Float.compare(a.value, b.value));
+    }
 
     public static class Item<T> {
         public T item;

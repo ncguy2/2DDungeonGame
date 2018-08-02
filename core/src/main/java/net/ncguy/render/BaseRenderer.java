@@ -26,6 +26,10 @@ public abstract class BaseRenderer {
         return screenBuffer.getColorBufferTexture();
     }
 
+    public boolean ShouldFlipTexture() {
+        return true;
+    }
+
     public void Resize(int width, int height) {
         screenBuffer.Resize(width, height);
     }

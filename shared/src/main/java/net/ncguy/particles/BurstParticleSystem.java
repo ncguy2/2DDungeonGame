@@ -11,7 +11,7 @@ public class BurstParticleSystem extends AbstractParticleSystem {
     @Override
     public void Update(float delta) {
         if(!hasSpawned) {
-            Spawn(desiredAmount);
+            Spawn(0, desiredAmount);
             hasSpawned = true;
         }
         super.Update(delta);

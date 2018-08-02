@@ -84,6 +84,7 @@ public class Entity implements IReplicationConfigurable {
         }
         entity.SetWorld(world);
         entity.parent = this;
+        entity.Transform().parent = this.Transform();
         return entity;
     }
 
@@ -169,6 +170,8 @@ public class Entity implements IReplicationConfigurable {
     }
 
     public void DestroyImmediate() {
+        EntityWorld world = this.world;
+
         synchronized (childEntities) {
             childEntities.forEach(Entity::DestroyImmediate);
             childEntities.clear();

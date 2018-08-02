@@ -45,8 +45,8 @@ public class DistortionPostProcessor extends PostProcessor {
     public Texture Render(Batch batch, Camera camera, Texture input, float delta) {
         frameBuffer.begin();
 //        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(camera.position.x, camera.position.y, frameBuffer.getWidth(), frameBuffer.getHeight()));
-        Matrix4 matrix4 = new Matrix4().setToOrtho2D(0, 0, frameBuffer.getWidth(), frameBuffer.getHeight());
 //        matrix4.translate(camera.position);
+        Matrix4 matrix4 = new Matrix4().setToOrtho2D(0, 0, frameBuffer.getWidth(), frameBuffer.getHeight());
         batch.setProjectionMatrix(matrix4);
         batch.begin();
         batch.setShader(null);

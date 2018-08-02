@@ -22,12 +22,15 @@ public class TemporalParticleSystem extends AbstractParticleSystem {
         toSpawn -= amtSpawned;
 
         if (toSpawn > 0) {
-            Spawn(toSpawn);
+            Spawn(amtSpawned, toSpawn);
             amtSpawned += toSpawn;
+        }else {
+//            if(amtSpawned < desiredAmount) {
+//                System.out.println("None to spawn this frame, To spawn in future: " + (desiredAmount - amtSpawned));
+//            }
         }
         ProfilerHost.End("TemporalParticleSystem::Update");
         super.Update(delta);
-
     }
 
     @Override

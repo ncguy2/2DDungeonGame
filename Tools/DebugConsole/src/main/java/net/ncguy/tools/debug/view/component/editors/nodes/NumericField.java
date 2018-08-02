@@ -76,11 +76,14 @@ public class NumericField extends TextField {
         public DoubleValidator(NumericField field) {
             super(field, "value", 0.0); //$NON-NLS-1$
             this.field = field;
+            invalidated();
         }
 
         @Override
         protected void invalidated() {
-            field.setText(Double.toString(get()));
+            double d = get();
+            String value = Double.toString(d);
+            field.setText(value);
         }
 
         @Override
@@ -109,11 +112,14 @@ public class NumericField extends TextField {
         public LongValidator(NumericField field) {
             super(field, "value", 0L); //$NON-NLS-1$
             this.field = field;
+            invalidated();
         }
 
         @Override
         protected void invalidated() {
-            field.setText(Long.toString(get()));
+            long i = get();
+            String value = Long.toString(i);
+            field.setText(value);
         }
 
         @Override

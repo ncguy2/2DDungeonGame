@@ -25,7 +25,7 @@ import net.ncguy.profile.CPUProfiler;
 import net.ncguy.profile.GPUProfiler;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.profile.TaskStats;
-import net.ncguy.lib.foundation.utils.ColourCurve;
+import net.ncguy.lib.foundation.utils.FXColourCurve;
 import org.controlsfx.control.CheckComboBox;
 
 import java.net.URL;
@@ -37,7 +37,7 @@ public class ProfilerController implements Initializable {
     public Label CPULabel;
     public Label GPULabel;
     public CheckComboBox captureOptions;
-    ColourCurve colourCurve;
+    FXColourCurve colourCurve;
 
     //    public LineChart utilizationChart;
     public AreaChart<Integer, Long> utilizationChart;
@@ -95,7 +95,7 @@ public class ProfilerController implements Initializable {
         utilizationChart.animatedProperty()
                 .bind(animationEnabled.selectedProperty());
 
-        colourCurve = new ColourCurve();
+        colourCurve = new FXColourCurve();
         colourCurve.Add(Color.web("#377D36"), 0);
 //        colourCurve.Add(Color.web("#5E8224"), 1);
 //        colourCurve.Add(Color.web("#7D6728"), 3);

@@ -61,5 +61,8 @@ public class EntityFactory {
         return entity;
     }
 
+    public void AddToWorld(Entity entity) {
+        Engine().IfIsMainEngine(e -> e.world.Add(entity));
+    }
 
 }

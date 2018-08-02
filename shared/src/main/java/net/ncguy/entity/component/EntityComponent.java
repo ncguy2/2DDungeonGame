@@ -43,6 +43,8 @@ public class EntityComponent implements IReplicationConfigurable {
 
     public EntityComponent(String name) {
         _RegisterClass();
+        if(name == null || name.isEmpty())
+            name = "Unnamed " + getClass().getSimpleName();
         this.name = name.replace("/", "_");
     }
 

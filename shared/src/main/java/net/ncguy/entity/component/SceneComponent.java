@@ -20,7 +20,7 @@ public class SceneComponent extends EntityComponent {
     public transient Entity owningEntity;
 
     public SceneComponent() {
-        this("Unnamed Scene component");
+        this(null);
     }
 
     public SceneComponent(String name) {

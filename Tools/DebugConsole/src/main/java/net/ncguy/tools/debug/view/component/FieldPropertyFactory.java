@@ -7,10 +7,8 @@ import net.ncguy.entity.component.EntityComponent;
 import net.ncguy.entity.component.EntityFunction;
 import net.ncguy.entity.component.EntityProperty;
 import net.ncguy.entity.component.IPropertyProvider;
-import net.ncguy.tools.debug.view.component.editors.ColourEditor;
-import net.ncguy.tools.debug.view.component.editors.FunctionEditor;
-import net.ncguy.tools.debug.view.component.editors.TransformEditor;
-import net.ncguy.tools.debug.view.component.editors.VectorEditor;
+import net.ncguy.tools.debug.view.component.editors.*;
+import net.ncguy.util.curve.GLColourCurve;
 import org.controlsfx.property.editor.PropertyEditor;
 
 import java.lang.reflect.Field;
@@ -75,6 +73,7 @@ public class FieldPropertyFactory {
         RegisterDefaults();
     }
     public static void RegisterDefaults() {
+        Register(GLColourCurve.class, GLColourCurveEditor.class);
         Register(Vector2.class, VectorEditor.class);
         Register(Color.class, ColourEditor.class);
         Register(Transform2D.class, TransformEditor.class);

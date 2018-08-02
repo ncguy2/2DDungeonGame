@@ -12,6 +12,7 @@ import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
 import net.ncguy.profile.ProfilerHost;
+import net.ncguy.render.post.BloomPostProcessor;
 import net.ncguy.render.post.PostProcessor;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
@@ -37,7 +38,9 @@ public class LightRenderer2 extends BaseRenderer {
     SimpleRenderer baseRenderer;
     TextureRegion occluders;
     TextureRegion shadowMap1D;
+    ParticleRenderer particleRenderer;
     OrthographicCamera cam;
+    BloomPostProcessor bloomPP;
 
     public LightRenderer2(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
@@ -82,7 +85,14 @@ public class LightRenderer2 extends BaseRenderer {
         baseRenderer = new SimpleRenderer(engine, batch, camera);
         ProfilerHost.End("LightRenderer2::LightRenderer2");
 
+        particleRenderer = new ParticleRenderer(engine, batch, this.camera);
+
+        processors.add(bloomPP = new BloomPostProcessor(engine));
+        bloomPP.Init();
 //        processors.add(new DistortionPostProcessor(engine));
+
+        bloomPP.lightTexture = screenBuffer.getColorBufferTexture();
+        bloomPP.particleTexture = particleRenderer.GetTexture();
     }
 
     public void ResizeBuffers(int lightSize, boolean actuallyResize) {
@@ -101,10 +111,17 @@ public class LightRenderer2 extends BaseRenderer {
     }
 
     @Override
+    public boolean ShouldFlipTexture() {
+        return (processors.size() & 1) == 0;
+    }
+
+    @Override
     public void Resize(int width, int height) {
         super.Resize(width, height);
         baseRenderer.Resize(width, height);
         lightMapFBO.Resize(width, height);
+        particleRenderer.Resize(width, height);
+        bloomPP.particleTexture = particleRenderer.GetTexture();
         processors.forEach(p -> p.Resize(width, height));
     }
 
@@ -175,6 +192,10 @@ public class LightRenderer2 extends BaseRenderer {
         ProfilerHost.End("Draw");
         screenBuffer.end();
         ProfilerHost.End("Lighting render");
+
+        ProfilerHost.Start("Particle renderer");
+        particleRenderer.Render(delta);
+        ProfilerHost.End("Particle renderer");
 
         ProfilerHost.Start("PostProcess");
         postProcessedTexture = screenBuffer.getColorBufferTexture();

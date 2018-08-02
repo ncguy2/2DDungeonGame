@@ -35,7 +35,6 @@ public class ParticleRenderer extends BaseRenderer {
                 0, 1, 2,
                 1, 3, 2
         });
-
     }
 
     @Override
@@ -57,6 +56,7 @@ public class ParticleRenderer extends BaseRenderer {
         ProfilerHost.Start("System iteration");
         ParticleManager.instance().Systems(sys -> {
             ProfilerHost.Start("System render [" + sys.desiredAmount + "]");
+            sys.BindBuffer(0);
             mesh.instanceCount = sys.desiredAmount;
             mesh.render(shader.Program(), GL20.GL_TRIANGLES);
             ProfilerHost.End("System render");
@@ -67,6 +67,8 @@ public class ParticleRenderer extends BaseRenderer {
         screenBuffer.end();
         shader.Program().end();
         ProfilerHost.End("Cleanup");
+
+
         ProfilerHost.End("ParticleRenderer::Render");
     }
 }

@@ -2,9 +2,9 @@ package net.ncguy.lib.foundation.utils;
 
 import javafx.scene.paint.Color;
 
-public class ColourCurve extends Curve<Color> {
+public class FXColourCurve extends Curve<Color> {
 
-    public ColourCurve() {
+    public FXColourCurve() {
         super(Color.class);
     }
 

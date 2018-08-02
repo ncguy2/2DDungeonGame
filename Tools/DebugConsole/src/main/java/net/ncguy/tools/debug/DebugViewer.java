@@ -7,6 +7,8 @@ import javafx.stage.Stage;
 import net.ncguy.lwjgl3.Lwjgl3Launcher;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.Scanner;
 
 import static javafx.fxml.FXMLLoader.load;
@@ -15,8 +17,8 @@ public class DebugViewer extends Application {
 
     public static void main(String[] args) {
 
-//        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-//        System.out.println(runtimeMXBean.getName());
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        System.out.println(runtimeMXBean.getName());
         System.out.println("Renderdoc injection point");
         new Scanner(System.in).next();
 

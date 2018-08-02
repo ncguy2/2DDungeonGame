@@ -1,7 +1,11 @@
 package net.ncguy.util;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import net.ncguy.shaders.ShaderPreprocessor;
 
 public class ReloadableShaderProgram extends ReloadableShader<ShaderProgram> {
 
@@ -17,7 +21,7 @@ public class ReloadableShaderProgram extends ReloadableShader<ShaderProgram> {
 
     @Override
     public void ReloadImmediate() {
-        ShaderProgram program = new ShaderProgram(vertexShader, fragmentShader);
+        ShaderProgram program = new ShaderProgram(ShaderPreprocessor.ReadShader(vertexShader), ShaderPreprocessor.ReadShader(fragmentShader));
         System.out.println(program.getLog());
         if(program.isCompiled()) {
             if(this.program != null)
@@ -40,6 +44,14 @@ public class ReloadableShaderProgram extends ReloadableShader<ShaderProgram> {
         if(program != null) {
             program.dispose();
             program = null;
+        }
+    }
+
+    public void BindTexture(String loc, Texture texture, int id) {
+        if(program != null) {
+            texture.bind(id);
+            program.setUniformi(loc, id);
+            Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
         }
     }
 }

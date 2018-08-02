@@ -11,6 +11,7 @@ import net.ncguy.material.ColourAttribute;
 import net.ncguy.material.Material;
 import net.ncguy.material.MaterialResolver;
 import net.ncguy.material.MaterialResolverWithDefault;
+import net.ncguy.particles.AbstractParticleSystem;
 import net.ncguy.profile.*;
 import net.ncguy.tween.TweenCore;
 import net.ncguy.util.DeferredCalls;
@@ -24,6 +25,7 @@ import static net.ncguy.script.ScriptUtils.tempPrimitives;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class GameLauncher extends Game {
+
 
     @Override
     public void create() {
@@ -70,7 +72,8 @@ public class GameLauncher extends Game {
 
 
         ProfilerHost.Start("Screen");
-        setScreen(new MPTestScreen());
+        setScreen(new TestScreen2());
+//        setScreen(new MPTestScreen());
         ProfilerHost.End("Screen");
 
         ProfilerHost.EndFrame();
@@ -82,6 +85,7 @@ public class GameLauncher extends Game {
         ProfilerHost.StartFrame();
         ProfilerHost.Start("Frame preamble");
         float delta = Gdx.graphics.getDeltaTime();
+        AbstractParticleSystem.GlobalLife += delta;
         ProfilerHost.Start("Tween manager");
         TweenCore.instance().tweenManager.update(delta);
         ProfilerHost.End();

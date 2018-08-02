@@ -110,4 +110,29 @@
             </Requirements>
         </Ability>
     </AbilityGroup>
+
+    <AbilityGroup Name="Level 9">
+        <Ability>
+            <Name>Starburst</Name>
+            <Icon>textures/icons/starburst.png</Icon>
+            <Level>Level_9</Level>
+            <Script>scripts/abilities/starburst.js</Script>
+            <Cost>
+                <Component type="Somatic"/>
+                <Component type="Verbal"/>
+                <Component type="Material"/>
+            </Cost>
+            <Requirements>
+                <ClassRequirement>
+                    <Class>Cleric</Class>
+                    <Class>Paladin</Class>
+                    <Class>Sorcerer</Class>
+                    <Class>Warlock</Class>
+                    <Class>Wizard</Class>
+                </ClassRequirement>
+                <LevelRequirement>15</LevelRequirement>
+            </Requirements>
+        </Ability>
+    </AbilityGroup>
+
 </AbilitySet>

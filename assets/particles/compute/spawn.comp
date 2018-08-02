@@ -5,31 +5,38 @@
 
 layout (local_size_x = 1) in;
 
-struct ParticleData {
-    vec2 Position;
-    float Life;
-    uint Type;
-    vec4 Colour;
-    vec2 Velocity;
-    vec2 Scale;
-};
+#pragma include("includes/particle.glsl")
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
+uniform int u_rngBaseSeed = 1;
+int rngSeed;
+int fastrand() {
+    rngSeed = (214013 * rngSeed + 2531011);
+    return (rngSeed >> 16) & 0x7FFF;
+}
+
+const float factor = 1.0 / 1024.0;
+float f_fastrand() {
+    int r = fastrand();
+    return mod(r, 1024) * factor;
+}
+
 // 128MB+
-layout(std430, binding = 0) buffer Particles {
-    ParticleData Data[];
-};
+
 //
 //layout(std430, binding = 1) buffer DeadPool {
 //    uint LastIdx;
 //    int[] DeadIndices;
 //};
 
+uniform float gTime;
+uniform float iTime;
 uniform int u_workload = 360;
-
+uniform int u_startId = 0;
+uniform vec2 u_spawnPoint;
 
 void main() {
     uint invocationIdx = gl_GlobalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
@@ -37,6 +44,7 @@ void main() {
                         gl_GlobalInvocationID.x;
 
     int id = abs(int(invocationIdx)) * u_workload;
+    id += u_startId;
 
     int particleId = -1;
     for(int i = 0; i < u_workload; i++) {
@@ -45,13 +53,19 @@ void main() {
 
         // TODO create particle data based on uniforms
 
-        datum.Position = vec2(0.0);
-//        float angle = i / u_workload;
-        float angle = rand(vec2(gl_GlobalInvocationID.x, i));
+//        float angle = rand(vec2(gl_GlobalInvocationID.x, i));
+        float angle = f_fastrand();
+        float dist = f_fastrand() * 32.0;
+//        dist /= 10.0;
+//        dist = 32.0 - dist;
+
         angle = radians(angle * 360);
-        datum.Velocity = normalize(vec2(cos(angle), sin(angle)));
+        datum.Position = normalize(vec2(cos(angle), sin(angle))) * dist;
+        datum.Position += u_spawnPoint;
+//        float angle = i / u_workload;
+        datum.Velocity = vec2(0.0);
         datum.Colour = vec4(1.0);
-        datum.Life = 1f;
+        datum.Life = 10f;
         datum.Type = 0;
         datum.Scale = vec2(1.0);
 

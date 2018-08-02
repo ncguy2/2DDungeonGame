@@ -23,13 +23,16 @@ import net.ncguy.tween.TweenCore;
 import net.ncguy.tween.accessors.BodyTweenAccessor;
 import net.ncguy.tween.accessors.TransformTweenAccessor;
 import net.ncguy.util.DeferredCalls;
+import net.ncguy.util.curve.GLColourCurve;
 import net.ncguy.world.Engine;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.stream.DoubleStream;
 
 public class ScriptUtils {
 
@@ -269,6 +272,27 @@ public class ScriptUtils {
                 task.accept(b);
         });
         world.foreman.Post(dispatchedTask);
+    }
+
+    public GLColourCurve RandomColourCurve(int steps, float maxKey) {
+//        float[] keys = new float[steps];
+//        for (int i = 0; i < steps; i++) {
+//            ThreadLocalRandom.current().nextFloat()
+//        }
+        DoubleStream doubles = ThreadLocalRandom.current()
+                .doubles(steps, 0.0, maxKey);
+
+        double[] dArr = doubles.sorted().toArray();
+
+        GLColourCurve curve = new GLColourCurve();
+
+        for (double v : dArr) {
+            Color item = RandomColour();
+            item.a = 1.f;
+            curve.Add(item, (float) v);
+        }
+
+        return curve;
     }
 
     public Body GetOtherBody(Contact contact, Body body) {

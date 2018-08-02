@@ -75,7 +75,7 @@ public class ComputeShader implements Disposable {
     public void Compile() {
         ProfilerHost.Start("ComputeShader::Compile [" + scriptHandle.nameWithoutExtension() + "]");
         ProfilerHost.Start("Preamble");
-        script = scriptHandle.readString();
+        script = ShaderPreprocessor.ReadShader(scriptHandle);
         ProfilerHost.End("Preamble");
 
         ProfilerHost.Start("Compilation");

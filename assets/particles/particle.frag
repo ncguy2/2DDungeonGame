@@ -2,14 +2,8 @@
 
 out vec4 FinalColour;
 
-struct ParticleData {
-    vec2 Position;  // 8
-    float Life;     // 9
-    vec4 Colour;    // 25
-    vec2 Velocity;  // 33
-    vec2 Scale;     // 41
-    uint Type;      // 45
-};
+#define EXCLUDE_PARTICLE_BUFFER
+#pragma include("compute/includes/particle.glsl")
 
 in flat ParticleData datum;
 
@@ -24,8 +18,10 @@ void main() {
 
     vec4 col = texture(u_texture, TexCoords) * datum.Colour;
 
+    col.a = col.a * smoothstep(0.0, 0.5, datum.Life / 10.0);
+
     if(col.a <= u_alphaCutoff)
         discard;
 
-	FinalColour = texture(u_texture, TexCoords) * datum.Colour;
+	FinalColour = col;
 }

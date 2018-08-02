@@ -1,6 +1,7 @@
 package net.ncguy.entity.component;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import net.ncguy.ability.Ability;
 import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.ability.AbilityScript;
@@ -24,6 +25,7 @@ public class AbilityComponent extends EntityComponent {
 
     public AbilityComponent(String name) {
         super(name);
+
     }
 
     public AbilityComponent SlotIdx(int slotIdx) {
@@ -34,9 +36,10 @@ public class AbilityComponent extends EntityComponent {
     public void SetAbility(Ability ability) {
         this.ability = ability;
         if(ability != null) {
-            script = new AbilityScript(Gdx.files.internal(this.ability.scriptPath)
-                    .readString());
-            script.Parse();
+            FileHandle handle = Gdx.files.internal(this.ability.scriptPath);
+            String script = handle.readString();
+            this.script = new AbilityScript(script);
+            this.script.Parse();
         }else script = null;
     }
 
