@@ -17,6 +17,7 @@ layout (local_size_x = 1) in;
 uniform float gTime;
 uniform int u_workload = 360;
 uniform float u_delta;
+uniform float u_simSpeed = 1;
 uniform vec2 attractionPoint;
 
 #pragma include("includes/noise.glsl")
@@ -29,13 +30,16 @@ void main() {
     int id = abs(int(invocationIdx)) * u_workload;
 
     int particleId = -1;
+
+    float delta = u_delta * u_simSpeed;
+
     for(int i = 0; i < u_workload; i++) {
         particleId = id + i;
         ParticleData datum = Data[particleId];
         if(datum.Life <= 0f)
             continue;
 
-        datum.Life -= u_delta;
+        datum.Life -= delta;
 
         vec2 direction = GetDirection(datum.Position, u_noiseScale);
         datum.Velocity += direction;
@@ -52,7 +56,7 @@ void main() {
         datum.Colour = Sample(u_curve, 10.0 - datum.Life);
 
         // update particles
-        datum.Position += datum.Velocity * u_delta;
+        datum.Position += datum.Velocity * delta;
 
 //        if(datum.Life <= 0f) {
 //            uint idx = LastIdx++;

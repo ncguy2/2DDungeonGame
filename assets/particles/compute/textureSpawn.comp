@@ -1,0 +1,90 @@
+#version 450
+#define M_PI 3.1415926535897932384626433832795
+#define M_TAU (M_PI * 2)
+#define MAX_PARTICLES 5000
+
+layout (local_size_x = 1) in;
+
+#pragma include("includes/particle.glsl")
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+uniform int u_rngBaseSeed = 1;
+int rngSeed;
+int fastrand() {
+    rngSeed = (214013 * rngSeed + 2531011);
+    return (rngSeed >> 16) & 0x7FFF;
+}
+
+const float factor = 1.0 / 1024.0;
+float f_fastrand() {
+    int r = fastrand();
+    return mod(r, 1024) * factor;
+}
+
+// 128MB+
+
+//
+//layout(std430, binding = 1) buffer DeadPool {
+//    uint LastIdx;
+//    int[] DeadIndices;
+//};
+
+uniform float gTime;
+uniform float iTime;
+uniform int u_workload = 360;
+uniform int u_startId = 0;
+uniform vec2 u_spawnPoint;
+
+uniform sampler2D u_sampleMask;
+uniform vec2 u_sampleSize;
+uniform int u_sampleChannel;
+
+void main() {
+    uint invocationIdx = gl_GlobalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
+                        gl_GlobalInvocationID.y * gl_WorkGroupSize.x +
+                        gl_GlobalInvocationID.x;
+
+    int id = abs(int(invocationIdx)) * u_workload;
+    id += u_startId;
+
+    int particleId = -1;
+    for(int i = 0; i < u_workload; i++) {
+        particleId = id + i;
+        ParticleData datum = Data[particleId];
+
+        // TODO create particle data based on uniforms
+
+        float angle = f_fastrand();
+        float dist = f_fastrand() * u_devianceRadius;
+
+        angle = radians(angle * 360);
+
+        vec2 deviance = normalize(vec2(cos(angle), sin(angle))) * dist;
+
+        vec2 coords = vec2(0.0);
+        int overflow = mod(particleId, u_sampleSize.x);
+        int x = floor(particleId / u_sampleSize.y);
+
+        coords.x = x;
+        coords.y = overflow;
+
+        datum.Position = u_spawnPoint + (coords * u_sampleSize);
+
+        vec2 direction = normalize(attractionPoint - u_spawnPoint);
+
+        vec2 texCoords = coords / u_sampleSize;
+
+//        datum.Position += u_spawnPoint;
+//        float angle = i / u_workload;
+        datum.Velocity = direction;
+        datum.Colour = vec4(1.0);
+        datum.Life = 10f * texture(u_sampleMask, coords)[u_sampleChannel];
+        datum.Type = 0;
+        datum.Scale = vec2(1.0);
+
+        Data[particleId] = datum;
+    }
+}

@@ -170,7 +170,6 @@ public class ScriptUtils {
 
         List<Intersection> intersections = MultiLineTrace(start, end);
         if (intersections.isEmpty()) {
-            System.out.println("Empty");
             return intersection;
         }
         return intersections.get(0);

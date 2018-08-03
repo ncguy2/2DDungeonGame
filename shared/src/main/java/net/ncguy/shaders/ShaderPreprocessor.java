@@ -56,12 +56,12 @@ public class ShaderPreprocessor {
                 line = line.replace(entry.getKey(), entry.getValue());
 
             if(line.startsWith("#pragma"))
-                HandlePragma(sb, path, line);
+                HandlePragma(sb, path, line, macroParams);
             else sb.append(line).append("\n");
         }
     }
 
-    public static void HandlePragma(StringBuilder sb, String currentPath, String line) {
+    public static void HandlePragma(StringBuilder sb, String currentPath, String line, Map<String, String> macroParams) {
         String cmd = line.substring("#pragma ".length());
         if(cmd.startsWith("include")) {
             Pattern p = Pattern.compile("\"([^\"]*)\"");
@@ -70,7 +70,7 @@ public class ShaderPreprocessor {
             if(m.find())
                 includePath = m.group(1);
             if(includePath != null)
-                Include(sb, currentPath, includePath);
+                Include(sb, currentPath, includePath, macroParams);
         }
     }
 
@@ -78,7 +78,7 @@ public class ShaderPreprocessor {
     public static void Include(StringBuilder sb, String currentPath, String includePath) {
         Include(sb, currentPath, includePath, new HashMap<>());
     }
-    public static void Include(StringBuilder sb, String currentPath, String includePath, HashMap<String, String> macroParams) {
+    public static void Include(StringBuilder sb, String currentPath, String includePath, Map<String, String> macroParams) {
         String path = includePath;
         if(!path.startsWith("/")) {
             path = currentPath + path;

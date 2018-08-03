@@ -1,6 +1,7 @@
 package net.ncguy.particles;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import net.ncguy.buffer.ShaderStorageBufferObject;
@@ -17,8 +18,10 @@ public abstract class AbstractParticleSystem {
 
     public static float GlobalLife = 0;
 
+    public int bufferId;
     public final int desiredAmount;
     protected float life;
+    protected float duration;
     protected ReloadableComputeShader compute;
     protected ReloadableComputeShader updateScript;
     protected ShaderStorageBufferObject particleBuffer;
@@ -26,20 +29,39 @@ public abstract class AbstractParticleSystem {
     public final Map<String, Consumer<Integer>> uniformSetters;
     public final List<Consumer<ShaderProgram>> uniformTasks;
 
+    public final Map<String, String> macroParams;
+
     public static final int PARTICLE_BYTES = 48;
 
-    public AbstractParticleSystem(int desiredAmount) {
+    public Runnable onFinish;
+
+    public AbstractParticleSystem(int desiredAmount, float duration) {
+        this(desiredAmount, null, null, duration);
+    }
+    public AbstractParticleSystem(int desiredAmount, FileHandle spawnHandle, FileHandle updateHandle, float duration) {
+        macroParams = new HashMap<>();
+        this.duration = duration;
         this.desiredAmount = desiredAmount;
         uniformSetters = new HashMap<>();
         uniformTasks = new ArrayList<>();
         life = 0;
 
+        if(spawnHandle == null)
+            spawnHandle = Gdx.files.internal("particles/compute/spawn.comp");
+        if(updateHandle == null)
+            updateHandle = Gdx.files.internal("particles/compute/noiseAttractor.comp");
+
         particleBuffer = new ShaderStorageBufferObject(desiredAmount * PARTICLE_BYTES);
         deadBuffer = new ShaderStorageBufferObject(desiredAmount);
 
-        compute = new ReloadableComputeShader("Particle::Spawn script", Gdx.files.internal("particles/compute/spawn.comp"));
-        updateScript = new ReloadableComputeShader("ParticleManager::Update script", Gdx.files.internal("particles/compute/noiseAttractor.comp"));
-        ParticleManager.instance().systems.add(this);
+        ParticleManager.instance().AddSystem(this);
+
+        macroParams.put("p_BindingPoint", String.valueOf(bufferId));
+
+        compute = new ReloadableComputeShader("Particle::Spawn script", spawnHandle, macroParams);
+        updateScript = new ReloadableComputeShader("ParticleManager::Update script", updateHandle, macroParams);
+
+        BindBuffer();
     }
 
     public void AddUniform(String name, Consumer<Integer> loc) {
@@ -58,16 +80,22 @@ public abstract class AbstractParticleSystem {
         compute.Program().SetUniform("u_rngBaseSeed", loc -> Gdx.gl.glUniform1i(loc, new Random().nextInt()));
         compute.Program().SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
         uniformSetters.forEach(compute.Program()::SetUniform);
-        BindBuffers(compute.Program());
+//        BindBuffer();
+//        BindBuffers(compute.Program());
         compute.Program()
                 .Dispatch((int) Math.ceil(amount / 360f));
         compute.Program()
                 .Unbind();
     }
 
+    public void BindBuffer() {
+        BindBuffer(bufferId);
+    }
     public void BindBuffer(int location) {
         particleBuffer.Bind(location);
     }
+
+    @Deprecated
     public void BindBuffers(ComputeShader program) {
         ProfilerHost.Start("ParticleManager::BindBuffers");
         program.BindSSBO(0, particleBuffer);
@@ -82,7 +110,7 @@ public abstract class AbstractParticleSystem {
         ProfilerHost.Start("Particle buffer update");
         ComputeShader program = updateScript.Program();
         program.Bind();
-        BindBuffers(program);
+//        BindBuffer();
         program.SetUniform("u_delta", loc -> Gdx.gl.glUniform1f(loc, delta));
         program.SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
         program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
@@ -91,12 +119,28 @@ public abstract class AbstractParticleSystem {
         program.Unbind();
         ProfilerHost.End("Particle buffer update");
 
+        if(ShouldFinish())
+            Finish();
+
         ProfilerHost.End("AbstractParticleSystem::Update");
     }
 
+    public boolean ShouldFinish() {
+        if(duration < 0)
+            return false;
+
+        return life >= duration;
+    }
+
     public void Finish() {
+        if(onFinish != null)
+            onFinish.run();
         compute.Shutdown();
-        ParticleManager.instance().systems.remove(this);
+        ParticleManager.instance().RemoveSystem(this);
+    }
+
+    public boolean IsFinished() {
+        return compute == null;
     }
 
     public void Bind(String uniform, GLColourCurve curve) {

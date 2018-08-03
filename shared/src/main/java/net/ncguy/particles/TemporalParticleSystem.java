@@ -1,5 +1,6 @@
 package net.ncguy.particles;
 
+import com.badlogic.gdx.files.FileHandle;
 import net.ncguy.profile.ProfilerHost;
 
 public class TemporalParticleSystem extends AbstractParticleSystem {
@@ -7,8 +8,13 @@ public class TemporalParticleSystem extends AbstractParticleSystem {
     float spawnOverTime;
     int amtSpawned = 0;
 
-    public TemporalParticleSystem(int desiredAmount, float spawnOverTime) {
-        super(desiredAmount);
+    public TemporalParticleSystem(int desiredAmount, float spawnOverTime, float duration) {
+        super(desiredAmount, duration);
+        this.spawnOverTime = spawnOverTime;
+    }
+
+    public TemporalParticleSystem(int particleCount, float spawnOverTime, FileHandle spawnHandle, FileHandle updateHandle, float duration) {
+        super(particleCount, spawnHandle, updateHandle, duration);
         this.spawnOverTime = spawnOverTime;
     }
 

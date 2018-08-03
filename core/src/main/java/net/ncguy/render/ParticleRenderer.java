@@ -11,6 +11,9 @@ import net.ncguy.profile.ProfilerHost;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.world.MainEngine;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ParticleRenderer extends BaseRenderer {
 
     ReloadableShaderProgram shader;
@@ -19,7 +22,11 @@ public class ParticleRenderer extends BaseRenderer {
 
     public ParticleRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
         super(engine, batch, camera);
-        shader = new ReloadableShaderProgram("Particle Render", Gdx.files.internal("particles/particle.vert"), Gdx.files.internal("particles/particle.frag"));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("p_BindingPoint", "0");
+
+        shader = new ReloadableShaderProgram("Particle Render", Gdx.files.internal("particles/particle.vert"), Gdx.files.internal("particles/particle.frag"), params);
         texture = new Texture(Gdx.files.internal("particles/particle.png"));
 
         mesh = new InstancedMesh(true, 4, 6, VertexAttribute.Position(), VertexAttribute.TexCoords(0));

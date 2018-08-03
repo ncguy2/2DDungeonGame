@@ -1,0 +1,55 @@
+{
+  "name": "Default",
+  "type": "Temporal",
+  "spawnHandle": {
+    "valid": false
+  },
+  "updateHandle": {
+    "valid": false
+  },
+  "curve": {
+    "items": [
+      {
+        "item": [
+          1.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "value": 0.0
+      },
+      {
+        "item": [
+          0.0,
+          1.0,
+          0.0,
+          1.0
+        ],
+        "value": 2.5
+      },
+      {
+        "item": [
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "value": 5.0
+      },
+      {
+        "item": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "value": 7.5
+      }
+    ],
+    "min": 0.0,
+    "max": 7.5
+  },
+  "duration": 15.0,
+  "particleCount": 0,
+  "spawnOverTime": 5.0
+}

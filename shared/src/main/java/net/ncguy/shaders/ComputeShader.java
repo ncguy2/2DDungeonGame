@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL42;
 import org.lwjgl.opengl.GL43;
 
 import java.nio.IntBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Consumer;
@@ -28,9 +29,15 @@ public class ComputeShader implements Disposable {
     protected int programHandle;
 
     protected Map<String, Integer> uniformLocationCache;
+    public final Map<String, String> macroParams;
 
     public ComputeShader(FileHandle scriptHandle) {
+        this(scriptHandle, new HashMap<>());
+    }
+
+    public ComputeShader(FileHandle scriptHandle, Map<String, String> macroParams) {
         this.scriptHandle = scriptHandle;
+        this.macroParams = macroParams;
         uniformLocationCache = new TreeMap<>();
         Compile();
     }
@@ -75,7 +82,7 @@ public class ComputeShader implements Disposable {
     public void Compile() {
         ProfilerHost.Start("ComputeShader::Compile [" + scriptHandle.nameWithoutExtension() + "]");
         ProfilerHost.Start("Preamble");
-        script = ShaderPreprocessor.ReadShader(scriptHandle);
+        script = ShaderPreprocessor.ReadShader(scriptHandle, macroParams);
         ProfilerHost.End("Preamble");
 
         ProfilerHost.Start("Compilation");

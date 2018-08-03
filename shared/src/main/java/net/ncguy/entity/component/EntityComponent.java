@@ -1,8 +1,8 @@
 package net.ncguy.entity.component;
 
 import net.ncguy.entity.Entity;
-import net.ncguy.io.Json;
-import net.ncguy.io.RuntimeTypeAdapterFactory;
+import net.ncguy.lib.foundation.io.Json;
+import net.ncguy.lib.foundation.io.RuntimeTypeAdapterFactory;
 import net.ncguy.lib.net.shared.IReplicationConfigurable;
 
 import java.util.HashSet;
@@ -20,7 +20,6 @@ public class EntityComponent implements IReplicationConfigurable {
     public transient SceneComponent owningComponent;
 
     // Serialization stuffs
-
     protected static final RuntimeTypeAdapterFactory<EntityComponent> adapter = RuntimeTypeAdapterFactory.of(EntityComponent.class, "Internal_ComponentType");
     protected static final HashSet<Class<? extends EntityComponent>> registeredClasses = new HashSet<>();
 

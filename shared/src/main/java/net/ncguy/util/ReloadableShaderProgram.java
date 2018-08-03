@@ -7,21 +7,31 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import net.ncguy.shaders.ShaderPreprocessor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ReloadableShaderProgram extends ReloadableShader<ShaderProgram> {
 
     private final FileHandle vertexShader;
     private final FileHandle fragmentShader;
 
+    protected final Map<String, String> macroParams;
+
     public ReloadableShaderProgram(String name, FileHandle vertexShader, FileHandle fragmentShader) {
+        this(name, vertexShader, fragmentShader, new HashMap<>());
+    }
+
+    public ReloadableShaderProgram(String name, FileHandle vertexShader, FileHandle fragmentShader, Map<String, String> macroParams) {
         super(name);
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
+        this.macroParams = macroParams;
         ReloadImmediate();
     }
 
     @Override
     public void ReloadImmediate() {
-        ShaderProgram program = new ShaderProgram(ShaderPreprocessor.ReadShader(vertexShader), ShaderPreprocessor.ReadShader(fragmentShader));
+        ShaderProgram program = new ShaderProgram(ShaderPreprocessor.ReadShader(vertexShader, macroParams), ShaderPreprocessor.ReadShader(fragmentShader, macroParams));
         System.out.println(program.getLog());
         if(program.isCompiled()) {
             if(this.program != null)

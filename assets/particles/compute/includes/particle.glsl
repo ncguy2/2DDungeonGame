@@ -9,7 +9,7 @@ struct ParticleData {
 
 
 #ifndef EXCLUDE_PARTICLE_BUFFER
-layout(std430, binding = 0) buffer Particles {
+layout(std430, binding = p_BindingPoint) buffer Particles {
     ParticleData Data[];
 };
 #endif

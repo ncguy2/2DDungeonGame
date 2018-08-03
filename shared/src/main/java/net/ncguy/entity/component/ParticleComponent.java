@@ -74,8 +74,8 @@ public class ParticleComponent extends SceneComponent {
 
     public AbstractParticleSystem BuildSystem() {
         switch(systemType) {
-            case Burst: return new BurstParticleSystem(particleCount);
-            case Temporal: return new TemporalParticleSystem(particleCount, spawnOverTime);
+            case Burst: return new BurstParticleSystem(particleCount, duration);
+            case Temporal: return new TemporalParticleSystem(particleCount, spawnOverTime, duration);
         }
         return null;
     }

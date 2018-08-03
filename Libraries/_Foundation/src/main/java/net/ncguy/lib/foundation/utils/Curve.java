@@ -1,16 +1,38 @@
 package net.ncguy.lib.foundation.utils;
 
+import net.ncguy.lib.foundation.io.Json;
+import net.ncguy.lib.foundation.io.RuntimeTypeAdapterFactory;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public abstract class Curve<T> {
 
-    public final Class<T> type;
+    // Serialization stuffs
+    protected static final RuntimeTypeAdapterFactory<Curve> adapter = RuntimeTypeAdapterFactory.of(Curve.class, "Internal_CurveType");
+    protected static final HashSet<Class<? extends Curve>> registeredClasses = new HashSet<>();
+
+    static {
+        Json.Register(adapter);
+    }
+
+    private synchronized void _RegisterClass() {
+        Class<? extends Curve> cls = getClass();
+        if (registeredClasses.contains(cls))
+            return;
+
+        registeredClasses.add(cls);
+        adapter.registerSubtype(cls);
+    }
+
+    public final transient Class<T> type;
     public final List<Item<T>> items;
     public float min;
     public float max;
 
     public Curve(Class<T> type) {
+        _RegisterClass();
         this.type = type;
         items = new ArrayList<>();
     }

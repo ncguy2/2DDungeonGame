@@ -1,5 +1,6 @@
 package net.ncguy.server;
 
+import net.ncguy.Initialization;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.GeneratorComponent;
 import net.ncguy.system.NetServerReplicateSystem;
@@ -17,6 +18,7 @@ public class ServerLauncher {
     static PhysicsSystem physics;
 
     public static void main(String[] args) {
+        Initialization.Init();
         engine = new MainEngine();
         physics = new PhysicsSystem(engine.world);
         engine.AddSystem(physics);

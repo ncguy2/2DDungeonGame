@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.ncguy.io;
+package net.ncguy.lib.foundation.io;
 
 import com.google.gson.*;
 import com.google.gson.internal.Streams;

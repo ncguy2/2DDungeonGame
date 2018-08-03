@@ -1,2 +1,7 @@
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 eclipse.project.name = appName + '-lib-Foundation'
+
+dependencies {
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile "org.mini2Dx:universal-tween-engine:6.3.3"
+}
