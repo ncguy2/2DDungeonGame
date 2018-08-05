@@ -3,7 +3,7 @@
 #define M_TAU (M_PI * 2)
 #define MAX_PARTICLES 100000
 
-layout (local_size_x = 1) in;
+layout (local_size_x = 256) in;
 
 #pragma include("includes/particle.glsl")
 

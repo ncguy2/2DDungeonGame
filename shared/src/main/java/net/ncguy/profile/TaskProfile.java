@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Poolable {
 
+    public static boolean useReflectionForLocationDiscovery = false;
+
     public int depth;
     public int frame;
     public T parent;
@@ -25,8 +27,10 @@ public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Pool
 
     protected StackTraceElement DiscoverLocation() {
         long start = System.nanoTime();
-        StackTraceElement stackTraceElement = ThreadUtils.GetFirstElementNotOfType(Thread.currentThread()
-                .getStackTrace(), getClass(), ProfilerHost.class, GPUProfiler.class, CPUProfiler.class, TaskProfile.class);
+        StackTraceElement stackTraceElement;
+        if(useReflectionForLocationDiscovery)
+            stackTraceElement = ThreadUtils.GetFirstElementNotOfTypeReflection(getClass(), ProfilerHost.class, GPUProfiler.class, CPUProfiler.class, TaskProfile.class);
+        else stackTraceElement = ThreadUtils.GetFirstElementNotOfType(Thread.currentThread().getStackTrace(), getClass(), ProfilerHost.class, GPUProfiler.class, CPUProfiler.class, TaskProfile.class);
         totalLocationDiscoveryCost += System.nanoTime() - start;
         return stackTraceElement;
     }

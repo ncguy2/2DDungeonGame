@@ -29,6 +29,7 @@
                 <CheckComboBox fx:id="captureOptions" />
 
                 <CheckBox fx:id="animationEnabled" text="Animated"/>
+                <CheckBox fx:id="useReflectionForLocationDiscovery" text="Reflective location discovery"/>
                 <Button onAction="#ClearChart" text="Clear chart"/>
             </HBox>
         </AnchorPane>

@@ -1,9 +1,11 @@
 package net.ncguy.threading;
 
+import sun.reflect.Reflection;
+
 public class ThreadUtils {
 
     public static StackTraceElement GetFirstElementNotOfType(Class... typesToAvoid) {
-        return GetFirstElementNotOfType(Thread.currentThread(), typesToAvoid);
+        return GetFirstElementNotOfType(new Exception().getStackTrace(), typesToAvoid);
     }
     public static StackTraceElement GetFirstElementNotOfType(Thread thread, Class... typesToAvoid) {
         return GetFirstElementNotOfType(thread.getStackTrace(), typesToAvoid);
@@ -32,6 +34,21 @@ public class ThreadUtils {
                 return e;
         }
         return stack[0];
+    }
+
+    public static StackTraceElement GetFirstElementNotOfTypeReflection(Class... typesToAvoid) {
+        Class[] types = new Class[typesToAvoid.length + 1];
+        types[0] = ThreadUtils.class;
+        System.arraycopy(typesToAvoid, 0, types, 1, typesToAvoid.length);
+        return GetFirstElementNotOfTypeReflection(0, types);
+    }
+    public static StackTraceElement GetFirstElementNotOfTypeReflection(int depth, Class... typesToAvoid) {
+        Class<?> callerCls = Reflection.getCallerClass(depth);
+        for (Class cls : typesToAvoid) {
+            if(callerCls.equals(cls))
+                return GetFirstElementNotOfTypeReflection(depth + 1, typesToAvoid);
+        }
+        return new StackTraceElement(callerCls.getCanonicalName(), "Unknown", callerCls.getCanonicalName().replace(".", "/") + ".java", -1);
     }
 
 }

@@ -69,4 +69,21 @@ public class SpriteComponent extends RenderComponent {
         if(castShadow)
             super.RenderShadow(batch);
     }
+
+    public Vector2 GetWorldSize() {
+        Vector2 size = new Vector2();
+        transform.WorldTransform().getScale(size);
+
+        if(spriteScaleOverride.x > -1 && spriteScaleOverride.y > -1)
+            size.set(spriteScaleOverride);
+
+        return size;
+    }
+
+    public Texture GetTexture() {
+        if(sprite == null)
+            return null;
+        return sprite.getTexture();
+    }
+
 }

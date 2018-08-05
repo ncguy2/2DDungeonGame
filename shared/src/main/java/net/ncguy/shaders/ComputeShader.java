@@ -43,7 +43,7 @@ public class ComputeShader implements Disposable {
     }
 
     public int GetUniformLocation(String uniform) {
-        if(programHandle < 0)
+        if(programHandle <= 0)
             return -1;
 
         if(uniformLocationCache.containsKey(uniform))

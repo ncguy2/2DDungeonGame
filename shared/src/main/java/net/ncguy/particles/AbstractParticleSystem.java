@@ -19,7 +19,7 @@ public abstract class AbstractParticleSystem {
     public static float GlobalLife = 0;
 
     public int bufferId;
-    public final int desiredAmount;
+    public int desiredAmount;
     protected float life;
     protected float duration;
     protected ReloadableComputeShader compute;
@@ -64,6 +64,24 @@ public abstract class AbstractParticleSystem {
         BindBuffer();
     }
 
+    public void SetAmount(float amt) {
+        SetAmount(Math.round(amt));
+    }
+
+    public void SetAmount(int amt) {
+        particleBuffer.Unbind();
+        particleBuffer.dispose();
+        deadBuffer.Unbind();
+        deadBuffer.dispose();
+
+        desiredAmount = amt;
+
+        particleBuffer = new ShaderStorageBufferObject(desiredAmount * PARTICLE_BYTES);
+        deadBuffer = new ShaderStorageBufferObject(desiredAmount);
+
+        BindBuffer();
+    }
+
     public void AddUniform(String name, Consumer<Integer> loc) {
         uniformSetters.put(name, loc);
     }
@@ -82,8 +100,9 @@ public abstract class AbstractParticleSystem {
         uniformSetters.forEach(compute.Program()::SetUniform);
 //        BindBuffer();
 //        BindBuffers(compute.Program());
-        compute.Program()
-                .Dispatch((int) Math.ceil(amount / 360f));
+
+
+        compute.Program().Dispatch((int) Math.ceil(amount / 256f));
         compute.Program()
                 .Unbind();
     }
@@ -115,7 +134,8 @@ public abstract class AbstractParticleSystem {
         program.SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
         program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
         uniformSetters.forEach(program::SetUniform);
-        program.Dispatch((int) Math.ceil(desiredAmount / 360f));
+
+        program.Dispatch((int) Math.ceil(desiredAmount / 256f));
         program.Unbind();
         ProfilerHost.End("Particle buffer update");
 
@@ -157,6 +177,7 @@ public abstract class AbstractParticleSystem {
     public static enum SystemType {
         Temporal(TemporalParticleSystem.class),
         Burst(BurstParticleSystem.class),
+        TextureBurst(TextureBurstParticleSystem.class),
         ;
         public final Class<? extends AbstractParticleSystem> type;
         SystemType(Class<? extends AbstractParticleSystem> type) {

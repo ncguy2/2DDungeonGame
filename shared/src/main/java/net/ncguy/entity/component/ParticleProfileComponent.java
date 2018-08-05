@@ -60,6 +60,7 @@ public class ParticleProfileComponent extends SceneComponent {
         if(onInit != null && particleSystem != null)
             onInit.accept(this, particleSystem);
 
+
         DeferredCalls.Instance().Post(profile.duration, () -> {
             if(onFinish != null)
                 onFinish.accept(ParticleProfileComponent.this);

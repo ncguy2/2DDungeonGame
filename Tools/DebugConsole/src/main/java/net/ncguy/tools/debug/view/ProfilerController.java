@@ -21,10 +21,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
-import net.ncguy.profile.CPUProfiler;
-import net.ncguy.profile.GPUProfiler;
-import net.ncguy.profile.ProfilerHost;
-import net.ncguy.profile.TaskStats;
+import net.ncguy.profile.*;
 import net.ncguy.lib.foundation.utils.FXColourCurve;
 import org.controlsfx.control.CheckComboBox;
 
@@ -37,6 +34,7 @@ public class ProfilerController implements Initializable {
     public Label CPULabel;
     public Label GPULabel;
     public CheckComboBox captureOptions;
+    public CheckBox useReflectionForLocationDiscovery;
     FXColourCurve colourCurve;
 
     //    public LineChart utilizationChart;
@@ -67,6 +65,9 @@ public class ProfilerController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         Runnable updateGlobalProfilerState = () -> ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED || GPUProfiler.PROFILING_ENABLED;
+
+        useReflectionForLocationDiscovery.setSelected(TaskProfile.useReflectionForLocationDiscovery);
+        useReflectionForLocationDiscovery.selectedProperty().addListener((observable, oldValue, newValue) -> TaskProfile.useReflectionForLocationDiscovery = newValue);
 
         captureOptions.getItems()
                 .addAll("CPU Profiling", "GPU Profiling");
