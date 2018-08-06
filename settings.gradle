@@ -3,5 +3,6 @@ include 'Libraries/_Foundation'
 include 'Libraries/DamageSystem'
 include 'Libraries/Generator'
 include 'Libraries/Network'
+include 'Libraries/PhysicsEngine'
 
 include 'Tools/DebugConsole'

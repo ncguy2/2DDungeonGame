@@ -18,7 +18,9 @@ void main() {
 
     datum = d;
 
-    vec2 worldPos = a_position.xy * d.Scale;
+    vec2 scl = (d.Scale * abs(normalize(d.Velocity))) + d.Scale;
+
+    vec2 worldPos = a_position.xy * scl;
     worldPos += d.Position;
 
     gl_Position = u_projViewTrans * vec4(worldPos, 0.0, 1.0);

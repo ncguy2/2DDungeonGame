@@ -2,6 +2,8 @@ package net.ncguy.entity.component;
 
 import com.badlogic.gdx.Input;
 import net.ncguy.input.InputAction;
+import net.ncguy.input.InputAxis;
+import net.ncguy.input.ScrollInputHelper;
 
 import java.util.Optional;
 
@@ -40,6 +42,9 @@ public class InputComponent extends EntityComponent {
     public InputAction keyAttackPrimary = InputAction.Button("Primary Attack", Input.Buttons.LEFT);
     @EntityProperty(Type = InputAction.class, Category = "Input", Description = "Key to use the equipped secondary attack", Name = "Key Secondary Attack")
     public InputAction keyAttackSecondary = InputAction.Button("Secondary Attack", Input.Buttons.RIGHT);
+
+    @EntityProperty(Type = InputAxis.class, Category = "Input", Description = "Zoom axis", Name = "Zoom axis")
+    public InputAxis zoomAxis = InputAxis.Create().Add(InputAction.Scroll("Zoom in", ScrollInputHelper.ScrollType.UP), 1).Add(InputAction.Scroll("Zoom out", ScrollInputHelper.ScrollType.DOWN), -1);
 
     public InputComponent() {
         this("Unnamed Scene component");

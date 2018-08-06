@@ -17,13 +17,14 @@ public class DebugViewer extends Application {
 
     public static void main(String[] args) {
 
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        System.out.println(runtimeMXBean.getName());
-        System.out.println("Renderdoc injection point");
-        new Scanner(System.in).next();
 
-
-        new Thread(() -> Lwjgl3Launcher.main(args)).start();
+        new Thread(() -> {
+            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            System.out.println(runtimeMXBean.getName());
+            System.out.println("Renderdoc injection point");
+            new Scanner(System.in).next();
+            Lwjgl3Launcher.main(args);
+        }).start();
         launch(args);
     }
 

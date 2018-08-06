@@ -56,8 +56,6 @@ public class ProfilerController implements Initializable {
 
     Map<Integer, TreeItem<TaskStats>> statMap;
     Map<Integer, List<HoveredThresholdNode>> nodeMap;
-    int cpuBaseLine;
-    int gpuBaseLine;
 
     SimpleObjectProperty<Integer> selectedFrameId;
 

@@ -11,6 +11,9 @@ public class InputAction {
     public static InputAction Button(String name, int id) {
         return new InputAction(name, id, InputType.Mouse);
     }
+    public static InputAction Scroll(String name, ScrollInputHelper.ScrollType type) {
+        return new InputAction(name, type.ordinal(), InputType.Scroll);
+    }
 
     public InputAction(String name, int id, InputType type) {
         this.name = name;

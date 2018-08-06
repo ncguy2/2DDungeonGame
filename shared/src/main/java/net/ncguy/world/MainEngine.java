@@ -1,5 +1,7 @@
 package net.ncguy.world;
 
+import net.ncguy.profile.ProfilerHost;
+
 import java.util.function.Consumer;
 
 public class MainEngine extends Engine {
@@ -12,8 +14,12 @@ public class MainEngine extends Engine {
 
     @Override
     public void Update(float delta) {
+        ProfilerHost.Start("System update");
         super.Update(delta);
+        ProfilerHost.End("System update");
+        ProfilerHost.Start("World update");
         world.Update(delta);
+        ProfilerHost.End("World update");
     }
 
     @Override

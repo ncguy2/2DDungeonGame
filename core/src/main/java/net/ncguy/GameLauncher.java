@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.kotcrab.vis.ui.VisUI;
 import net.ncguy.ability.AbilityRegistry;
+import net.ncguy.assets.AssetHandler;
 import net.ncguy.entity.component.MaterialSpriteComponent;
+import net.ncguy.input.ScrollInputHelper;
 import net.ncguy.material.ColourAttribute;
 import net.ncguy.material.Material;
 import net.ncguy.material.MaterialResolver;
@@ -26,12 +28,18 @@ import static net.ncguy.script.ScriptUtils.tempPrimitives;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class GameLauncher extends Game {
 
+    long startTime;
+    boolean firstFrame = true;
+    boolean secondFrame = true;
 
     @Override
     public void create() {
 
+        System.out.println("First frame time measurement started");
+        startTime = System.nanoTime();
+
         Initialization.Init();
-        ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED = GPUProfiler.PROFILING_ENABLED = false;
+//        ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED = GPUProfiler.PROFILING_ENABLED = false;
 
         ProfilerHost.StartFrame();
         ProfilerHost.Start("Loading");
@@ -83,8 +91,20 @@ public class GameLauncher extends Game {
     @Override
     public void render() {
 
+        long time = System.nanoTime();
+        if(firstFrame) {
+            System.out.printf("Time until first frame: %fms\n", (time - startTime) / 1000000f);
+            firstFrame = false;
+        }else if(secondFrame) {
+            System.out.printf("Time until second frame: %fms\n", (time - startTime) / 1000000f);
+            secondFrame = false;
+        }
+
         ProfilerHost.StartFrame();
         ProfilerHost.Start("Frame preamble");
+        ProfilerHost.Start("AssetHandler::Update");
+        AssetHandler.WithInstanceIfExists(AssetHandler::Update);
+        ProfilerHost.End("AssetHandler::Update");
         float delta = Gdx.graphics.getDeltaTime();
         AbstractParticleSystem.GlobalLife += delta;
         ProfilerHost.Start("Tween manager");
@@ -106,6 +126,8 @@ public class GameLauncher extends Game {
         ProfilerHost.End();
         ProfilerHost.EndFrame();
 
+        long s = System.nanoTime();
+
         ProfilerHost.Clear();
 
         GPUTaskProfile tp;
@@ -121,6 +143,9 @@ public class GameLauncher extends Game {
         }
 
         ProfilerHost.instance().NotifyListeners();
+        ScrollInputHelper.instance().Update(delta);
+        long e = System.nanoTime();
+//        System.out.printf("Profiler overhead for frame %d: %fms\n", Gdx.graphics.getFrameId(), (e - s) / 1000000f);
 
     }
 

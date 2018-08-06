@@ -3,10 +3,9 @@ package net.ncguy.entity.component;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import net.ncguy.lib.gen.tile.CaveTileWorldGenerator;
 import net.ncguy.lib.gen.tile.TileWorldElement;
-import net.ncguy.lib.gen.tile.TileWorldGenerator;
 import net.ncguy.physics.worker.SpawnEntityTask;
-import net.ncguy.profile.ProfilerHost;
 import net.ncguy.system.PhysicsContainer;
 import net.ncguy.system.PhysicsSystem;
 
@@ -25,12 +24,21 @@ public class GeneratorComponent extends SceneComponent {
     public float tileHeight = 64;
 
     @EntityProperty(Type = Integer.class, Name = "World width", Category = "Generator", Description = "Width of the world")
-    public int worldWidth = 8;
+    public int worldWidth = 4;
     @EntityProperty(Type = Integer.class, Name = "World height", Category = "Generator", Description = "Height of the world")
-    public int worldHeight = 8;
+    public int worldHeight = 4;
 
     @EntityProperty(Type = Integer.class, Name = "Seed", Category = "Generator", Description = "Seed for the generator")
     public int generatorSeed = 8;
+
+    @EntityProperty(Type = Float.class, Name = "Chance To Start Alive", Category = "Generator")
+    public float chanceToStartAlive = 0.25f;
+    @EntityProperty(Type = Integer.class, Name = "Death Limit", Category = "Generator")
+    public int deathLimit = 6;
+    @EntityProperty(Type = Integer.class, Name = "Birth Limit", Category = "Generator")
+    public int birthLimit = 3;
+    @EntityProperty(Type = Integer.class, Name = "Iterations", Category = "Generator")
+    public int iterations = 8;
 
     protected transient final List<SceneComponent> generatedEntities;
 
@@ -54,24 +62,26 @@ public class GeneratorComponent extends SceneComponent {
         String wallTexPath = "textures/wall.jpg";
         String floorTexPath = "textures/wood.png";
 
-        ProfilerHost.Start("Map");
         float width = tileWidth;
         float height = tileHeight;
 
         float halfWidth = width * .5f;
         float halfHeight = height * .5f;
 
-        ProfilerHost.Start("World generation");
-        TileWorldGenerator generator = new TileWorldGenerator();
+        CaveTileWorldGenerator generator = new CaveTileWorldGenerator();
         generator.seed = generatorSeed;
         generator.width = worldWidth;
         generator.height = worldHeight;
+        generator.iterations = iterations;
+        generator.chanceToStartAlive = chanceToStartAlive;
+        generator.deathLimit = deathLimit;
+        generator.birthLimit = birthLimit;
+
         Collection<TileWorldElement> elements = generator.GetElements();
-        ProfilerHost.End("World generation");
 
         PhysicsContainer container = PhysicsSystem.GetContainerByName("Overworld").orElse(null);
 
-        ProfilerHost.Start("World composition [" + elements.size() + "]");
+        long start = System.nanoTime();
         synchronized (generatedEntities) {
             for (TileWorldElement element : elements) {
 
@@ -81,7 +91,13 @@ public class GeneratorComponent extends SceneComponent {
 
                 MaterialSpriteComponent mapEntity = new MaterialSpriteComponent("Sprite");
                 mapEntity.materialRef = "default";
-                mapEntity.spriteRef = (solid ? wallTexPath : floorTexPath);
+                if(element.texRef == null || element.texRef.isEmpty())
+                    mapEntity.spriteRef = (solid ? wallTexPath : floorTexPath);
+                else mapEntity.spriteRef = element.texRef;
+                mapEntity.connected = element.texConnected;
+                mapEntity.worldX = element.x;
+                mapEntity.worldY = element.y;
+                mapEntity.worldMap = element.texMap;
                 mapEntity.castShadow = solid;
                 mapEntity.transform.translation.set(width * x, height * y);
                 mapEntity.transform.scale.set(width, height);
@@ -119,8 +135,8 @@ public class GeneratorComponent extends SceneComponent {
             }
         }
 //        generatedEntities.forEach(owningComponent::Add);
-        ProfilerHost.End("World composition");
-        ProfilerHost.End("Map");
+        long end = System.nanoTime();
+        System.out.printf("World composition finished: took %fms\n", (end - start) / 1000000f);
     }
 
     @Override

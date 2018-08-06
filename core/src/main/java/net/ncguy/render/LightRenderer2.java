@@ -127,12 +127,14 @@ public class LightRenderer2 extends BaseRenderer {
 
     @Override
     public Texture GetTexture() {
-//        return shadowmapFBO.getColorBufferTexture();
+//        return lightMapFBO.getColorBufferTexture();
         return postProcessedTexture;
     }
 
     @Override
     public void Render(float delta) {
+
+
         ProfilerHost.Start("LightRenderer2::Render");
         ProfilerHost.Start("World renderer");
         baseRenderer.Render(delta);
@@ -170,6 +172,7 @@ public class LightRenderer2 extends BaseRenderer {
         ProfilerHost.End("Lights");
 
         ProfilerHost.Start("Lighting render");
+        cam.zoom = 1f;
         cam.setToOrtho(true);
         screenBuffer.begin();
         screenBuffer.clear(0, 0, 0, 1, false);
@@ -248,6 +251,7 @@ public class LightRenderer2 extends BaseRenderer {
 
 //            cam.setToOrtho(false, shadowmapFBO.getWidth(), shadowmapFBO.getHeight());
         size = lightSize;
+        cam.zoom = 1f;
         cam.setToOrtho(false, size, 1);
         batch.setProjectionMatrix(cam.combined);
         ProfilerHost.Start("Scene render");
@@ -273,14 +277,19 @@ public class LightRenderer2 extends BaseRenderer {
         light.transform.WorldTransform().getTranslation(pos);
         float size = lightSize * lightScale;
 //        float size = lightSize;
-        pos.sub(size * .5f, size * .5f);
+        float s = size * ((OrthographicCamera) camera).zoom;
+        pos.sub(s * .5f, s * .5f);
         ProfilerHost.End("Reposition");
         ProfilerHost.Start("Render");
         lightMapFBO.begin();
         batch.setShader(applicationShader.Program());
+//        if(camera instanceof OrthographicCamera)
+//            cam.zoom = ((OrthographicCamera) camera).zoom;
+        cam.zoom = 1;
         cam.setToOrtho(false);
         batch.setProjectionMatrix(cam.combined);
         batch.begin();
+        applicationShader.Program().setUniformf("u_zoom", ((OrthographicCamera) camera).zoom);
         applicationShader.Program().setUniformf("u_resolution", lightSize, lightSize);
         batch.setColor(light.colour);
         Vector3 v = new Vector3(pos, 0.f);

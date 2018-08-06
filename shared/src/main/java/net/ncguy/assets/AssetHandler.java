@@ -11,10 +11,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import net.ncguy.profile.ProfilerHost;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -47,7 +44,7 @@ public class AssetHandler implements Disposable {
         });
     }
 
-    protected Map<String, Consumer<?>> asyncRequests;
+    protected Map<String, List<Consumer<?>>> asyncRequests;
     protected AssetManager manager;
 
     public boolean IsLoading() {
@@ -73,8 +70,7 @@ public class AssetHandler implements Disposable {
         asyncRequests.entrySet()
                 .stream()
                 .filter(e -> manager.isLoaded(e.getKey()))
-                .peek(e -> e.getValue()
-                        .accept(manager.get(e.getKey())))
+                .peek(e -> e.getValue().forEach(t -> t.accept(manager.get(e.getKey()))))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList())
                 .forEach(asyncRequests::remove);
@@ -144,7 +140,10 @@ public class AssetHandler implements Disposable {
             return;
         }
 
-        if (asyncRequests.containsKey(path)) return;
+        if (asyncRequests.containsKey(path)) {
+            asyncRequests.get(path).add(func);
+            return;
+        }
         if (IsAbsolutePath(path)) {
             if (handle.exists() && !handle.isDirectory())
                 manager.load(new AssetDescriptor<>(handle, type));
@@ -160,7 +159,9 @@ public class AssetHandler implements Disposable {
             } else manager.load(path, type);
         }
 
-        asyncRequests.put(path, func);
+        ArrayList<Consumer<?>> value = new ArrayList<>();
+        value.add(func);
+        asyncRequests.put(path, value);
     }
 
     public <T> List<T> GetOfType(Class<T> type) {

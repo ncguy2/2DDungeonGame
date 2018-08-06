@@ -7,4 +7,8 @@ public class TileWorldElement extends WorldElement {
     public int x, y;
     public boolean solid;
 
+    public String texRef;
+    public boolean texConnected;
+
+    public boolean[][] texMap;
 }

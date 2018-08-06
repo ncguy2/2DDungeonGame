@@ -24,6 +24,7 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
+import net.ncguy.input.InputHelper;
 import net.ncguy.network.NetworkContainer;
 import net.ncguy.particles.AbstractParticleSystem;
 import net.ncguy.particles.ParticleManager;
@@ -33,7 +34,6 @@ import net.ncguy.profile.ProfilerHost;
 import net.ncguy.render.BaseRenderer;
 import net.ncguy.render.LightRenderer2;
 import net.ncguy.script.ScriptUtils;
-import net.ncguy.script.SpawnerScriptObject;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsSystem;
@@ -200,7 +200,7 @@ public class TestScreen2 implements Screen {
         stage.addActor(characterUI);
         ProfilerHost.End("UI");
 
-        Gdx.input.setInputProcessor(stage);
+        InputHelper.AddProcessors(stage);
 
         engine.world.Add(playerEntity);
 
@@ -211,13 +211,20 @@ public class TestScreen2 implements Screen {
         LightComponent light = entity.AddComponent(new LightComponent("Light"));
         light.colour.set(1, 1, 0, 1);
         light.radius = 256;
-        EntitySpawnerComponent spawner = new EntitySpawnerComponent("Spawner");
-        spawner.spawnInterval = 2.5f;
-        spawner.spawnAmount = 3;
-        spawner.spawnerScript = new SpawnerScriptObject(Gdx.files.internal("scripts/spawner.alpha.js")
-                .readString());
-        spawner.spawnerScript.Parse();
-        entity.AddComponent(spawner);
+
+//        ProfilerHost.Start("Spawner component");
+//        EntitySpawnerComponent spawner = new EntitySpawnerComponent("Spawner");
+//        spawner.spawnInterval = 2.5f;
+//        spawner.spawnAmount = 3;
+//        ProfilerHost.Start("Creation");
+//        spawner.spawnerScript = new SpawnerScriptObject(Gdx.files.internal("scripts/spawner.alpha.js").readString());
+//        ProfilerHost.End("Creation");
+//        ProfilerHost.Start("Parsing");
+//        spawner.spawnerScript.Parse();
+//        ProfilerHost.End("Parse");
+//        entity.AddComponent(spawner);
+//        ProfilerHost.End("Spawner component");
+
         entity.Transform().translation.set(400, 250);
         ProfilerHost.End("Creation");
         ProfilerHost.Start("Dispatch");

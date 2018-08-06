@@ -9,6 +9,7 @@ in vec4 Colour;
 uniform sampler2D u_texture;
 uniform vec2 u_resolution;
 uniform float u_lightScale;
+uniform float u_zoom;
 
 float Sample(vec2 coord, float r) {
     return step(r, texture(u_texture, coord).r);
@@ -21,6 +22,8 @@ void main() {
     float r = length(norm);
     float coord = (theta + PI) / (2.0 * PI);
     vec2 tc = vec2(coord, 0.0);
+
+    r *= u_zoom;
 
     // Sample hard shadows
     float center = Sample(tc, r);

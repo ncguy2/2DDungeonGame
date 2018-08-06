@@ -3,7 +3,7 @@ package net.ncguy.lib.gen.tile;
 import net.ncguy.lib.gen.BaseWorld;
 import net.ncguy.lib.gen.utils.SimplexNoise;
 
-public class TileWorld extends BaseWorld<TileWorldElement> {
+public class SimplexTileWorld extends BaseWorld<TileWorldElement> {
 
     public int width;
     public int height;
@@ -11,11 +11,11 @@ public class TileWorld extends BaseWorld<TileWorldElement> {
 
     protected final SimplexNoise noise;
 
-    public TileWorld() {
+    public SimplexTileWorld() {
         this(0);
     }
 
-    public TileWorld(int noiseSeed) {
+    public SimplexTileWorld(int noiseSeed) {
         noise = new SimplexNoise(noiseSeed);
     }
 

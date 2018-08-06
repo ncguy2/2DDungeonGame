@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public abstract class TaskProfile<T extends TaskProfile<T>> implements Pool.Poolable {
 
-    public static boolean useReflectionForLocationDiscovery = false;
+    public static boolean useReflectionForLocationDiscovery = true;
 
     public int depth;
     public int frame;

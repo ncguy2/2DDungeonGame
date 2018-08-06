@@ -29,6 +29,24 @@ public class InputAxis {
         return value;
     }
 
+    public InputAxis Add(InputAction action, float scale) {
+        AxisEntry entry = new AxisEntry();
+        entry.action = action;
+        entry.scale = scale;
+        entries.add(entry);
+        return this;
+    }
+
+    public static InputAxis Create() {
+        return Create(CompositionRule.AdditiveClamped);
+    }
+    public static InputAxis Create(CompositionRule rule) {
+        InputAxis inputAxis = new InputAxis();
+        if(rule != null)
+            inputAxis.rule = rule;
+        return inputAxis;
+    }
+
     public static class AxisEntry {
         public InputAction action;
         public float scale;
