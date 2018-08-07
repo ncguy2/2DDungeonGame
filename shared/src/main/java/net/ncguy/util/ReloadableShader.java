@@ -21,6 +21,8 @@ public abstract class ReloadableShader<T> {
         ProfilerHost.End("ReloadableShader::ReloadableShader [" + name + "]");
     }
 
+    public abstract T Create();
+
     private void Register() {
         shaders.add(new WeakReference<>(this));
     }

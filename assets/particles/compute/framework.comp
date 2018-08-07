@@ -1,0 +1,63 @@
+#version 450
+#define M_PI 3.1415926535897932384626433832795
+#define M_TAU (M_PI * 2)
+#define MAX_PARTICLES 5000
+
+layout (local_size_x = 256) in;
+
+#pragma include("includes/particle.glsl")
+#pragma include("includes/colourCurve.glsl")
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+uniform int u_rngBaseSeed = 1;
+int rngSeed;
+int fastrand() {
+    rngSeed = (214013 * rngSeed + 2531011);
+    return (rngSeed >> 16) & 0x7FFF;
+}
+
+const float factor = 1.0 / 1024.0;
+float f_fastrand() {
+    int r = fastrand();
+    return mod(r, 1024) * factor;
+}
+
+uniform float gTime;
+uniform float iTime;
+uniform float u_delta;
+uniform int u_startId = 0;
+uniform vec2 u_spawnPoint;
+uniform float u_simSpeed = 1;
+
+float delta;
+
+#pragma include("includes/noise.glsl")
+
+#pragma inject("uniforms")
+#pragma inject("declarations")
+
+void main() {
+    uint invocationIdx = gl_GlobalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
+                        gl_GlobalInvocationID.y * gl_WorkGroupSize.x +
+                        gl_GlobalInvocationID.x;
+
+
+    int particleId = abs(int(invocationIdx));
+    particleId += u_startId;
+    rngSeed += particleId;
+    ParticleData datum = Data[particleId];
+
+    delta = u_delta * u_simSpeed;
+
+
+
+    #pragma inject("invocations")
+
+    Data[particleId] = datum;
+}
+
+
+#pragma inject("definitions")

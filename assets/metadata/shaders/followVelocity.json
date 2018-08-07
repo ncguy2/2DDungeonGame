@@ -1,0 +1,9 @@
+{
+  "name": "Follow Velocity",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [],
+  "fragment": [
+    "datum.Position += datum.Velocity * delta;"
+  ]
+}

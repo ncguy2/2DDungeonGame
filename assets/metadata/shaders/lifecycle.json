@@ -1,0 +1,9 @@
+{
+  "name": "Lifecycle",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [],
+  "fragment": [
+    "datum.Life -= delta;"
+  ]
+}

@@ -38,7 +38,6 @@ import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
 import net.ncguy.system.PhysicsSystem;
 import net.ncguy.ui.character.CharacterUI;
-import net.ncguy.util.DeferredCalls;
 import net.ncguy.world.MainEngine;
 import net.ncguy.world.ThreadedEngine;
 
@@ -259,31 +258,31 @@ public class TestScreen2 implements Screen {
 
 //        spawnTask[0].run();
 
-        Entity particleEntity = new Entity();
-        ParticleComponent particleComponent = new ParticleComponent();
-//        particleEntity.SetRootComponent(particleComponent);
-        particleComponent.particleCount = 1_000_000;
-        particleComponent.systemType = AbstractParticleSystem.SystemType.Burst;
-        particleComponent.onInit = (comp, particles) -> {
-            particles.Bind("u_curve", comp.curve);
-            particles.AddUniform("u_spawnPoint", loc -> {
-                Vector2 pos = comp.transform.WorldTranslation();
-                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
-            });
-            particles.AddUniform("attractionPoint", loc -> {
-                Vector2 pos = playerEntity.Transform()
-                        .WorldTranslation();
-                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
-            });
-        };
-
-        engine.world.Add(particleEntity);
-
-        spawnTask[0] = () -> {
-            particleComponent.Reinit();
-            DeferredCalls.Instance()
-                    .Post(particleComponent.duration, spawnTask[0]);
-        };
+//        Entity particleEntity = new Entity();
+//        ParticleComponent particleComponent = new ParticleComponent();
+////        particleEntity.SetRootComponent(particleComponent);
+//        particleComponent.particleCount = 1_000_000;
+//        particleComponent.systemType = AbstractParticleSystem.SystemType.Burst;
+//        particleComponent.onInit = (comp, particles) -> {
+//            particles.Bind("u_curve", comp.curve);
+//            particles.AddUniform("u_spawnPoint", loc -> {
+//                Vector2 pos = comp.transform.WorldTranslation();
+//                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
+//            });
+//            particles.AddUniform("u_attractionPoint", loc -> {
+//                Vector2 pos = playerEntity.Transform()
+//                        .WorldTranslation();
+//                Gdx.gl.glUniform2f(loc, pos.x, pos.y);
+//            });
+////        };
+//
+//        engine.world.Add(particleEntity);
+//
+//        spawnTask[0] = () -> {
+//            particleComponent.Reinit();
+//            DeferredCalls.Instance()
+//                    .Post(particleComponent.duration, spawnTask[0]);
+//        };
 //        DeferredCalls.Instance()
 //                .Post(15, spawnTask[0]);
 

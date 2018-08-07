@@ -44,7 +44,6 @@ void main() {
 
         vec2 direction = GetDirection(datum.Position, u_noiseScale);
         datum.Velocity += direction;
-
         vec2 dir = attractionPoint - datum.Position;
         float dst = distance(attractionPoint, datum.Position);
         dir = normalize(dir);

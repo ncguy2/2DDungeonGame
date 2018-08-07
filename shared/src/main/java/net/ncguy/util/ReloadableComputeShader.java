@@ -8,12 +8,23 @@ import java.util.Map;
 
 public class ReloadableComputeShader extends ReloadableShader<ComputeShader> {
 
+    protected final FileHandle handle;
+    protected final Map<String, String> macroParams;
+
     public ReloadableComputeShader(String name, FileHandle handle) {
         this(name, handle, new HashMap<>());
     }
+
     public ReloadableComputeShader(String name, FileHandle handle, Map<String, String> macroParams) {
         super(name);
-        program = new ComputeShader(handle, macroParams);
+        this.handle = handle;
+        this.macroParams = macroParams;
+        program = Create();
+    }
+
+    @Override
+    public ComputeShader Create() {
+        return new ComputeShader(handle, macroParams);
     }
 
     @Override

@@ -5,10 +5,10 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import net.ncguy.buffer.ShaderStorageBufferObject;
+import net.ncguy.lib.foundation.io.Json;
 import net.ncguy.lib.foundation.utils.Curve;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.shaders.ComputeShader;
-import net.ncguy.util.ReloadableComputeShader;
 import net.ncguy.util.curve.GLColourCurve;
 
 import java.util.*;
@@ -22,10 +22,15 @@ public abstract class AbstractParticleSystem {
     public int desiredAmount;
     protected float life;
     protected float duration;
-    protected ReloadableComputeShader compute;
-    protected ReloadableComputeShader updateScript;
+
+    protected ParticleShader spawnScript;
+    protected ParticleShader updateScript;
+
+//    protected ReloadableComputeShader compute;
+//    protected ReloadableComputeShader updateScript;
     protected ShaderStorageBufferObject particleBuffer;
-    protected ShaderStorageBufferObject deadBuffer;
+
+//    protected ShaderStorageBufferObject deadBuffer;
     public final Map<String, Consumer<Integer>> uniformSetters;
     public final List<Consumer<ShaderProgram>> uniformTasks;
 
@@ -46,22 +51,48 @@ public abstract class AbstractParticleSystem {
         uniformTasks = new ArrayList<>();
         life = 0;
 
-        if(spawnHandle == null)
-            spawnHandle = Gdx.files.internal("particles/compute/spawn.comp");
-        if(updateHandle == null)
-            updateHandle = Gdx.files.internal("particles/compute/noiseAttractor.comp");
+//        if(spawnHandle == null)
+//            spawnHandle = Gdx.files.internal("particles/compute/spawn.comp");
+            spawnHandle = Gdx.files.internal("particles/compute/framework.comp");
+//        if(updateHandle == null)
+//            updateHandle = Gdx.files.internal("particles/compute/noiseAttractor.comp");
+        updateHandle = Gdx.files.internal("particles/compute/framework.comp");
 
         particleBuffer = new ShaderStorageBufferObject(desiredAmount * PARTICLE_BYTES);
-        deadBuffer = new ShaderStorageBufferObject(desiredAmount);
+//        deadBuffer = new ShaderStorageBufferObject(desiredAmount);
 
         ParticleManager.instance().AddSystem(this);
 
         macroParams.put("p_BindingPoint", String.valueOf(bufferId));
 
-        compute = new ReloadableComputeShader("Particle::Spawn script", spawnHandle, macroParams);
-        updateScript = new ReloadableComputeShader("ParticleManager::Update script", updateHandle, macroParams);
+//        compute = new ReloadableComputeShader("Particle::Spawn script", spawnHandle, macroParams);
+//        updateScript = new ReloadableComputeShader("ParticleManager::Update script", updateHandle, macroParams);
 
+        spawnScript = new ParticleShader("Particle::Spawn script", spawnHandle, macroParams);
+        updateScript = new ParticleShader("Particle::Update script", updateHandle, macroParams);
+
+        AddBlock(Json.From(Gdx.files.internal("metadata/shaders/lifecycle.json").readString(), ParticleBlock.class));
+        AddBlock(Json.From(Gdx.files.internal("metadata/shaders/triangleVectorField.json").readString(), ParticleBlock.class));
+        AddBlock(Json.From(Gdx.files.internal("metadata/shaders/followColourCurve.json").readString(), ParticleBlock.class));
+        AddBlock(Json.From(Gdx.files.internal("metadata/shaders/followVelocity.json").readString(), ParticleBlock.class));
+
+        AddBlock(Json.From(Gdx.files.internal("metadata/shaders/initialState.json").readString(), ParticleBlock.class));
+        AddBlock(Json.From(Gdx.files.internal("metadata/shaders/lineSpawn.json").readString(), ParticleBlock.class));
+
+        spawnScript.ReloadImmediate();
+        updateScript.ReloadImmediate();
         BindBuffer();
+    }
+
+    public void AddBlock(ParticleBlock block) {
+        AddBlock(block, block.type);
+    }
+
+    public void AddBlock(ParticleBlock block, ParticleBlock.Type typeOverride) {
+        switch(typeOverride) {
+            case Spawn: spawnScript.AddBlock(block); break;
+            case Update: updateScript.AddBlock(block); break;
+        }
     }
 
     public void SetAmount(float amt) {
@@ -71,13 +102,13 @@ public abstract class AbstractParticleSystem {
     public void SetAmount(int amt) {
         particleBuffer.Unbind();
         particleBuffer.dispose();
-        deadBuffer.Unbind();
-        deadBuffer.dispose();
+//        deadBuffer.Unbind();
+//        deadBuffer.dispose();
 
         desiredAmount = amt;
 
         particleBuffer = new ShaderStorageBufferObject(desiredAmount * PARTICLE_BYTES);
-        deadBuffer = new ShaderStorageBufferObject(desiredAmount);
+//        deadBuffer = new ShaderStorageBufferObject(desiredAmount);
 
         BindBuffer();
     }
@@ -91,26 +122,27 @@ public abstract class AbstractParticleSystem {
     }
 
     public void Spawn(int offset, int amount) {
-        compute.Program()
-                .Bind();
-        compute.Program().SetUniform("u_startId", loc -> Gdx.gl.glUniform1i(loc, offset));
-        compute.Program().SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
-        compute.Program().SetUniform("u_rngBaseSeed", loc -> Gdx.gl.glUniform1i(loc, new Random().nextInt()));
-        compute.Program().SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
-        uniformSetters.forEach(compute.Program()::SetUniform);
+
+        ComputeShader program = spawnScript.Program();
+
+        program.Bind();
+        program.SetUniform("u_startId", loc -> Gdx.gl.glUniform1i(loc, offset));
+        program.SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
+        program.SetUniform("u_rngBaseSeed", loc -> Gdx.gl.glUniform1i(loc, new Random().nextInt()));
+        program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
+        uniformSetters.forEach(program::SetUniform);
 //        BindBuffer();
 //        BindBuffers(compute.Program());
-
-
-        compute.Program().Dispatch((int) Math.ceil(amount / 256f));
-        compute.Program()
-                .Unbind();
+        program.Dispatch((int) Math.ceil(amount / 256f));
+        program.Unbind();
     }
 
     public void BindBuffer() {
         BindBuffer(bufferId);
     }
     public void BindBuffer(int location) {
+        spawnScript.SetParticleBuffer(location, particleBuffer);
+        updateScript.SetParticleBuffer(location, particleBuffer);
         particleBuffer.Bind(location);
     }
 
@@ -135,7 +167,8 @@ public abstract class AbstractParticleSystem {
         program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
         uniformSetters.forEach(program::SetUniform);
 
-        program.Dispatch((int) Math.ceil(desiredAmount / 256f));
+        int ceil = (int) Math.ceil(desiredAmount / 256f);
+        program.Dispatch(ceil);
         program.Unbind();
         ProfilerHost.End("Particle buffer update");
 
@@ -155,12 +188,19 @@ public abstract class AbstractParticleSystem {
     public void Finish() {
         if(onFinish != null)
             onFinish.run();
-        compute.Shutdown();
+        if(spawnScript != null)
+            spawnScript.Shutdown();
+        if(updateScript != null)
+            updateScript.Shutdown();
+
+        spawnScript = null;
+        updateScript = null;
+
         ParticleManager.instance().RemoveSystem(this);
     }
 
     public boolean IsFinished() {
-        return compute == null;
+        return spawnScript == null;
     }
 
     public void Bind(String uniform, GLColourCurve curve) {

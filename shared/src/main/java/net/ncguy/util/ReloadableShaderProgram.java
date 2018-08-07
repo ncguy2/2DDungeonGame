@@ -30,8 +30,13 @@ public class ReloadableShaderProgram extends ReloadableShader<ShaderProgram> {
     }
 
     @Override
+    public ShaderProgram Create() {
+        return new ShaderProgram(ShaderPreprocessor.ReadShader(vertexShader, macroParams), ShaderPreprocessor.ReadShader(fragmentShader, macroParams));
+    }
+
+    @Override
     public void ReloadImmediate() {
-        ShaderProgram program = new ShaderProgram(ShaderPreprocessor.ReadShader(vertexShader, macroParams), ShaderPreprocessor.ReadShader(fragmentShader, macroParams));
+        ShaderProgram program = Create();
         System.out.println(program.getLog());
         if(program.isCompiled()) {
             if(this.program != null)

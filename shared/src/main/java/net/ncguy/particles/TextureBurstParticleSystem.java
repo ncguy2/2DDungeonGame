@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import net.ncguy.shaders.ComputeShader;
 
 import java.util.Random;
 
@@ -23,36 +24,35 @@ public class TextureBurstParticleSystem extends AbstractParticleSystem {
 
     @Override
     public void Spawn(int offset, int amount) {
-        compute.Program()
-                .Bind();
-        compute.Program().SetUniform("u_startId", loc -> Gdx.gl.glUniform1i(loc, offset));
-        compute.Program().SetUniform("u_workload", loc -> Gdx.gl.glUniform1i(loc, 1));
-        compute.Program().SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
-        compute.Program().SetUniform("u_rngBaseSeed", loc -> Gdx.gl.glUniform1i(loc, new Random().nextInt()));
-        compute.Program().SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
-        compute.Program().SetUniform("u_sampleColour", loc -> {
+        ComputeShader program = spawnScript.Program();
+        program.Bind();
+        program.SetUniform("u_startId", loc -> Gdx.gl.glUniform1i(loc, offset));
+        program.SetUniform("u_workload", loc -> Gdx.gl.glUniform1i(loc, 1));
+        program.SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
+        program.SetUniform("u_rngBaseSeed", loc -> Gdx.gl.glUniform1i(loc, new Random().nextInt()));
+        program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
+        program.SetUniform("u_sampleColour", loc -> {
             if(colourTexture != null) {
                 colourTexture.bind(4);
                 Gdx.gl.glUniform1i(loc, 4);
             }
         });
-        compute.Program().SetUniform("u_sampleMask", loc -> {
+        program.SetUniform("u_sampleMask", loc -> {
             if(maskTexture != null) {
                 maskTexture.bind(5);
                 Gdx.gl.glUniform1i(loc, 5);
             }
         });
-        compute.Program().SetUniform("u_sampleChannel", loc -> Gdx.gl.glUniform1i(loc, maskChannel));
-        compute.Program().SetUniform("u_sampleSize", loc -> Gdx.gl.glUniform2f(loc, size.x, size.y));
-        uniformSetters.forEach(compute.Program()::SetUniform);
+        program.SetUniform("u_sampleChannel", loc -> Gdx.gl.glUniform1i(loc, maskChannel));
+        program.SetUniform("u_sampleSize", loc -> Gdx.gl.glUniform2f(loc, size.x, size.y));
+        uniformSetters.forEach(program::SetUniform);
 
         Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
 
 //        BindBuffer();
 //        BindBuffers(compute.Program());
-        compute.Program().Dispatch((int) (size.x / 16f), (int) (size.y / 16f));
-        compute.Program()
-                .Unbind();
+        program.Dispatch((int) (size.x / 16f), (int) (size.y / 16f));
+        program.Unbind();
     }
 
     @Override

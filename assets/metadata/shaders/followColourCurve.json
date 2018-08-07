@@ -1,0 +1,9 @@
+{
+  "name": "Follow Colour Curve",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [],
+  "fragment": [
+    "datum.Colour = Sample(u_curve, 10.0 - datum.Life);"
+  ]
+}

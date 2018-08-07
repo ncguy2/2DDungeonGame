@@ -80,11 +80,13 @@ public class ComputeShader implements Disposable {
     }
 
     public void Compile() {
-        ProfilerHost.Start("ComputeShader::Compile [" + scriptHandle.nameWithoutExtension() + "]");
         ProfilerHost.Start("Preamble");
         script = ShaderPreprocessor.ReadShader(scriptHandle, macroParams);
         ProfilerHost.End("Preamble");
+        Compile(script);
+    }
 
+    public void Compile(String script) {
         ProfilerHost.Start("Compilation");
         IntBuffer outBuffer = BufferUtils.newIntBuffer(8);
         int cs = Gdx.gl30.glCreateShader(GL43.GL_COMPUTE_SHADER);
@@ -121,8 +123,6 @@ public class ComputeShader implements Disposable {
         ProfilerHost.Start("Cleanup");
         Gdx.gl.glDeleteShader(cs);
         ProfilerHost.End("Cleanup");
-        ProfilerHost.End("ComputeShader::Compile");
-
     }
 
     public void Recompile() {

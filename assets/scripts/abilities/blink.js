@@ -37,11 +37,14 @@ function OnEnabled() {
         sys.AddUniform("u_spawnPoint", function(loc) {
             Gdx.gl.glUniform2f(loc, origin.x, origin.y);
         });
-        sys.AddUniform("attractionPoint", function(loc) {
+        sys.AddUniform("u_initialScale", function(loc) {
+            Gdx.gl.glUniform2f(loc, 1, 1);
+        });
+        sys.AddUniform("u_attractionPoint", function(loc) {
             Gdx.gl.glUniform2f(loc, offsetPoint.x, offsetPoint.y);
         });
         sys.AddUniform("u_simSpeed", function(loc) {
-            Gdx.gl.glUniform1f(loc, 5);
+            Gdx.gl.glUniform1f(loc, 10);
         });
         sys.AddUniform("u_devianceRadius", function (loc) {
             Gdx.gl.glUniform1f(loc, 32);
