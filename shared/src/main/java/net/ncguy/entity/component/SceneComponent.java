@@ -161,10 +161,26 @@ public class SceneComponent extends EntityComponent {
     }
 
     public EntityComponent GetChildByName(String name) {
-        return GetComponents().stream()
+        return GetChildByName(name, false);
+    }
+    public EntityComponent GetChildByName(String name, boolean searchDescendants) {
+        Set<EntityComponent> components = GetComponents();
+        EntityComponent comp = components.stream()
                 .filter(c -> c.name.equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
+
+        if(comp != null || !searchDescendants)
+            return comp;
+
+        for (EntityComponent component : components) {
+            if(component instanceof SceneComponent) {
+                EntityComponent child = ((SceneComponent) component).GetChildByName(name, searchDescendants);
+                if(child != null)
+                    return child;
+            }
+        }
+        return null;
     }
 
     @Override

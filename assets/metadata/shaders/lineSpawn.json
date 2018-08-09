@@ -7,8 +7,8 @@
     "float u_devianceRadius = 32"
   ],
   "fragment": [
-    "float angle = f_fastrand();",
-    "float dist = f_fastrand() * u_devianceRadius;",
+    "float angle = Random();",
+    "float dist = Random() * u_devianceRadius;",
     "angle = radians(angle * 360);",
     "vec2 deviance = normalize(vec2(cos(angle), sin(angle))) * dist;",
     "datum.Position = mix(u_spawnPoint, u_attractionPoint, f_fastrand()) + deviance;",

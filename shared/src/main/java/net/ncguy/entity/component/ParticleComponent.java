@@ -11,6 +11,7 @@ import net.ncguy.util.curve.GLColourCurve;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@Deprecated
 public class ParticleComponent extends SceneComponent {
 
     @EntityProperty(Type = Float.class, Description = "Seconds this particle system should llive for", Category = "Particle", Name = "Duration")

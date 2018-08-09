@@ -1,0 +1,18 @@
+{
+  "name": "Point Attractor",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [
+    "vec2 u_attractionPoint"
+  ],
+  "fragment": [
+    "vec2 dir = u_attractionPoint - datum.Position;",
+    "float dst = distance(u_attractionPoint, datum.Position);",
+    "dir = normalize(dir);",
+    "float m = 1.0 / (dst * dst);",
+    "m *= 100;",
+    "m = clamp(m, 10, 100);",
+    "dir *= m;",
+    "datum.Velocity += dir;"
+  ]
+}

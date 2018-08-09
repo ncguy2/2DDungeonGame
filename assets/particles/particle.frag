@@ -16,9 +16,14 @@ void main() {
     if(datum.Life <= 0)
         discard;
 
-    vec4 col = texture(u_texture, TexCoords) * datum.Colour;
+    vec4 tex = texture(u_texture, TexCoords);
 
-    col.a = col.a * smoothstep(0.0, 0.5, datum.Life / 10.0);
+    // TODO add condition for monochromatic textures
+    tex.a = tex.r;
+
+    vec4 col = tex * datum.Colour;
+
+    col.a = col.a * smoothstep(0.0, 0.5, datum.Life / datum.MaxLife);
 
     if(col.a <= u_alphaCutoff)
         discard;

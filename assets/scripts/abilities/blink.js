@@ -47,7 +47,7 @@ function OnEnabled() {
             Gdx.gl.glUniform1f(loc, 10);
         });
         sys.AddUniform("u_devianceRadius", function (loc) {
-            Gdx.gl.glUniform1f(loc, 32);
+            Gdx.gl.glUniform1f(loc, 16);
         });
     };
     this.AddComponent(trail);

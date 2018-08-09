@@ -1,7 +1,7 @@
 struct ParticleData {
     vec2 Position;
     float Life;
-    uint Type;
+    float MaxLife;
     vec4 Colour;
     vec2 Velocity;
     vec2 Scale;

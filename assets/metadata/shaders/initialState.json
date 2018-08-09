@@ -10,7 +10,7 @@
   "fragment": [
     "datum.Colour = u_initialColour;",
     "datum.Life = u_initialLife;",
-    "datum.Type = 0;",
+    "datum.MaxLife = u_initialLife;",
     "datum.Scale = u_initialScale.xy;"
   ]
 }

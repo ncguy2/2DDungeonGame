@@ -1,0 +1,17 @@
+{
+  "name": "Circle boundary spawn",
+  "type": "Spawn",
+  "datumKey": "datum",
+  "uniforms": [
+    "float u_devianceRadius = 32"
+  ],
+  "fragment": [
+    "float angle = Random();",
+    "float dist = u_devianceRadius;",
+    "angle = radians(angle * 360);",
+    "datum.Position = normalize(vec2(cos(angle), sin(angle))) * dist;",
+    "datum.Position += u_spawnPoint;",
+    "datum.Velocity = vec2(0.0);",
+    "datum.Scale = vec2(4.0);"
+  ]
+}

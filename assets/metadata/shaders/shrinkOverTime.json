@@ -1,0 +1,12 @@
+{
+  "name": "Shrink Over Time",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [
+    "vec2 u_baseScale = vec2(8.0)"
+  ],
+  "fragment": [
+    "float scl = datum.Life / datum.MaxLife;",
+    "datum.Scale = u_baseScale * scl;"
+  ]
+}

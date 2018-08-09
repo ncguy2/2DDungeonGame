@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.IndexData;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.VertexData;
+import net.ncguy.profile.ProfilerHost;
 
 import java.nio.ShortBuffer;
 
@@ -64,30 +65,52 @@ public class InstancedMesh extends Mesh {
     @Override
     public void render(ShaderProgram shader, int primitiveType, int offset, int count, boolean autoBind) {
         if (count == 0) return;
+        ProfilerHost.Start("InstancedMesh::render");
 
-        if (autoBind) bind(shader);
+        if (autoBind) {
+            ProfilerHost.Start("Autobind shader");
+            bind(shader);
+            ProfilerHost.End("Autobind shader");
+        }
 
         if (bIsVertexArray) {
+            ProfilerHost.Start("Vertex Array");
             if (getNumIndices() > 0) {
+                ProfilerHost.Start("Draw elements");
                 ShortBuffer buffer = getIndicesBuffer();
                 int oldPosition = buffer.position();
                 int oldLimit = buffer.limit();
                 buffer.position(offset);
                 buffer.limit(offset + count);
+                ProfilerHost.Start("Draw");
                 Gdx.gl20.glDrawElements(primitiveType, count, GL20.GL_UNSIGNED_SHORT, buffer);
+                ProfilerHost.End("Draw");
                 buffer.position(oldPosition);
                 buffer.limit(oldLimit);
+                ProfilerHost.End("Draw elements");
             } else {
+                ProfilerHost.Start("Draw arrays");
                 Gdx.gl20.glDrawArrays(primitiveType, offset, count);
+                ProfilerHost.End("Draw arrays");
             }
+            ProfilerHost.End("Vertex Array");
         } else {
             if (getNumIndices() > 0) {
+                ProfilerHost.Start("Draw elements instanced");
                 Gdx.gl30.glDrawElementsInstanced(primitiveType, count, GL20.GL_UNSIGNED_SHORT, offset * 2, instanceCount);
+                ProfilerHost.End("Draw elements instanced");
             } else {
+                ProfilerHost.Start("Draw arrays instanced");
                 Gdx.gl30.glDrawArraysInstanced(primitiveType, offset, count, instanceCount);
+                ProfilerHost.End("Draw arrays instanced");
             }
         }
 
-        if (autoBind) unbind(shader);
+        if (autoBind) {
+            ProfilerHost.Start("Autobind shader - unbind");
+            unbind(shader);
+            ProfilerHost.End("Autobind shader - unbind");
+        }
+        ProfilerHost.End("InstancedMesh::render");
     }
 }

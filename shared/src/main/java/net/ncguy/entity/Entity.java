@@ -134,6 +134,15 @@ public class Entity implements IReplicationConfigurable {
         return true;
     }
 
+    public EntityComponent GetComponent(String name, boolean searchDescendants) {
+        return rootComponent.GetChildByName(name, searchDescendants);
+    }
+
+    public <T extends EntityComponent> T GetComponent(String name, Class<T> type, boolean searchDescendants) {
+        List<T> cs = GetComponents(type, searchDescendants);
+        return cs.stream().filter(c -> c.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
     public <T extends EntityComponent> T GetComponent(Class<T> type, boolean searchDescendants) {
         if(rootComponent == null)
             return null;

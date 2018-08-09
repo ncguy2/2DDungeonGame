@@ -1,12 +1,7 @@
 {
   "name": "Default",
   "type": "Temporal",
-  "spawnHandle": {
-    "valid": false
-  },
-  "updateHandle": {
-    "valid": false
-  },
+  "blocks": [],
   "curve": {
     "items": [
       {

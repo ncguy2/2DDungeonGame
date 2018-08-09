@@ -3,13 +3,18 @@
 #define M_TAU (M_PI * 2)
 #define MAX_PARTICLES 5000
 
-layout (local_size_x = 256) in;
+layout (local_size_x = 16) in;
 
 #pragma include("includes/particle.glsl")
 #pragma include("includes/colourCurve.glsl")
 
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+highp float rand(vec2 co) {
+    highp float a = 12.9898;
+    highp float b = 78.233;
+    highp float c = 43758.5453;
+    highp float dt= dot(co.xy ,vec2(a,b));
+    highp float sn= mod(dt,3.14);
+    return fract(sin(sn) * c);
 }
 
 uniform int u_rngBaseSeed = 1;
@@ -19,20 +24,31 @@ int fastrand() {
     return (rngSeed >> 16) & 0x7FFF;
 }
 
-const float factor = 1.0 / 1024.0;
+const float scalar = 768.0;
+const float factor = 1.0 / scalar;
 float f_fastrand() {
     int r = fastrand();
-    return mod(r, 1024) * factor;
+    return mod(r, scalar) * factor;
 }
 
 uniform float gTime;
 uniform float iTime;
 uniform float u_delta;
 uniform int u_startId = 0;
+uniform int imaxParticleCount = 0;
 uniform vec2 u_spawnPoint;
 uniform float u_simSpeed = 1;
 
+int particleId;
 float delta;
+
+highp float Random() {
+    vec2 co;
+    co.x = float(particleId) / float(imaxParticleCount);
+    co.y = f_fastrand();
+    return rand(co);
+}
+
 
 #pragma include("includes/noise.glsl")
 
@@ -45,13 +61,15 @@ void main() {
                         gl_GlobalInvocationID.x;
 
 
-    int particleId = abs(int(invocationIdx));
+    particleId = abs(int(invocationIdx));
     particleId += u_startId;
-    rngSeed += particleId;
-    ParticleData datum = Data[particleId];
+
+    if(particleId > imaxParticleCount)
+        return;
 
     delta = u_delta * u_simSpeed;
-
+    rngSeed += particleId;
+    ParticleData datum = Data[particleId];
 
 
     #pragma inject("invocations")

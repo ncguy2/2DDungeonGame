@@ -83,7 +83,7 @@ public class ParticleProfileComponent extends SceneComponent {
     @Override
     public void _OnRemoveFromComponent() {
         if(particleSystem != null) {
-            particleSystem.Finish();
+            particleSystem.BeginFinish();
             particleSystem = null;
         }
         super._OnRemoveFromComponent();

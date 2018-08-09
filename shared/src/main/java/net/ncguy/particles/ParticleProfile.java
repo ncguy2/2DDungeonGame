@@ -9,13 +9,22 @@ public class ParticleProfile {
     public String name;
 
     public AbstractParticleSystem.SystemType type;
-    public FileHandle spawnHandle;
-    public FileHandle updateHandle;
+
+    public String[] blocks;
+
     public GLColourCurve curve;
     public float duration;
     public int particleCount;
 
+    public AbstractParticleSystem.LoopingBehaviour loopingBehaviour = AbstractParticleSystem.LoopingBehaviour.None;
+    public int loopingAmount = 1;
+
     // Temporal only
     public float spawnOverTime;
+
+    @Deprecated
+    public FileHandle spawnHandle;
+    @Deprecated
+    public FileHandle updateHandle;
 
 }

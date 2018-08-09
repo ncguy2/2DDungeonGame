@@ -1,0 +1,13 @@
+{
+  "name": "Invert colour",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [
+    "bool u_invertAlpha = false"
+  ],
+  "fragment": [
+    "datum.Colour.rgb = vec3(1.0) - datum.Colour.rgb;",
+    "if(u_invertAlpha) ",
+    "\tdatum.Colour.a = 1.0 - datum.Colour.a;"
+  ]
+}

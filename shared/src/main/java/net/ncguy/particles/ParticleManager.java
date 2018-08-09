@@ -9,8 +9,10 @@ import net.ncguy.script.ScriptHost;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @SuppressWarnings("WeakerAccess")
 public class ParticleManager {
@@ -23,30 +25,48 @@ public class ParticleManager {
         return instance;
     }
 
+    protected List<ParticleBlock> blockRegistry;
+
     private ParticleManager() {
         ScriptHost.AddGlobalBinding("ParticleManager", this);
+        blockRegistry = new ArrayList<>();
         systems = new ArrayList<>();
         Init();
         RegisterDefaultProfiles();
+        RegisterDefaultParticleBlocks();
+    }
+
+    protected void RegisterDefaultParticleBlocks() {
+        String path = "metadata/shaders/";
+        GetDefaults(path, s -> s.endsWith(".json")).map(s -> Json.From(s, ParticleBlock.class)).forEach(this::RegisterParticleBlock);
+    }
+
+    protected void RegisterParticleBlock(ParticleBlock block) {
+        blockRegistry.add(block);
+    }
+
+    public Optional<ParticleBlock> GetParticleBlock(String name) {
+        return blockRegistry.stream().filter(e -> e.name.equalsIgnoreCase(name)).findFirst();
     }
 
     protected Map<String, ParticleProfile> profiles;
 
     protected void RegisterDefaultProfiles() {
 
-
         String path = "metadata/particles/";
-        FileHandle dir = Gdx.files.internal(path);
-        String s = dir.readString();
+        GetDefaults(path, s -> s.endsWith(".json")).map(s -> Json.From(s, ParticleProfile.class)).forEach(this::RegisterProfile);
 
-        String[] fileNames = s.split("\n");
-        List<FileHandle> handles = new ArrayList<>();
-        for (String fileName : fileNames) {
-            if (fileName.endsWith(".json"))
-                handles.add(Gdx.files.internal(path + "/" + fileName));
-        }
-
-        handles.stream().map(FileHandle::readString).map(str -> Json.From(str, ParticleProfile.class)).forEach(this::RegisterProfile);
+//        FileHandle dir = Gdx.files.internal(path);
+//        String s = dir.readString();
+//
+//        String[] fileNames = s.split("\n");
+//        List<FileHandle> handles = new ArrayList<>();
+//        for (String fileName : fileNames) {
+//            if (fileName.endsWith(".json"))
+//                handles.add(Gdx.files.internal(path + "/" + fileName));
+//        }
+//
+//        handles.stream().map(FileHandle::readString).map(str -> Json.From(str, ParticleProfile.class)).forEach(this::RegisterProfile);
 
 //        RegisterProfile(Json.From(Gdx.files.internal("metadata/particles/default.json").readString(), ParticleProfile.class));
 //        RegisterProfile(Json.From(Gdx.files.internal("metadata/particles/blink.json").readString(), ParticleProfile.class));
@@ -66,6 +86,20 @@ public class ParticleManager {
 //        System.out.println(to);
     }
 
+    protected Stream<String> GetDefaults(String root, Predicate<String> fileFilter) {
+        FileHandle dir = Gdx.files.internal(root);
+        String s = dir.readString();
+
+        String[] fileNames = s.split("\n");
+        List<FileHandle> handles = new ArrayList<>();
+        for (String fileName : fileNames) {
+            if (fileFilter.test(fileName))
+                handles.add(Gdx.files.internal(root + "/" + fileName));
+        }
+
+        return handles.stream().map(FileHandle::readString);
+    }
+
     public void RegisterProfile(ParticleProfile profile) {
         profiles.put(profile.name, profile);
     }
@@ -78,15 +112,23 @@ public class ParticleManager {
         return GetProfile(name).flatMap(this::BuildSystem);
     }
     public Optional<AbstractParticleSystem> BuildSystem(ParticleProfile profile) {
+        return BuildSystemImpl(profile).map(p -> {
+            p.loopingBehaviour = profile.loopingBehaviour;
+            p.loopingAmount = profile.loopingAmount;
+            return p;
+        });
+    }
+
+    private Optional<AbstractParticleSystem> BuildSystemImpl(ParticleProfile profile) {
         switch(profile.type) {
-            case Burst: return Optional.of(new BurstParticleSystem(profile.particleCount, profile.spawnHandle, profile.updateHandle, profile.duration));
-            case Temporal: return Optional.of(new TemporalParticleSystem(profile.particleCount, profile.spawnOverTime, profile.spawnHandle, profile.updateHandle, profile.duration));
+            case Burst: return Optional.of(new BurstParticleSystem(profile.particleCount, profile.duration, profile.blocks));
+            case Temporal: return Optional.of(new TemporalParticleSystem(profile.particleCount, profile.spawnOverTime, profile.duration, profile.blocks));
             case TextureBurst: return Optional.of(TextureBurstParticleSystem.Build(null, null, 0, new Vector2(1, 1), profile));
         }
         return Optional.empty();
     }
 
-//    public static final int ParticleBufferBytes = 134_217_728; // 128MB
+    //    public static final int ParticleBufferBytes = 134_217_728; // 128MB
 //    public static final int DeadBufferBytes = 16_384; // 16KB
 //
 //    public static final int maxEstimatedParticles = 2982616;

@@ -1,7 +1,6 @@
 package net.ncguy.particles;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
@@ -14,16 +13,12 @@ public class TextureBurstParticleSystem extends AbstractParticleSystem {
     public Vector2 size;
     boolean hasSpawned = false;
 
-    public TextureBurstParticleSystem(int desiredAmount, float duration) {
-        super(desiredAmount, duration);
-    }
-
-    public TextureBurstParticleSystem(int desiredAmount, FileHandle spawnHandle, FileHandle updateHandle, float duration) {
-        super(desiredAmount, spawnHandle, updateHandle, duration);
+    public TextureBurstParticleSystem(int desiredAmount, float duration, String... blockNames) {
+        super(desiredAmount, duration, blockNames);
     }
 
     @Override
-    public void Spawn(int offset, int amount) {
+    public int Spawn(int offset, int amount) {
         ComputeShader program = spawnScript.Program();
         program.Bind();
         program.SetUniform("u_startId", loc -> Gdx.gl.glUniform1i(loc, offset));
@@ -49,10 +44,10 @@ public class TextureBurstParticleSystem extends AbstractParticleSystem {
 
         Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0);
 
-//        BindBuffer();
-//        BindBuffers(compute.Program());
-        program.Dispatch((int) (size.x / 16f), (int) (size.y / 16f));
+        int amtSpawned = round(amount, 256);
+        program.Dispatch(amtSpawned);
         program.Unbind();
+        return amtSpawned;
     }
 
     @Override
@@ -76,7 +71,7 @@ public class TextureBurstParticleSystem extends AbstractParticleSystem {
 
     public static TextureBurstParticleSystem Build(Texture colourTexture, Texture maskTexture, int maskChannel, Vector2 size, ParticleProfile profile) {
         int amt = Math.round(size.x * size.y);
-        TextureBurstParticleSystem sys = new TextureBurstParticleSystem(amt, profile.spawnHandle, profile.updateHandle, profile.duration);
+        TextureBurstParticleSystem sys = new TextureBurstParticleSystem(amt, profile.duration, profile.blocks);
         sys.size = size;
         sys.colourTexture = colourTexture;
         sys.maskTexture = maskTexture;
