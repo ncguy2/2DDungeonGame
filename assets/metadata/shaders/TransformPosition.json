@@ -1,0 +1,9 @@
+{
+  "name": "Transform Position",
+  "type": "Spawn",
+  "datumKey": "datum",
+  "uniforms": [],
+  "fragment": [
+    "datum.Position = (u_spawnMatrix * vec3(datum.Position, 1.0)).xy;"
+  ]
+}

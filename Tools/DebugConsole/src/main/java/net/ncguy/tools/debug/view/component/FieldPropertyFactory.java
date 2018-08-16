@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class FieldPropertyFactory {
 
@@ -78,6 +79,7 @@ public class FieldPropertyFactory {
         Register(Color.class, ColourEditor.class);
         Register(Transform2D.class, TransformEditor.class);
         Register(Runnable.class, FunctionEditor.class);
+        Register(Supplier.class, ProgressEditor.class);
     }
     public static void Register(Class type, Class<? extends PropertyEditor<?>> editorClass) {
         editorClasses.put(type, editorClass);

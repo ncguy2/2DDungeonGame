@@ -2,6 +2,7 @@ package net.ncguy;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.kotcrab.vis.ui.VisUI;
@@ -9,6 +10,8 @@ import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.assets.AssetHandler;
 import net.ncguy.entity.component.MaterialSpriteComponent;
 import net.ncguy.input.ScrollInputHelper;
+import net.ncguy.lib.foundation.config.Config;
+import net.ncguy.lib.foundation.config.Configuration;
 import net.ncguy.material.ColourAttribute;
 import net.ncguy.material.Material;
 import net.ncguy.material.MaterialResolver;
@@ -22,6 +25,7 @@ import net.ncguy.world.ThreadedEngine;
 
 import java.lang.ref.Reference;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import static net.ncguy.script.ScriptUtils.tempPrimitives;
 
@@ -32,8 +36,13 @@ public class GameLauncher extends Game {
     boolean firstFrame = true;
     boolean secondFrame = true;
 
+    @Config(Name = "game.LaunchScreen", Type = LaunchScreen.class)
+    public LaunchScreen launchScreen = LaunchScreen.TestScreen2;
+
     @Override
     public void create() {
+
+        Configuration.Inject(this);
 
         System.out.println("First frame time measurement started");
         startTime = System.nanoTime();
@@ -81,7 +90,8 @@ public class GameLauncher extends Game {
 
 
         ProfilerHost.Start("Screen");
-        setScreen(new TestScreen2());
+        setScreen(launchScreen.Get());
+//        setScreen(new TestScreen2());
 //        setScreen(new MPTestScreen());
         ProfilerHost.End("Screen");
 
@@ -163,4 +173,22 @@ public class GameLauncher extends Game {
         super.dispose();
         Shaders.Dispose();
     }
+
+    public enum LaunchScreen {
+        ParticleTest(ParticleTestScreen::new),
+        TestScreen(TestScreen::new),
+        TestScreen2(TestScreen2::new),
+        MPTestScreen(MPTestScreen::new),
+        ;
+
+        private final Supplier<Screen> func;
+        LaunchScreen(Supplier<Screen> func) {
+            this.func = func;
+        }
+
+        public Screen Get() {
+            return func.get();
+        }
+    }
+
 }

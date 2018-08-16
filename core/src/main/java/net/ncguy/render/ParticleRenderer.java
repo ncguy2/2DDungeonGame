@@ -87,6 +87,8 @@ public class ParticleRenderer extends BaseRenderer {
                         ProfilerHost.End("Texture binding");
                     }
 
+                    Gdx.gl.glEnable(GL20.GL_BLEND);
+
                     sys.BindBuffer(0);
                     mesh.instanceCount = sys.desiredAmount;
                     ProfilerHost.Start("Mesh rendering");

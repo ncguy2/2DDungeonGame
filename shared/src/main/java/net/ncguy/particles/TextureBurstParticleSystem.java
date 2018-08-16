@@ -13,8 +13,8 @@ public class TextureBurstParticleSystem extends AbstractParticleSystem {
     public Vector2 size;
     boolean hasSpawned = false;
 
-    public TextureBurstParticleSystem(int desiredAmount, float duration, String... blockNames) {
-        super(desiredAmount, duration, blockNames);
+    public TextureBurstParticleSystem(ParticleProfile profile) {
+        super(profile);
     }
 
     @Override
@@ -69,9 +69,10 @@ public class TextureBurstParticleSystem extends AbstractParticleSystem {
     public Texture maskTexture;
     public int maskChannel;
 
+    @Deprecated
     public static TextureBurstParticleSystem Build(Texture colourTexture, Texture maskTexture, int maskChannel, Vector2 size, ParticleProfile profile) {
         int amt = Math.round(size.x * size.y);
-        TextureBurstParticleSystem sys = new TextureBurstParticleSystem(amt, profile.duration, profile.blocks);
+        TextureBurstParticleSystem sys = new TextureBurstParticleSystem(profile);
         sys.size = size;
         sys.colourTexture = colourTexture;
         sys.maskTexture = maskTexture;

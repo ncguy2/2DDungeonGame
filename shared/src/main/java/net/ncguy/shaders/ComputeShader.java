@@ -50,13 +50,17 @@ public class ComputeShader implements Disposable {
             return uniformLocationCache.get(uniform);
 
         int loc = Gdx.gl.glGetUniformLocation(programHandle, uniform);
-        uniformLocationCache.put(uniform, loc);
+        if(loc > -1)
+            uniformLocationCache.put(uniform, loc);
         return loc;
     }
 
     public void SetUniform(String uniform, Consumer<Integer> setter) {
         ProfilerHost.Start("ComputeShader::SetUniform [" + uniform + "]");
-        setter.accept(GetUniformLocation(uniform));
+        int loc = GetUniformLocation(uniform);
+        if(loc > -1)
+            setter.accept(loc);
+        else System.out.println("Could not get uniform location for " + uniform);
         ProfilerHost.End("ComputeShader::SetUniform");
     }
 

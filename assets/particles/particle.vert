@@ -18,8 +18,6 @@ void main() {
 
     datum = d;
 
-//    d.Scale = vec2(4.0);
-
     vec2 scl = (d.Scale * abs(normalize(d.Velocity))) + d.Scale;
 
     vec2 worldPos = a_position.xy * scl;

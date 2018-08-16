@@ -2,9 +2,11 @@
   "name": "Triangle Vector Field",
   "type": "Update",
   "datumKey": "datum",
-  "uniforms": [],
+  "uniforms": [
+    "float u_vectorFieldIntensity = 1;"
+  ],
   "fragment": [
-    "vec2 direction = GetDirection(datum.Position, u_noiseScale);",
+    "vec2 direction = GetDirection(datum.Position, u_noiseScale) * u_vectorFieldIntensity;",
     "datum.Velocity += direction;"
   ]
 }

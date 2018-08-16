@@ -2,7 +2,6 @@ package net.ncguy.particles;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.math.Vector2;
 import net.ncguy.lib.foundation.io.Json;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.script.ScriptHost;
@@ -112,20 +111,7 @@ public class ParticleManager {
         return GetProfile(name).flatMap(this::BuildSystem);
     }
     public Optional<AbstractParticleSystem> BuildSystem(ParticleProfile profile) {
-        return BuildSystemImpl(profile).map(p -> {
-            p.loopingBehaviour = profile.loopingBehaviour;
-            p.loopingAmount = profile.loopingAmount;
-            return p;
-        });
-    }
-
-    private Optional<AbstractParticleSystem> BuildSystemImpl(ParticleProfile profile) {
-        switch(profile.type) {
-            case Burst: return Optional.of(new BurstParticleSystem(profile.particleCount, profile.duration, profile.blocks));
-            case Temporal: return Optional.of(new TemporalParticleSystem(profile.particleCount, profile.spawnOverTime, profile.duration, profile.blocks));
-            case TextureBurst: return Optional.of(TextureBurstParticleSystem.Build(null, null, 0, new Vector2(1, 1), profile));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(profile.Create());
     }
 
     //    public static final int ParticleBufferBytes = 134_217_728; // 128MB

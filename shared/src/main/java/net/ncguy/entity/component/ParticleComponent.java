@@ -3,8 +3,6 @@ package net.ncguy.entity.component;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import net.ncguy.particles.AbstractParticleSystem;
-import net.ncguy.particles.BurstParticleSystem;
-import net.ncguy.particles.TemporalParticleSystem;
 import net.ncguy.util.DeferredCalls;
 import net.ncguy.util.curve.GLColourCurve;
 
@@ -74,10 +72,6 @@ public class ParticleComponent extends SceneComponent {
     }
 
     public AbstractParticleSystem BuildSystem() {
-        switch(systemType) {
-            case Burst: return new BurstParticleSystem(particleCount, duration);
-            case Temporal: return new TemporalParticleSystem(particleCount, spawnOverTime, duration);
-        }
         return null;
     }
 

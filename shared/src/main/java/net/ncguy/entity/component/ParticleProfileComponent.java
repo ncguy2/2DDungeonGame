@@ -9,11 +9,14 @@ import net.ncguy.util.DeferredCalls;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ParticleProfileComponent extends SceneComponent {
 
     @EntityProperty(Type = String.class, Description = "The system profile name", Category = "Particle", Name = "Profile name")
     public String systemName;
+    @EntityProperty(Type = Supplier.class, Description = "The system progress", Category = "Particle", Name = "System progress")
+    public Supplier<Float> progressSupplier;
 
     public transient ParticleProfile profile;
     public transient AbstractParticleSystem particleSystem;
@@ -56,6 +59,12 @@ public class ParticleProfileComponent extends SceneComponent {
             particleSystem = null;
         }
         particleSystem = BuildSystem();
+
+        if(particleSystem != null) {
+            particleSystem.spawnPointSupplier = transform::WorldTranslation;
+            particleSystem.spawnMatrixSupplier = transform::WorldTransform;
+            progressSupplier = particleSystem::GetLifePercent;
+        }
 
         if(onInit != null && particleSystem != null)
             onInit.accept(this, particleSystem);

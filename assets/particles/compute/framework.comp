@@ -37,18 +37,22 @@ uniform float u_delta;
 uniform int u_startId = 0;
 uniform int imaxParticleCount = 0;
 uniform vec2 u_spawnPoint;
+uniform mat3 u_spawnMatrix;
 uniform float u_simSpeed = 1;
 
 int particleId;
 float delta;
 
-highp float Random() {
+highp float SeededRandom(float seed) {
     vec2 co;
     co.x = float(particleId) / float(imaxParticleCount);
-    co.y = f_fastrand();
+    co.y = seed;
     return rand(co);
 }
 
+highp float Random() {
+    return SeededRandom(f_fastrand());
+}
 
 #pragma include("includes/noise.glsl")
 

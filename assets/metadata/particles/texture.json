@@ -1,20 +1,22 @@
 {
-  "name": "Hurt",
-  "type": "Temporal",
+  "name": "Texture Test",
+  "type": "TexturedTemporal",
   "blocks": [
     "Lifecycle",
     "Triangle Vector Field",
     "Follow Colour Curve",
     "Follow Velocity",
     "Initial State",
-    "Circle boundary spawn"
+    "Texture Spawn",
+    "Texture Colour",
+    "Transform Position"
   ],
   "curve": {
     "items": [
       {
         "item": [
           1.0,
-          0.0,
+          1.0,
           1.0,
           1.0
         ],
@@ -22,19 +24,25 @@
       },
       {
         "item": [
-          0.0,
-          0.0,
-          0.0,
+          1.0,
+          1.0,
+          1.0,
           0.0
         ],
-        "value": 3.0
+        "value": 10.0
       }
     ],
     "min": 0.0,
-    "max": 3.0
+    "max": 10.0
   },
+  "size": {
+    "x": 512,
+    "y": 512
+  },
+  "texturePath": "textures/swiss2.jpg",
+  "maskChannel": 0,
   "loopingBehaviour": "Forever",
-  "duration": 3.0,
-  "particleCount": 8192,
-  "spawnOverTime": 3.0
+  "duration": 10.0,
+  "particleCount": 100000,
+  "spawnOverTime": 10.0
 }

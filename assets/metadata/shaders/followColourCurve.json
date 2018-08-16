@@ -4,6 +4,6 @@
   "datumKey": "datum",
   "uniforms": [],
   "fragment": [
-    "datum.Colour = Sample(u_curve, 10.0 - datum.Life);"
+    "datum.Colour = datum.BaseColour * Sample(u_curve, datum.MaxLife - datum.Life);"
   ]
 }

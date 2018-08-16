@@ -4,8 +4,8 @@ public class BurstParticleSystem extends AbstractParticleSystem {
 
     boolean hasSpawned = false;
 
-    public BurstParticleSystem(int desiredAmount, float duration, String... blockNames) {
-        super(desiredAmount, duration, blockNames);
+    public BurstParticleSystem(ParticleProfile profile) {
+        super(profile);
     }
 
     @Override

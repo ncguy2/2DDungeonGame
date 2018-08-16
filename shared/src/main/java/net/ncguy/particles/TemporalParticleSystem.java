@@ -7,10 +7,15 @@ public class TemporalParticleSystem extends AbstractParticleSystem {
     float spawnOverTime;
     int amtSpawned = 0;
 
-    public TemporalParticleSystem(int particleCount, float spawnOverTime, float duration, String... blockNames) {
-        super(particleCount, duration, blockNames);
-        this.spawnOverTime = spawnOverTime;
+    public TemporalParticleSystem(ParticleProfile profile) {
+        super(profile);
+        this.spawnOverTime = profile.spawnOverTime;
     }
+
+//    public TemporalParticleSystem(int particleCount, float spawnOverTime, float duration, String... blockNames) {
+//        super(particleCount, duration, blockNames);
+//        this.spawnOverTime = spawnOverTime;
+//    }
 
     @Override
     public void Update(float delta) {

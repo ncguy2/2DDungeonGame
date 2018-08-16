@@ -1,0 +1,15 @@
+{
+  "name": "Texture spawn",
+  "type": "Spawn",
+  "datumKey": "datum",
+  "uniforms": [
+    "sampler2D u_spawnTexture",
+    "int u_sampleChannel",
+    "vec2 u_size"
+  ],
+  "fragment": [
+    "vec4 samp = texture(u_spawnTexture, datum.TexCoords);",
+    "datum.Position = (datum.TexCoords * u_size) - (u_size * 0.5);",
+    "datum.MaxLife = datum.Life = (u_initialLife * samp[u_sampleChannel]);"
+  ]
+}
