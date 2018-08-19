@@ -12,6 +12,7 @@ import net.ncguy.entity.component.MaterialSpriteComponent;
 import net.ncguy.input.ScrollInputHelper;
 import net.ncguy.lib.foundation.config.Config;
 import net.ncguy.lib.foundation.config.Configuration;
+import net.ncguy.lib.foundation.startup.Initialisation;
 import net.ncguy.material.ColourAttribute;
 import net.ncguy.material.Material;
 import net.ncguy.material.MaterialResolver;
@@ -42,12 +43,14 @@ public class GameLauncher extends Game {
     @Override
     public void create() {
 
+        ProfilerHost.SupportsGPUProfiling();
+
         Configuration.Inject(this);
 
         System.out.println("First frame time measurement started");
         startTime = System.nanoTime();
 
-        Initialization.Init();
+        Initialisation.Init();
 //        ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED = GPUProfiler.PROFILING_ENABLED = false;
 
         ProfilerHost.StartFrame();
@@ -140,17 +143,18 @@ public class GameLauncher extends Game {
 
         ProfilerHost.Clear();
 
-        GPUTaskProfile tp;
-        while((tp = GPUProfiler.GetFrameResults()) != null) {
-            ProfilerHost.Post(new TaskStats(tp));
-            GPUProfiler.Recycle(tp);
-        }
-
-        CPUTaskProfile cp;
-        while((cp = CPUProfiler.GetFrameResults()) != null) {
-            ProfilerHost.Post(new TaskStats(cp));
-            CPUProfiler.Recycle(cp);
-        }
+        // TODO reimplement properly
+//        GPUTaskProfile tp;
+//        while((tp = GPUProfiler.GetFrameResults()) != null) {
+//            ProfilerHost.Post(new TaskStats(tp));
+//            GPUProfiler.Recycle(tp);
+//        }
+//
+//        CPUTaskProfile cp;
+//        while((cp = CPUProfiler.GetFrameResults()) != null) {
+//            ProfilerHost.Post(new TaskStats(cp));
+//            CPUProfiler.Recycle(cp);
+//        }
 
         ProfilerHost.instance().NotifyListeners();
         ScrollInputHelper.instance().Update(delta);

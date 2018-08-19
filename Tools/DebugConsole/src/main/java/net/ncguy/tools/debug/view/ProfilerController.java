@@ -62,29 +62,24 @@ public class ProfilerController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        Runnable updateGlobalProfilerState = () -> ProfilerHost.PROFILER_ENABLED = CPUProfiler.PROFILING_ENABLED || GPUProfiler.PROFILING_ENABLED;
-
         useReflectionForLocationDiscovery.setSelected(TaskProfile.useReflectionForLocationDiscovery);
         useReflectionForLocationDiscovery.selectedProperty().addListener((observable, oldValue, newValue) -> TaskProfile.useReflectionForLocationDiscovery = newValue);
 
         captureOptions.getItems()
-                .addAll("CPU Profiling", "GPU Profiling");
+                .addAll("Profiling");
 
         captureOptions.getItemBooleanProperty(0)
-                .setValue(CPUProfiler.PROFILING_ENABLED);
-        captureOptions.getItemBooleanProperty(1)
-                .setValue(GPUProfiler.PROFILING_ENABLED);
+                .setValue(ProfilerHost.PROFILER_ENABLED);
 
         captureOptions.getItemBooleanProperty(0)
                 .addListener((observable, oldValue, newValue) -> {
-                    CPUProfiler.PROFILING_ENABLED = newValue;
-                    updateGlobalProfilerState.run();
+                    ProfilerHost.PROFILER_ENABLED = newValue;
                 });
-        captureOptions.getItemBooleanProperty(1)
-                .addListener((observable, oldValue, newValue) -> {
-                    GPUProfiler.PROFILING_ENABLED = newValue;
-                    updateGlobalProfilerState.run();
-                });
+//        captureOptions.getItemBooleanProperty(1)
+//                .addListener((observable, oldValue, newValue) -> {
+//                    GPUProfiler.PROFILING_ENABLED = newValue;
+//                    updateGlobalProfilerState.run();
+//                });
 
         selectedFrameId = new SimpleObjectProperty<>(-1);
         frameIdLabel.textProperty()
@@ -103,10 +98,10 @@ public class ProfilerController implements Initializable {
         colourCurve.Add(Color.web("#7D2C2C"), 16f);
 //        colourCurve.Add(Color.web("#71237A"), 16);
 
-        if (!CPUProfiler.PROFILING_ENABLED)
-            CPULabel.setText("CPU (Profiling disabled)");
-        if (!GPUProfiler.PROFILING_ENABLED)
-            GPULabel.setText("GPU (Profiling disabled)");
+//        if (!CPUProfiler.PROFILING_ENABLED)
+//            CPULabel.setText("CPU (Profiling disabled)");
+//        if (!GPUProfiler.PROFILING_ENABLED)
+//            GPULabel.setText("GPU (Profiling disabled)");
 
         Runnable bindScrollbars = () -> {
             Set<Node> nodes = cpuTree.lookupAll(".scroll-bar");

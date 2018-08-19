@@ -5,15 +5,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.google.gson.GsonBuilder;
 import net.ncguy.io.ColourTypeAdapter;
 import net.ncguy.io.FileHandleTypeAdapter;
-import net.ncguy.lib.foundation.io.Json;
+import net.ncguy.lib.foundation.startup.Initialisation;
+import net.ncguy.lib.foundation.startup.Startup;
 
-public class Initialization {
+@Startup
+public class SharedInitialization {
 
-    public static void Init() {
-        Json.WithBuilder(Initialization::Json);
-    }
-
-    static void Json(GsonBuilder b) {
+    @Startup(Initialisation.Target.Json)
+    public static void Json(GsonBuilder b) {
         b.registerTypeAdapter(FileHandle.class, new FileHandleTypeAdapter());
         b.registerTypeAdapter(Color.class, new ColourTypeAdapter());
     }

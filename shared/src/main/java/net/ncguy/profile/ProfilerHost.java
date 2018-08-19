@@ -14,6 +14,16 @@ import java.util.stream.Collectors;
 
 public class ProfilerHost {
 
+    protected static ThreadLocal<Boolean> supportsGpu = ThreadLocal.withInitial(() -> false);
+
+    public static void SupportsGPUProfiling() {
+        supportsGpu.set(true);
+    }
+
+    public static boolean ThreadSupportsGPU() {
+        return supportsGpu.get();
+    }
+
     private static ProfilerHost instance;
     public static boolean PROFILER_ENABLED = true;
     private static boolean profilerEnabled;
@@ -122,18 +132,23 @@ public class ProfilerHost {
         if (!profilerEnabled)
             return;
 
-        CPUProfiler.setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
-        GPUProfiler.setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
+        CPUProfiler.Get().setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
 
-        CPUProfiler.StartFrame();
-        GPUProfiler.StartFrame();
+        if(ThreadSupportsGPU())
+            GPUProfiler.Get().setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
+
+        CPUProfiler.Get().StartFrame();
+
+        if(ThreadSupportsGPU())
+            GPUProfiler.Get().StartFrame();
     }
 
     public static void Start(String name) {
         if (!profilerEnabled)
             return;
-        CPUProfiler.Start(name);
-        GPUProfiler.Start(name);
+        CPUProfiler.Get().Start(name);
+        if(ThreadSupportsGPU())
+            GPUProfiler.Get().Start(name);
     }
 
     public static void End(String name) {
@@ -143,15 +158,17 @@ public class ProfilerHost {
     public static void End() {
         if (!profilerEnabled)
             return;
-        CPUProfiler.End();
-        GPUProfiler.End();
+        CPUProfiler.Get().End();
+        if(ThreadSupportsGPU())
+            GPUProfiler.Get().End();
     }
 
     public static void EndFrame() {
         if (!profilerEnabled)
             return;
-        CPUProfiler.EndFrame();
-        GPUProfiler.EndFrame();
+        CPUProfiler.Get().EndFrame();
+        if(ThreadSupportsGPU())
+            GPUProfiler.Get().EndFrame();
     }
 
 }
