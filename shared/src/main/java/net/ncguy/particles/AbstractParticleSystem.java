@@ -72,15 +72,14 @@ public abstract class AbstractParticleSystem {
         loopingBehaviour = profile.loopingBehaviour;
         loopingAmount = profile.loopingAmount;
 
-        FileHandle spawnHandle = Gdx.files.internal("particles/compute/framework.comp");
-        FileHandle updateHandle = Gdx.files.internal("particles/compute/framework.comp");
+        FileHandle fileHandle = Gdx.files.internal("particles/compute/framework.comp");
 
         ParticleManager.instance().AddSystem(this);
 
         macroParams.put("p_BindingPoint", String.valueOf(bufferId));
 
-        spawnScript = new ParticleShader("Particle::Spawn script", spawnHandle, macroParams);
-        updateScript = new ParticleShader("Particle::Update script", updateHandle, macroParams);
+        spawnScript = new ParticleShader("Particle::Spawn script", fileHandle, macroParams);
+        updateScript = new ParticleShader("Particle::Update script", fileHandle, macroParams);
 
         for (String block : profile.blocks)
             ParticleManager.instance()

@@ -5,6 +5,5 @@ public class GLThread {
     public GLThread() {
 
 
-
     }
 }

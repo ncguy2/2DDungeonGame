@@ -60,7 +60,7 @@ public class ComputeShader implements Disposable {
         int loc = GetUniformLocation(uniform);
         if(loc > -1)
             setter.accept(loc);
-        else System.out.println("Could not get uniform location for " + uniform);
+//        else System.out.println("Could not get uniform location for " + uniform);
         ProfilerHost.End("ComputeShader::SetUniform");
     }
 

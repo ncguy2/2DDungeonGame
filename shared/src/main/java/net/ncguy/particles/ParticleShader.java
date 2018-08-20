@@ -1,5 +1,6 @@
 package net.ncguy.particles;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import net.ncguy.buffer.ShaderStorageBufferObject;
 import net.ncguy.shaders.ComputeShader;
@@ -17,12 +18,37 @@ public class ParticleShader extends ReloadableComputeShader {
 
     protected List<ParticleBlock> blocks;
 
+    public static Map<ParticleBlock.Type, ParticleShader> FromProfile(ParticleProfile profile, boolean register) {
+        HashMap<ParticleBlock.Type, ParticleShader> map = new HashMap<>();
+
+        FileHandle handle = Gdx.files.internal("particles/compute/framework.comp");
+        map.put(ParticleBlock.Type.Spawn, new ParticleShader(profile.name + ": Spawn", handle, new HashMap<>(), register));
+        map.put(ParticleBlock.Type.Update, new ParticleShader(profile.name + ": Update", handle, new HashMap<>(), register));
+
+        for (String block : profile.blocks)
+            ParticleManager.instance()
+                    .GetParticleBlock(block)
+                    .ifPresent(b -> {
+                        ParticleShader ps = map.get(b.type);
+                        if(ps != null)
+                            ps.AddBlock(b);
+                    });
+
+        if(register)
+            map.values().forEach(ParticleShader::ReloadImmediate);
+
+        return map;
+    }
+
     public ParticleShader(String name, FileHandle handle) {
         this(name, handle, new HashMap<>());
     }
 
     public ParticleShader(String name, FileHandle handle, Map<String, String> macroParams) {
-        super(name, handle, macroParams);
+        this(name, handle, macroParams, true);
+    }
+    public ParticleShader(String name, FileHandle handle, Map<String, String> macroParams, boolean register) {
+        super(name, handle, macroParams, register);
     }
 
     public void AddBlock(ParticleBlock block) {
@@ -124,6 +150,14 @@ public class ParticleShader extends ReloadableComputeShader {
                     .append("\n}\n");
         }
         return sb.toString();
+    }
+
+    public String GetScript() {
+        ShaderPreprocessor.SetBlock(new ShaderPreprocessor.ShaderInjectionBlock("uniforms", ParticleShader.this::GetUniforms));
+        ShaderPreprocessor.SetBlock(new ShaderPreprocessor.ShaderInjectionBlock("declarations", ParticleShader.this::GetDeclarations));
+        ShaderPreprocessor.SetBlock(new ShaderPreprocessor.ShaderInjectionBlock("invocations", ParticleShader.this::GetInvocations));
+        ShaderPreprocessor.SetBlock(new ShaderPreprocessor.ShaderInjectionBlock("definitions", ParticleShader.this::GetDefinitions));
+        return ShaderPreprocessor.ReadShader(handle, macroParams);
     }
 
     @Override

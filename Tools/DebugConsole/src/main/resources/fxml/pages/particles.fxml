@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TextArea?>
+<?import org.fxmisc.richtext.CodeArea?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="net.ncguy.tools.debug.view.ParticleController"
+            prefHeight="400.0" prefWidth="600.0">
+    <SplitPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" orientation="VERTICAL">
+        <AnchorPane>
+            <SplitPane AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                <AnchorPane>
+                    <ScrollPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" fitToWidth="true" fitToHeight="true">
+                        <Accordion fx:id="container" />
+                    </ScrollPane>
+                </AnchorPane>
+                <AnchorPane>
+                    <ListView fx:id="availableBlockList" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"/>
+                </AnchorPane>
+            </SplitPane>
+        </AnchorPane>
+        <AnchorPane>
+            <TabPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+                <Tab text="Spawn" closable="false">
+                    <CodeArea fx:id="spawnScriptDisplay" editable="false" />
+                </Tab>
+                <Tab text="Update" closable="false">
+                    <CodeArea fx:id="updateScriptDisplay" editable="false" />
+                </Tab>
+            </TabPane>
+        </AnchorPane>
+    </SplitPane>
+</AnchorPane>

@@ -26,8 +26,8 @@ public class RootController implements Initializable {
         AddItem("Abilities", "/fxml/pages/abilities.fxml");
         AddItem("Entities", "/fxml/pages/entities.fxml");
         AddItem("Shaders", "/fxml/pages/shaders.fxml");
-        AddItem("Profile", "/fxml/pages/profiler.fxml", true);
-
+        AddItem("Particles", "/fxml/pages/particles.fxml", false);
+        AddItem("Profiler", "/fxml/pages/profiler.fxml", true);
 
     }
 
@@ -55,6 +55,8 @@ public class RootController implements Initializable {
             return;
 
         Node node = item.GetNode();
+        if(node == null)
+            return;
         children.add(node);
         AnchorPane.setBottomAnchor(node, 0.0);
         AnchorPane.setTopAnchor(node, 0.0);

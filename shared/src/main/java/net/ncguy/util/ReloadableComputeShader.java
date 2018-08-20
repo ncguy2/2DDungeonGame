@@ -16,10 +16,14 @@ public class ReloadableComputeShader extends ReloadableShader<ComputeShader> {
     }
 
     public ReloadableComputeShader(String name, FileHandle handle, Map<String, String> macroParams) {
-        super(name);
+        this(name, handle, macroParams, true);
+    }
+    public ReloadableComputeShader(String name, FileHandle handle, Map<String, String> macroParams, boolean register) {
+        super(name, register);
         this.handle = handle;
         this.macroParams = macroParams;
-        program = Create();
+        if(register)
+            program = Create();
     }
 
     @Override
@@ -29,12 +33,15 @@ public class ReloadableComputeShader extends ReloadableShader<ComputeShader> {
 
     @Override
     public void ReloadImmediate() {
-        program.Recompile();
+        if(program != null)
+            program.Recompile();
     }
 
     @Override
     public String getLog() {
-        return program.GetLog();
+        if(program != null)
+            return program.GetLog();
+        return "No program";
     }
 
     @Override

@@ -157,6 +157,13 @@ public class ParticleManager {
         }
     }
 
+    public void Blocks(Consumer<ParticleBlock> task) {
+        blockRegistry.forEach(task);
+    }
+    public void Profiles(Consumer<ParticleProfile> task) {
+        profiles.values().forEach(task);
+    }
+
     public void Init() {
         profiles = new HashMap<>();
         takenBindingPoints = new ArrayList<>();

@@ -17,7 +17,6 @@ public class DebugViewer extends Application {
 
     public static void main(String[] args) {
 
-
         new Thread(() -> {
             RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
             System.out.println(runtimeMXBean.getName());
@@ -25,6 +24,7 @@ public class DebugViewer extends Application {
             new Scanner(System.in).next();
             Lwjgl3Launcher.main(args);
         }).start();
+
         launch(args);
     }
 

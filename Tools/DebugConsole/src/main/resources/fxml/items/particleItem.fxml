@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.*?>
+<TitledPane fx:id="pane"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="net.ncguy.tools.debug.items.ParticleItemController"
+            prefHeight="400.0" prefWidth="600.0">
+    <AnchorPane>
+        <ScrollPane AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0" fitToHeight="true" fitToWidth="true">
+            <VBox fx:id="blockContainer"/>
+        </ScrollPane>
+    </AnchorPane>
+</TitledPane>

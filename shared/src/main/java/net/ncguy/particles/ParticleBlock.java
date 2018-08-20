@@ -53,4 +53,8 @@ public class ParticleBlock {
         Update
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

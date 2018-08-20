@@ -15,8 +15,12 @@ public abstract class ReloadableShader<T> {
     public static List<WeakReference<ReloadableShader<?>>> shaders = new ArrayList<>();
 
     public ReloadableShader(String name) {
+        this(name, true);
+    }
+    public ReloadableShader(String name, boolean register) {
         ProfilerHost.Start("ReloadableShader::ReloadableShader [" + name + "]");
-        Register();
+        if(register)
+            Register();
         this.name = name;
         ProfilerHost.End("ReloadableShader::ReloadableShader [" + name + "]");
     }

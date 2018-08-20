@@ -1,12 +1,15 @@
 package net.ncguy.lwjgl3;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import net.ncguy.GameLauncher;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
+
 
 //        String script = String.join("\n", Files.readAllLines(new File("assets/scripts/abilities/blink.js").toPath()));
 //        ScriptHost.Invoke(null, script, ctx -> {

@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class FXMLItem {
     public String name;
@@ -37,8 +38,35 @@ public class FXMLItem {
         return null;
     }
 
+    public Optional<ItemInfo> Build() {
+        try {
+            return Optional.of(BuildImpl());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+    public ItemInfo BuildImpl() throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+//        Node node = loader.load(getClass().getResource("/fxml/items/shaderItem.fxml").openStream());
+        Node node = loader.load(getClass().getResource(fxmlPath).openStream());
+        Object ctrlr = loader.getController();
+        return new ItemInfo(node, ctrlr);
+    }
+
     @Override
     public String toString() {
         return name;
     }
+
+    public static class ItemInfo {
+        public Node node;
+        public Object controller;
+
+        public ItemInfo(Node node, Object controller) {
+            this.node = node;
+            this.controller = controller;
+        }
+    }
+
 }
