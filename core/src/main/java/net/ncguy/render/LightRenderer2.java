@@ -11,9 +11,9 @@ import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.LightComponent;
 import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
+import net.ncguy.post.BloomPostProcessor;
+import net.ncguy.post.PostProcessor;
 import net.ncguy.profile.ProfilerHost;
-import net.ncguy.render.post.BloomPostProcessor;
-import net.ncguy.render.post.PostProcessor;
 import net.ncguy.util.ReloadableShaderProgram;
 import net.ncguy.viewport.FBO;
 import net.ncguy.world.MainEngine;
@@ -88,6 +88,14 @@ public class LightRenderer2 extends BaseRenderer {
         particleRenderer = new ParticleRenderer(engine, batch, this.camera);
 
         processors.add(bloomPP = new BloomPostProcessor(engine));
+//        SnowPostProcessor snow = new SnowPostProcessor(engine);
+//        SnowPostProcessor snow2 = new SnowPostProcessor(engine);
+//        snow.colourStrength = 0.8f;
+//        snow2.colourStrength = 0.2f;
+//        processors.add(snow);
+//        processors.add(snow2);
+//        snow.Init();
+//        snow2.Init();
         bloomPP.Init();
 //        processors.add(new DistortionPostProcessor(engine));
 

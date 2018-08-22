@@ -1,0 +1,12 @@
+{
+  "name": "Global Wind",
+  "type": "Update",
+  "datumKey": "datum",
+  "uniforms": [
+    "vec2 u_windVelocity;",
+    "float u_windInfluence = 1;"
+  ],
+  "fragment": [
+    "datum.Velocity += u_windVelocity * u_windInfluence;"
+  ]
+}

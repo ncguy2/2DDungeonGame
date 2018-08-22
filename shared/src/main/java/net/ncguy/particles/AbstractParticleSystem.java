@@ -12,6 +12,7 @@ import net.ncguy.particles.render.ParticleRenderData;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.shaders.ComputeShader;
 import net.ncguy.util.curve.GLColourCurve;
+import net.ncguy.world.WindManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -170,10 +171,10 @@ public abstract class AbstractParticleSystem {
         program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
         program.SetUniform("imaxParticleCount", loc -> Gdx.gl.glUniform1i(loc, desiredAmount));
         uniformSetters.forEach(program::SetUniform);
-//        BindBuffer();
+        BindBuffer();
 //        BindBuffers(compute.Program());
 
-        int amtSpawned = round(amount, INVOCATIONS_PER_WORKGROUP);
+        int amtSpawned = round(amount, INVOCATIONS_PER_WORKGROUP) / INVOCATIONS_PER_WORKGROUP;
         program.Dispatch(amtSpawned);
         program.Unbind();
         return amtSpawned;
@@ -186,9 +187,13 @@ public abstract class AbstractParticleSystem {
         if(particleBuffer == null)
             return;
 
-        spawnScript.SetParticleBuffer(location, particleBuffer);
-        updateScript.SetParticleBuffer(location, particleBuffer);
-        particleBuffer.Bind(location);
+        try {
+            spawnScript.SetParticleBuffer(location, particleBuffer);
+            updateScript.SetParticleBuffer(location, particleBuffer);
+            particleBuffer.Bind(location);
+        }catch (NullPointerException npe) {
+            npe.printStackTrace();
+        }
 
         if(profile.curve != null)
             Bind("u_curve", profile.curve);
@@ -209,17 +214,22 @@ public abstract class AbstractParticleSystem {
         ProfilerHost.Start("Particle buffer update");
         ComputeShader program = updateScript.Program();
         program.Bind();
-//        BindBuffer();
+        BindBuffer();
         program.SetUniform("u_rngBaseSeed", loc -> Gdx.gl.glUniform1i(loc, ThreadLocalRandom.current().nextInt()));
         program.SetUniform("u_delta", loc -> Gdx.gl.glUniform1f(loc, delta));
         program.SetUniform("iTime", loc -> Gdx.gl.glUniform1f(loc, life));
         program.SetUniform("gTime", loc -> Gdx.gl.glUniform1f(loc, GlobalLife));
         program.SetUniform("imaxParticleCount", loc -> Gdx.gl.glUniform1i(loc, desiredAmount));
         program.SetUniform("u_noiseScale", loc -> Gdx.gl.glUniform1f(loc, 0.001f));
-        program.SetUniform("u_vectorFieldIntensity", loc -> Gdx.gl.glUniform1f(loc, 1f));
+        program.SetUniform("u_vectorFieldIntensity", loc -> Gdx.gl.glUniform1f(loc, 1.5f));
+        program.SetUniform("u_windInfluence", loc -> Gdx.gl.glUniform1f(loc, 1.2f));
+        program.SetUniform("u_windVelocity", loc -> {
+            Vector2 wind = WindManager.Get().GetWind();
+            Gdx.gl.glUniform2f(loc, wind.x, wind.y);
+        });
         uniformSetters.forEach(program::SetUniform);
 
-        int amtSpawned = round(desiredAmount, INVOCATIONS_PER_WORKGROUP);
+        int amtSpawned = round(desiredAmount, INVOCATIONS_PER_WORKGROUP) / INVOCATIONS_PER_WORKGROUP;
         program.Dispatch(amtSpawned);
         program.Unbind();
         ProfilerHost.End("Particle buffer update");
@@ -258,15 +268,16 @@ public abstract class AbstractParticleSystem {
 
         if(onFinish != null)
             onFinish.run();
-        if(spawnScript != null)
-            spawnScript.Shutdown();
-        if(updateScript != null)
-            updateScript.Shutdown();
 
-        spawnScript = null;
-        updateScript = null;
+        ParticleManager.instance().RemoveSystem(this, () -> {
+            if(spawnScript != null)
+                spawnScript.Shutdown();
+            if(updateScript != null)
+                updateScript.Shutdown();
 
-        ParticleManager.instance().RemoveSystem(this);
+            spawnScript = null;
+            updateScript = null;
+        });
     }
 
     public boolean IsFinished() {

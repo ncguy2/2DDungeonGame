@@ -1,4 +1,4 @@
-package net.ncguy.render.post;
+package net.ncguy.post;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;

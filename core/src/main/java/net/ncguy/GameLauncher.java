@@ -23,6 +23,7 @@ import net.ncguy.tween.TweenCore;
 import net.ncguy.util.DeferredCalls;
 import net.ncguy.util.Shaders;
 import net.ncguy.world.ThreadedEngine;
+import net.ncguy.world.WindManager;
 
 import java.lang.ref.Reference;
 import java.util.Objects;
@@ -127,6 +128,11 @@ public class GameLauncher extends Game {
         ProfilerHost.Start("Deferred calls");
         DeferredCalls.Instance().Update(delta);
         ProfilerHost.End();
+
+        ProfilerHost.Start("Wind update");
+        WindManager.UpdateAll(delta);
+        ProfilerHost.End("Wind update");
+
         ProfilerHost.End();
 
         ProfilerHost.Start("Screen render");

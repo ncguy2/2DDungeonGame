@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import net.ncguy.lib.foundation.io.Json;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.script.ScriptHost;
+import net.ncguy.util.DeferredCalls;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -145,10 +146,18 @@ public class ParticleManager {
     }
 
     public void RemoveSystem(AbstractParticleSystem system) {
-        synchronized (systems) {
-            systems.remove(system);
-        }
-        takenBindingPoints.remove((Integer) system.bufferId);
+        RemoveSystem(system, null);
+    }
+    public void RemoveSystem(AbstractParticleSystem system, Runnable callback) {
+        final int bufferId = system.bufferId;
+        DeferredCalls.Instance().Post(system.duration, () -> {
+            synchronized (systems) {
+                systems.remove(system);
+            }
+            takenBindingPoints.remove((Integer) bufferId);
+            if(callback != null)
+                callback.run();
+        });
     }
 
     public void Systems(Consumer<AbstractParticleSystem> task) {

@@ -4,6 +4,7 @@
   "blocks": [
     "Lifecycle",
     "Triangle Vector Field",
+    "Global Wind",
     "Follow Colour Curve",
     "Follow Velocity",
     "Initial State",

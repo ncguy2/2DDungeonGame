@@ -19,9 +19,6 @@ function OnActiveUpdate(delta) {
     if(this.HasComponent(cls)) {
         var healthComp = this.GetComponent(cls, true);
         dmg.Apply(healthComp.health);
-        print("Healing");
-    }else {
-        print("No healing")
     }
 
 
@@ -71,7 +68,7 @@ function OnEnabled() {
             Gdx.gl.glUniform2f(loc, 4, 4);
         });
     };
-    this.AddComponent(trail);
+    caster.AddComponent(trail);
 
     // Debug rendering
     Utils.DebugCircle(origin, range, 2).colour = new Color(1, 1, 0, 1);

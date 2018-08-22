@@ -34,6 +34,6 @@ float GetAngle(in vec2 p, in float scale) {
 
 vec2 GetDirection(in vec2 p, in float scale) {
     float angle = GetAngle(p, scale);
-    vec2 q = vec2(cos(angle), sin(angle)) * 2.0 - 1.0;
+    vec2 q = vec2(cos(angle), sin(angle));
     return q;
 }

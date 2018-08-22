@@ -1,5 +1,6 @@
 var LightComponent = Java.type("net.ncguy.entity.component.LightComponent");
 var ParticleComponent = Java.type("net.ncguy.entity.component.ParticleComponent");
+var ParticleProfileComponent = Java.type("net.ncguy.entity.component.ParticleProfileComponent");
 var RotationComponent = Java.type("net.ncguy.entity.component.RotationComponent");
 var Vector2 = Java.type("com.badlogic.gdx.math.Vector2");
 var Entity = Java.type("net.ncguy.entity.Entity");
@@ -72,8 +73,9 @@ function OnEnabled() {
     for(i = 0; i < pointCount; i++) {
         var point = dirs[i].scl(range);
 
-        var p = new ParticleComponent("Particle " + i);
+        var p = new ParticleProfileComponent("Particle " + i);
         p.transform.translation.set(point);
+        p.systemName = "Starburst item";
 
         var l = new LightComponent();
         l.colour = Utils.RandomColour();
@@ -84,14 +86,14 @@ function OnEnabled() {
         l.radius = 512;
         p.Add(l);
 
-        p.duration = 40.0;
-        p.particleCount = 20000;
-        p.spawnOverTime = 30.0;
-        p.systemType = SystemType.Temporal;
-        p.curve = Utils.RandomColourCurve(curveSteps, curveMax);
+        // p.duration = 40.0;
+        // p.particleCount = 20000;
+        // p.spawnOverTime = 30.0;
+        // p.systemType = SystemType.Temporal;
+        // p.curve = Utils.RandomColourCurve(curveSteps, curveMax);
 
         p.onInit = function(comp, particles) {
-            particles.Bind("u_curve", comp.curve);
+            particles.Bind("u_curve", comp.profile.curve);
             particles.AddUniform("u_spawnPoint", function(loc) {
                 var pos = comp.transform.WorldTranslation();
                 Gdx.gl.glUniform2f(loc, pos.x, pos.y);
@@ -103,7 +105,6 @@ function OnEnabled() {
         };
 
         p.onFinish = function(comp) {
-            comp.particleSystem.Finish();
             comp.Destroy();
         };
         anchor.Add(p);

@@ -1,26 +1,35 @@
 {
-  "name": "Heal",
+  "name": "Starburst item",
   "type": "Temporal",
   "blocks": [
     "Lifecycle",
     "Triangle Vector Field",
+    "Point Attractor",
     "Follow Colour Curve",
     "Follow Velocity",
     "Initial State",
-    "Circle boundary spawn",
-    "Shrink Over Time",
+    "Circle spawn",
     "Transform Position"
   ],
   "curve": {
     "items": [
       {
         "item": [
-          0.0,
-          0.6,
-          0.0,
+          0.77,
+          0.36,
+          1.0,
           1.0
         ],
         "value": 0.0
+      },
+      {
+        "item": [
+          0.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "value": 7.5
       },
       {
         "item": [
@@ -29,14 +38,13 @@
           0.0,
           0.0
         ],
-        "value": 3.0
+        "value": 10.0
       }
     ],
     "min": 0.0,
-    "max": 3.0
+    "max": 10.0
   },
-  "loopingBehaviour": "Forever",
-  "duration": 3.0,
-  "particleCount": 8192,
-  "spawnOverTime": 3.0
+  "duration": 10.0,
+  "particleCount": 10000,
+  "spawnOverTime": 10.0
 }

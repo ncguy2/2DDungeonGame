@@ -1,10 +1,7 @@
 package net.ncguy.render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import net.ncguy.assets.TextureResolver;
 import net.ncguy.particles.ParticleManager;
@@ -61,6 +58,9 @@ public class ParticleRenderer extends BaseRenderer {
 
         Texture[] boundTexture = new Texture[1];
 
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendEquation(GL30.GL_MAX);
+
         ProfilerHost.Start("System iteration");
         ParticleManager.instance()
                 .Systems(sys -> {
@@ -87,16 +87,19 @@ public class ParticleRenderer extends BaseRenderer {
                         ProfilerHost.End("Texture binding");
                     }
 
-                    Gdx.gl.glEnable(GL20.GL_BLEND);
-
                     sys.BindBuffer(0);
+
                     mesh.instanceCount = sys.desiredAmount;
                     ProfilerHost.Start("Mesh rendering");
                     mesh.render(shader.Program(), GL20.GL_TRIANGLES);
                     ProfilerHost.End("Mesh rendering");
                     ProfilerHost.End("System render");
+
+                    sys.BindBuffer();
                 });
         ProfilerHost.End("System iteration");
+
+        Gdx.gl.glBlendEquation(GL30.GL_FUNC_ADD);
 
         ProfilerHost.Start("Cleanup");
         screenBuffer.end();
