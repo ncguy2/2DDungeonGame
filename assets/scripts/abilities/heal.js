@@ -50,6 +50,8 @@ function OnEnabled() {
     trail.onInit = function(comp, sys) {
 
         sys.renderer.textureRef = "textures/icons/health.png";
+        sys.renderer.alphaChannel = 0;
+        sys.renderer.alphaCutoff = 0.5;
 
         sys.Bind("u_curve", comp.profile.curve);
         sys.AddUniform("u_spawnPoint", function(loc) {

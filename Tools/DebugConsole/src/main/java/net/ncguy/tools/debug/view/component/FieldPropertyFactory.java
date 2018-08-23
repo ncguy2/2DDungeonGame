@@ -3,18 +3,18 @@ package net.ncguy.tools.debug.view.component;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import net.ncguy.entity.Transform2D;
-import net.ncguy.entity.component.EntityComponent;
-import net.ncguy.entity.component.EntityFunction;
-import net.ncguy.entity.component.EntityProperty;
-import net.ncguy.entity.component.IPropertyProvider;
+import net.ncguy.entity.component.*;
 import net.ncguy.tools.debug.view.component.editors.*;
 import net.ncguy.util.curve.GLColourCurve;
+import org.controlsfx.control.PropertySheet;
 import org.controlsfx.property.editor.PropertyEditor;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class FieldPropertyFactory {
@@ -26,7 +26,7 @@ public class FieldPropertyFactory {
         if (component instanceof IPropertyProvider)
             ((IPropertyProvider) component).Provide()
                     .stream()
-                    .map(c -> new FieldPropertyDescriptor(c))
+                    .map((Function<FieldPropertyDescriptorLite, FieldPropertyDescriptor>) FieldPropertyDescriptor::new)
                     .forEach(propertyDescriptors::add);
 
         return propertyDescriptors;
@@ -80,12 +80,28 @@ public class FieldPropertyFactory {
         Register(Transform2D.class, TransformEditor.class);
         Register(Runnable.class, FunctionEditor.class);
         Register(Supplier.class, ProgressEditor.class);
+        Register(List.class, ListEditor.class);
     }
     public static void Register(Class type, Class<? extends PropertyEditor<?>> editorClass) {
         editorClasses.put(type, editorClass);
     }
     public static Optional<Class<? extends PropertyEditor<?>>> GetEditorClass(Class type) {
         return Optional.ofNullable(editorClasses.get(type));
+    }
+
+    public static <T, U extends PropertyEditor<T>> Optional<U> Build(PropertySheet.Item item, Class<T> type) {
+        try {
+            return Optional.of(BuildImpl(item, type));
+        } catch (NoSuchMethodException | InstantiationException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    public static <T, U extends PropertyEditor<T>> U BuildImpl(PropertySheet.Item item, Class<T> type) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Class<? extends PropertyEditor<?>> aClass = editorClasses.get(type);
+        Constructor<? extends PropertyEditor<?>> ctor = aClass.getConstructor(item.getClass());
+        return (U) ctor.newInstance(item);
     }
 
 }

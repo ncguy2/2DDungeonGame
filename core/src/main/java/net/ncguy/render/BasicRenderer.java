@@ -1,20 +1,12 @@
 package net.ncguy.render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
-import net.ncguy.assets.Sprites;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.MaterialSpriteComponent;
-import net.ncguy.entity.component.PrimitiveCircleComponent;
 import net.ncguy.entity.component.RenderComponent;
 import net.ncguy.profile.ProfilerHost;
 import net.ncguy.util.ReloadableShaderProgram;
-import net.ncguy.viewport.FBO;
-import net.ncguy.viewport.FBOBuilder;
 import net.ncguy.world.MainEngine;
 
 import java.util.ArrayList;
@@ -22,55 +14,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SimpleRenderer extends BaseRenderer {
+public class BasicRenderer extends AbstractRenderer {
 
-    FBO gBuffer;
-    ReloadableShaderProgram gBufferShader;
+    ReloadableShaderProgram shader;
 
-    public SimpleRenderer(MainEngine engine, SpriteBatch batch, Camera camera) {
-        super(engine, batch, camera);
-        ProfilerHost.Start("SimpleRenderer::SimpleRenderer");
-
-        ProfilerHost.Start("Buffer setup");
-        int width = Gdx.graphics.getWidth();
-        int height = Gdx.graphics.getHeight();
-        gBuffer = FBOBuilder.BuildDefaultGBuffer(width, height);
-        ProfilerHost.End("Buffer setup");
-
-        ProfilerHost.Start("Texture setup");
-        ProfilerHost.End("Texture setup");
-
-        ProfilerHost.Start("Shader setup");
-        gBufferShader = new ReloadableShaderProgram("SimpleRenderer::GBuffer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
-        ProfilerHost.End("Shader setup");
-        ProfilerHost.End("SimpleRenderer::SimpleRenderer");
+    public BasicRenderer(MainEngine engine, SpriteBatch batch) {
+        super(engine, batch);
+        ProfilerHost.Start("BasicRenderer::BasicRenderer");
+        shader = new ReloadableShaderProgram("Basic Renderer", Gdx.files.internal("shaders/world.vert"), Gdx.files.internal("shaders/gbuffer.frag"));
+        ProfilerHost.End("BasicRenderer::BasicRenderer");
     }
 
     @Override
-    public void Resize(int width, int height) {
-        super.Resize(width, height);
-        gBuffer.Resize(width, height);
-    }
+    public void Render(PostProcessingCamera camera, float delta) {
+        ProfilerHost.Start("BasicRenderer::Render");
 
-    @Override
-    public Texture GetTexture() {
-        return gBuffer.getTextureAttachments().get(0);
-    }
+        camera.fbo.Begin();
+        camera.fbo.clear(0, 0, 0,1, true);
 
-    @Override
-    public void Render(float delta) {
-        ProfilerHost.Start("SimpleRenderer::Render");
-        ProfilerHost.Start("GBuffer");
-        // GBuffer
-        gBuffer.begin();
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        batch.setProjectionMatrix(camera.combined);
-        batch.setShader(gBufferShader.Program());
+        batch.setProjectionMatrix(camera.Combined());
+        batch.setShader(shader.Program());
         batch.begin();
 
-        //noinspection unchecked
         ProfilerHost.Start("Entity render");
         List<Entity> entities = engine.world.GetFlattenedEntitiesWithComponents(RenderComponent.class);
 
@@ -116,32 +81,11 @@ public class SimpleRenderer extends BaseRenderer {
 //        entities.forEach(this::Accept);
         ProfilerHost.End("Entity render");
 
-        Vector2 pos = new Vector2();
-        entities = engine.world.GetFlattenedEntitiesWithComponents(PrimitiveCircleComponent.class);
-        ProfilerHost.Start("Primitive render [" + entities.size() + "]");
-        for (Entity entity : entities) {
-            List<PrimitiveCircleComponent> circles = entity.GetComponents(PrimitiveCircleComponent.class, true);
-            for (PrimitiveCircleComponent circle : circles) {
-                ProfilerHost.Start("SimpleRenderer::Render [" + circle.name + "]");
-                circle.transform.WorldTransform().getTranslation(pos);
-                Sprites.Ball()
-                        .setBounds(pos.x - 32, pos.y - 32, 64, 64);
-                Sprites.Ball()
-                        .setColor(circle.colour);
-                Sprites.Ball()
-                        .draw(batch);
-                ProfilerHost.End("SimpleRenderer::Render");
-            }
-        }
-        ProfilerHost.End("Primitive render");
-
-        batch.flush();
-        gBuffer.end();
-        ProfilerHost.End("GBuffer");
-
         batch.end();
         batch.setShader(null);
-        ProfilerHost.End("SimpleRenderer::Render");
+
+        camera.fbo.End();
+        ProfilerHost.End("BasicRenderer::Render");
     }
 
     public void Accept(Entity entity) {

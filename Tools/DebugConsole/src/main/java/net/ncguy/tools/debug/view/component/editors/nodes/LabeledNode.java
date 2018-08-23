@@ -38,7 +38,7 @@ public class LabeledNode<T extends Node> extends AnchorPane {
         Build();
     }
 
-    void SetColour(Color colour) {
+    public void SetColour(Color colour) {
         labelBGColour.setValue(colour);
 
         if(container != null) {

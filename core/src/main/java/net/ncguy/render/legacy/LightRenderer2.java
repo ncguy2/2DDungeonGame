@@ -1,4 +1,4 @@
-package net.ncguy.render;
+package net.ncguy.render.legacy;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;

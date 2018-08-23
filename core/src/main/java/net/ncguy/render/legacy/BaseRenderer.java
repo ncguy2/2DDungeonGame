@@ -1,4 +1,4 @@
-package net.ncguy.render;
+package net.ncguy.render.legacy;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
@@ -8,6 +8,7 @@ import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
 import net.ncguy.world.MainEngine;
 
+@Deprecated
 public abstract class BaseRenderer {
 
     protected MainEngine engine;

@@ -3,6 +3,10 @@ package net.ncguy.entity.component;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
+/**
+ * @see net.ncguy.entity.component.ui.RenderingCameraComponent
+ */
+@Deprecated
 public class CameraComponent extends SceneComponent {
 
     public transient Camera camera;

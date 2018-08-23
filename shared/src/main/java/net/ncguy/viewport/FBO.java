@@ -53,10 +53,15 @@ public class FBO implements Disposable, StackableFBO {
 
         if(width == 0 || height == 0) return this;
 
+
         if(buffer != null) {
+
+            if(width == buffer.getWidth() && height == buffer.getHeight()) return this;
+
             buffer.dispose();
             buffer = null;
         }
+
         bufferBuilder.Resize(width, height);
         buffer = bufferBuilder.build();
         return this;

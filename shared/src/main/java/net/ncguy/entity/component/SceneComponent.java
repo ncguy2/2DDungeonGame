@@ -15,6 +15,10 @@ public class SceneComponent extends EntityComponent {
 
     @EntityProperty(Type = Transform2D.class, Category = "Scene", Description = "The transformation of this component", Name = "Transform")
     public Transform2D transform;
+
+//    @EntityProperty(Type = Transform2D.class, Category = "Scene", Description = "The World transformation of this component", Name = "World Transform", Editable = false)
+    public transient Transform2D worldTransform;
+
     //    @CollectionSerializer.BindCollection(elementSerializer = ConfigurableElementSerializer.class)
     public final Set<EntityComponent> childrenComponents;
     public transient Entity owningEntity;
@@ -25,6 +29,7 @@ public class SceneComponent extends EntityComponent {
 
     public SceneComponent(String name) {
         super(name);
+        worldTransform = new Transform2D();
         transform = new Transform2D();
         childrenComponents = new LinkedHashSet<>();
     }
@@ -129,6 +134,7 @@ public class SceneComponent extends EntityComponent {
 
     @Override
     public void Update(float delta) {
+        worldTransform.Set(transform.WorldTransform());
         super.Update(delta);
         for (EntityComponent childrenComponent : GetComponents())
             childrenComponent._Update(delta);

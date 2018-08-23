@@ -9,7 +9,8 @@ in flat ParticleData datum;
 
 in vec2 TexCoords;
 uniform sampler2D u_texture;
-uniform float u_alphaCutoff = 0.1;
+uniform float u_alphaCutoff = 0.25;
+uniform int u_alphaChannel = 3;
 
 void main() {
 
@@ -18,8 +19,7 @@ void main() {
 
     vec4 tex = texture(u_texture, TexCoords);
 
-    // TODO add condition for monochromatic textures
-//    tex.a = tex.r;
+    tex.a = tex[u_alphaChannel];
 
     vec4 col = tex * datum.Colour;
 

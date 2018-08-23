@@ -6,7 +6,6 @@ layout (location = 2) in vec2 a_texCoord0;
 
 uniform mat4 u_projTrans;
 
-
 out VS_OUT {
     vec4 Position;
     vec4 Colour;

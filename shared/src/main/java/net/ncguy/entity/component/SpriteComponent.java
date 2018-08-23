@@ -87,8 +87,10 @@ public class SpriteComponent extends RenderComponent {
 //                connectedSprite.setRotation(transform.getRotation());
                 connectedSprite.setSize(size.x, size.y);
             }else {
+                float rotation = transform.getRotation();
+                sprite.setOrigin(size.x * .5f, size.y * .5f);
                 sprite.setPosition(pos.x, pos.y);
-                sprite.setRotation(transform.getRotation());
+                sprite.setRotation(rotation);
                 sprite.setSize(size.x, size.y);
             }
         }
@@ -97,13 +99,15 @@ public class SpriteComponent extends RenderComponent {
 
     @Override
     public void Render(SpriteBatch batch) {
+        batch.getShader().setUniformi("u_castShadow", castShadow ? 1 : 0);
         if(connected) {
             if(connectedSprite != null)
                 connectedSprite.draw(batch);
-            return;
+        }else {
+            if (sprite != null)
+                sprite.draw(batch);
         }
-        if(sprite != null)
-            sprite.draw(batch);
+        batch.flush();
     }
 
     @Override

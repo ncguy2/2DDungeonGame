@@ -33,6 +33,7 @@ public class ShaderController implements Initializable {
     }
 
     private void ReloadList() {
+        long start = System.nanoTime();
         Container.getChildren()
                 .clear();
         shaderList.stream()
@@ -41,9 +42,18 @@ public class ShaderController implements Initializable {
                 .peek(n -> VBox.setVgrow(n, Priority.NEVER))
                 .forEach(Container.getChildren()::add);
 
+        long mid = System.nanoTime();
+
         Node spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
         Container.getChildren().add(spacer);
+
+        long end = System.nanoTime();
+
+        System.out.println("Time taken: ");
+        System.out.printf("\tMid: %fms\n", (mid - start) / 1000000f);
+        System.out.printf("\tEnd: %fms\n", (end - start) / 1000000f);
+
     }
 
     private Node Make(ReloadableShader shader) {

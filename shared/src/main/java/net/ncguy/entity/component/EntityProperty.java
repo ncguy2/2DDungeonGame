@@ -16,4 +16,6 @@ public @interface EntityProperty {
     String Category() default "";
     boolean Editable() default true;
 
+    Class<?> ElementType() default Object.class;
+
 }

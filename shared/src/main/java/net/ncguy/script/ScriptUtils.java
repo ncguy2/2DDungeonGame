@@ -11,9 +11,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
-import net.ncguy.entity.component.CameraComponent;
 import net.ncguy.entity.component.CollisionComponent;
 import net.ncguy.entity.component.HealthComponent;
+import net.ncguy.entity.component.ui.RenderingCameraComponent;
 import net.ncguy.physics.worker.DestroyBodyTask;
 import net.ncguy.physics.worker.SetTransformTask;
 import net.ncguy.physics.worker.SpawnEntityTask;
@@ -224,10 +224,10 @@ public class ScriptUtils {
     }
 
     public Vector2 UnprojectCoords(Entity entity, Vector2 screenCoords) {
-        if (!entity.HasComponent(CameraComponent.class))
+        if (!entity.HasComponent(RenderingCameraComponent.class))
             return screenCoords;
 
-        CameraComponent camera = entity.GetComponent(CameraComponent.class, true);
+        RenderingCameraComponent camera = entity.GetComponent(RenderingCameraComponent.class, true);
         Vector3 unproject = camera.camera.unproject(new Vector3(screenCoords, 0.f));
         return new Vector2(unproject.x, unproject.y);
     }

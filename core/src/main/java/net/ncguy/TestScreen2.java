@@ -23,6 +23,7 @@ import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
 import net.ncguy.entity.component.ui.HealthUIComponent;
+import net.ncguy.entity.component.ui.RenderingCameraComponent;
 import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.input.InputHelper;
 import net.ncguy.network.NetworkContainer;
@@ -31,8 +32,10 @@ import net.ncguy.particles.ParticleManager;
 import net.ncguy.physics.PhysicsUserObject;
 import net.ncguy.physics.worker.SpawnEntityTask;
 import net.ncguy.profile.ProfilerHost;
-import net.ncguy.render.BaseRenderer;
-import net.ncguy.render.LightRenderer2;
+import net.ncguy.render.BasicRenderer;
+import net.ncguy.render.PostProcessingCamera;
+import net.ncguy.render.post.LightingPostProcessor;
+import net.ncguy.render.post.ParticlePostProcessor;
 import net.ncguy.script.ScriptUtils;
 import net.ncguy.system.AbilitySystem;
 import net.ncguy.system.InputSystem;
@@ -70,10 +73,12 @@ public class TestScreen2 implements Screen {
     Viewport stageViewport;
     OrthographicCamera stageCamera;
 
-    BaseRenderer sceneRenderer;
+    BasicRenderer sceneRenderer;
     Entity entity;
 
     AbstractParticleSystem particles;
+
+    PostProcessingCamera activeCamera;
 
     @Override
     public void show() {
@@ -119,7 +124,8 @@ public class TestScreen2 implements Screen {
 
 //        sceneRenderer = new DeferredRenderer(engine, batch, camera);
         ProfilerHost.Start("Renderer");
-        sceneRenderer = new LightRenderer2(engine, batch, camera);
+//        sceneRenderer = new LightRenderer2(engine, batch, camera);
+        sceneRenderer = new BasicRenderer(engine, batch);
         ProfilerHost.End("Renderer");
 
         ProfilerHost.Start("Textures");
@@ -169,15 +175,24 @@ public class TestScreen2 implements Screen {
         ProfilerHost.Start("Components");
         playerEntity.AddComponent(new InputComponent("Input"));
         playerEntity.AddComponent(new MovementComponent("Movement")).resetAfterCheck = true;
-        CameraComponent camComponent = new CameraComponent("Camera");
-        camComponent.camera = this.camera;
+
+        RenderingCameraComponent camComponent = new RenderingCameraComponent("Camera");
+        activeCamera = camComponent.camera = new PostProcessingCamera(this.camera, new LightingPostProcessor(engine).Init(), new ParticlePostProcessor(engine).Init());
+
         LinearLaggingArmComponent cameraArm = new LinearLaggingArmComponent("Camera arm");
         cameraArm.Add(camComponent);
         playerEntity.AddComponent(cameraArm);
 //        playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
 
-        MaterialSpriteComponent body = playerEntity.AddComponent(new MaterialSpriteComponent("Body"));
-        body.spriteRef = "textures/kenney.nl/particlePack/spark_02.png";
+
+        RotationComponent rotAnchor = playerEntity.AddComponent(new RotationComponent("Rotator"));
+        rotAnchor.rotationSpeed = 30f;
+
+        MaterialSpriteComponent body = rotAnchor.Add(new MaterialSpriteComponent("Body"));
+
+//        body.spriteRef = "textures/kenney.nl/particlePack/spark_02.png";
+        body.spriteRef = "textures/Triskelion.png";
+//        body.spriteRef = "textures/awesomeface.png";
         body.materialRef = "mtl_01";
         body.spriteScaleOverride.set(64, 64);
 
@@ -351,17 +366,18 @@ public class TestScreen2 implements Screen {
         ProfilerHost.End("Engine update");
 
         ProfilerHost.Start("World Renderer");
-        sceneRenderer.Render(delta);
+        sceneRenderer.Render(activeCamera, delta);
         ProfilerHost.End("World Renderer");
 
         ProfilerHost.Start("Screen Renderer");
-        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        batch.begin();
 
         ProfilerHost.Start("World quad render");
-        Texture tex = sceneRenderer.GetTexture();
+        Texture tex = activeCamera.ProcessAndFlatten(batch, delta);
         TextureRegion reg = new TextureRegion(tex);
-        reg.flip(false, sceneRenderer.ShouldFlipTexture());
+        reg.flip(false, false);
+
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+        batch.begin();
         batch.draw(reg, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         ProfilerHost.End("World quad render");
@@ -419,7 +435,7 @@ public class TestScreen2 implements Screen {
     public void resize(int width, int height) {
         // Resize your screen here. The parameters represent the new window size.
         camera.setToOrtho(false, width, height);
-        sceneRenderer.Resize(width, height);
+        activeCamera.Resize(width, height);
         stageViewport.update(width, height, true);
     }
 

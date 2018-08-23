@@ -1,5 +1,7 @@
 package net.ncguy.entity;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Matrix3;
 import com.badlogic.gdx.math.Vector2;
 import net.ncguy.util.TransformPredictionQueue;
@@ -156,9 +158,34 @@ public class Transform2D {
                 .append(scale.y)
                 .append("]");
 
-        if(this.parent != null)
+        if(this.parent != null) {
             sb.append(" Parented");
 
+            if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+                Vector2 translation = WorldTranslation();
+                float rotationDegrees = WorldRotation();
+                Vector2 scale = WorldScale();
+                sb.append(": Tra: [")
+                        .append(translation.x)
+                        .append(", ")
+                        .append(translation.y)
+                        .append("] Rot: [")
+                        .append(rotationDegrees)
+                        .append("] Scl: [")
+                        .append(scale.x)
+                        .append(", ")
+                        .append(scale.y)
+                        .append("]");
+            }
+        }
+
         return sb.toString();
+    }
+
+    public void Set(Matrix3 worldTransform) {
+        worldTransform.getTranslation(translation);
+        rotationDegrees = worldTransform.getRotation();
+        worldTransform.getScale(scale);
+        Update();
     }
 }
