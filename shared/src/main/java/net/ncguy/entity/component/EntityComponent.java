@@ -1,6 +1,9 @@
 package net.ncguy.entity.component;
 
 import net.ncguy.entity.Entity;
+import net.ncguy.entity.aspect.Aspect;
+import net.ncguy.entity.aspect.AspectKey;
+import net.ncguy.entity.aspect.IAspectProvider;
 import net.ncguy.lib.foundation.io.Json;
 import net.ncguy.lib.foundation.io.RuntimeTypeAdapterFactory;
 import net.ncguy.lib.net.shared.IReplicationConfigurable;
@@ -11,7 +14,7 @@ import java.util.List;
 /**
  * Base entity component, has no runtime functionality but defines instantiation behaviours such as serialization registry and such
  */
-public class EntityComponent implements IReplicationConfigurable {
+public class EntityComponent implements IReplicationConfigurable, IAspectProvider {
 
     @EntityProperty(Type = Boolean.class, Category = "Internal", Description = "Enabled state of the component", Name = "Enabled")
     public boolean enabled = true;
@@ -113,6 +116,11 @@ public class EntityComponent implements IReplicationConfigurable {
     public EntityComponent GetFromPath(String path) {
         if(path.equalsIgnoreCase(name))
             return this;
+        return null;
+    }
+
+    @Override
+    public <T> Aspect<T> ProvideAspect(AspectKey<T> key) {
         return null;
     }
 }

@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ public class ProfilerHost {
     public static boolean PROFILER_ENABLED = true;
     private static boolean profilerEnabled;
 
-    public List<Runnable> onNotify;
+    public List<BiConsumer<List<TaskStats>, List<TaskStats>>> onNotify;
 
     public static ProfilerHost instance() {
         if (instance == null)
@@ -43,7 +44,7 @@ public class ProfilerHost {
         onNotify = new ArrayList<>();
     }
 
-    public static void Notify(Runnable task) {
+    public static void Notify(BiConsumer<List<TaskStats>, List<TaskStats>> task) {
         instance().onNotify.add(task);
     }
 
@@ -70,7 +71,9 @@ public class ProfilerHost {
     }
 
     public void NotifyListeners() {
-        onNotify.forEach(Runnable::run);
+        List<TaskStats> cpu = this.GetCurrentStats("CPU");
+        List<TaskStats> gpu = this.GetCurrentStats("GPU");
+        onNotify.forEach(c -> c.accept(cpu, gpu));
     }
 
     public static void Clear() {
@@ -129,26 +132,24 @@ public class ProfilerHost {
 
         profilerEnabled = PROFILER_ENABLED;
 
+        CPUProfiler.Get().profilingEnabled = profilerEnabled;
+        GPUProfiler.Get().profilingEnabled = profilerEnabled && ThreadSupportsGPU();
+
         if (!profilerEnabled)
             return;
 
         CPUProfiler.Get().setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
-
-        if(ThreadSupportsGPU())
-            GPUProfiler.Get().setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
+        GPUProfiler.Get().setFrameCounter(Math.toIntExact(Gdx.graphics.getFrameId()));
 
         CPUProfiler.Get().StartFrame();
-
-        if(ThreadSupportsGPU())
-            GPUProfiler.Get().StartFrame();
+        GPUProfiler.Get().StartFrame();
     }
 
     public static void Start(String name) {
         if (!profilerEnabled)
             return;
         CPUProfiler.Get().Start(name);
-        if(ThreadSupportsGPU())
-            GPUProfiler.Get().Start(name);
+        GPUProfiler.Get().Start(name);
     }
 
     public static void End(String name) {
@@ -159,16 +160,14 @@ public class ProfilerHost {
         if (!profilerEnabled)
             return;
         CPUProfiler.Get().End();
-        if(ThreadSupportsGPU())
-            GPUProfiler.Get().End();
+        GPUProfiler.Get().End();
     }
 
     public static void EndFrame() {
         if (!profilerEnabled)
             return;
         CPUProfiler.Get().EndFrame();
-        if(ThreadSupportsGPU())
-            GPUProfiler.Get().EndFrame();
+        GPUProfiler.Get().EndFrame();
     }
 
 }

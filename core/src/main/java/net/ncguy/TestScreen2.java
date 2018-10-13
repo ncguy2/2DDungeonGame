@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
+import net.ncguy.entity.component.modifiers.RotationComponent;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.RenderingCameraComponent;
 import net.ncguy.entity.component.ui.UIComponent;
@@ -185,10 +186,8 @@ public class TestScreen2 implements Screen {
 //        playerEntity.AddComponent(new PrimitiveCircleComponent("Body")).colour.set(Color.CYAN);
 
 
-        RotationComponent rotAnchor = playerEntity.AddComponent(new RotationComponent("Rotator"));
-        rotAnchor.rotationSpeed = 30f;
-
-        MaterialSpriteComponent body = rotAnchor.Add(new MaterialSpriteComponent("Body"));
+        MaterialSpriteComponent body = playerEntity.AddComponent(new MaterialSpriteComponent("Body"));
+        body.Add(new RotationComponent("Rotator")).rotationSpeed = 30f;
 
 //        body.spriteRef = "textures/kenney.nl/particlePack/spark_02.png";
         body.spriteRef = "textures/Triskelion.png";
@@ -226,6 +225,28 @@ public class TestScreen2 implements Screen {
         light.colour.set(1, 1, 0, 1);
         light.radius = 256;
 
+
+        ParticleProfileComponent part = light.Add(new ParticleProfileComponent("Fire particles"));
+        part.systemName = "Fire";
+        part.onInit = (comp, sys) -> {
+            sys.Bind("u_curve", comp.profile.curve);
+            sys.AddUniform("u_spawnPoint", loc -> {
+                Vector2 origin = entity.Transform().translation;
+                Gdx.gl.glUniform2f(loc, 0, 0);
+            });
+            sys.AddUniform("u_spawnMatrix", loc -> {
+                Gdx.gl.glUniformMatrix3fv(loc, 1, false, entity.Transform().WorldTransform().val, 0);
+            });
+            sys.AddUniform("u_initialScale", loc -> {
+                Gdx.gl.glUniform2f(loc, 1, 1);
+            });
+            sys.AddUniform("u_simSpeed", loc -> {
+                Gdx.gl.glUniform1f(loc, 1);
+            });
+            sys.AddUniform("u_devianceRadius", loc -> {
+                Gdx.gl.glUniform1f(loc, 24);
+            });
+        };
 //        ProfilerHost.Start("Spawner component");
 //        EntitySpawnerComponent spawner = new EntitySpawnerComponent("Spawner");
 //        spawner.spawnInterval = 2.5f;

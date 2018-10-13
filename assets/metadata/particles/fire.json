@@ -1,0 +1,59 @@
+{
+  "name": "Fire",
+  "type": "Temporal",
+  "blocks": [
+    "Lifecycle",
+    "Triangle Vector Field",
+    "Follow Colour Curve",
+    "Follow Velocity",
+    "Initial State",
+    "Circle spawn",
+    "Transform Position"
+  ],
+  "curve": {
+    "items": [
+      {
+        "item": [
+          1.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "value": 0.0
+      },
+      {
+        "item": [
+          1.0,
+          1.0,
+          0.0,
+          0.8
+        ],
+        "value": 2.5
+      },
+      {
+        "item": [
+          1.0,
+          1.0,
+          0.0,
+          0.2
+        ],
+        "value": 5.0
+      },
+      {
+        "item": [
+          1.0,
+          1.0,
+          1.0,
+          0.0
+        ],
+        "value": 7.5
+      }
+    ],
+    "min": 0.0,
+    "max": 7.5
+  },
+  "loopingBehaviour": "Forever",
+  "duration": 10.0,
+  "particleCount": 16384,
+  "spawnOverTime": 15.0
+}

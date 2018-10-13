@@ -22,6 +22,7 @@ import net.ncguy.ability.AbilityRegistry;
 import net.ncguy.assets.TextureResolver;
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.component.*;
+import net.ncguy.entity.component.modifiers.RotationComponent;
 import net.ncguy.entity.component.ui.HealthUIComponent;
 import net.ncguy.entity.component.ui.UIComponent;
 import net.ncguy.input.InputHelper;
@@ -196,13 +197,12 @@ public class ParticleTestScreen implements Screen {
         root.radius = 1024;
         root.colour.set(8775816);
 
-        RotationComponent rotator = root.Add(new RotationComponent("Rotator"));
-
         final Texture[] tex = new Texture[1];
 
         TextureResolver.GetTextureAsync("textures/testImg.jpg", t -> tex[0] = t);
 
-        ParticleProfileComponent particles = rotator.Add(new ParticleProfileComponent("Particles"));
+        ParticleProfileComponent particles = root.Add(new ParticleProfileComponent("Particles"));
+        particles.Add(new RotationComponent("Rotator"));
         particles.systemName = "Texture Test";
         particles.onInit = (comp, sys) -> {
             sys.AddUniform("u_colourTexture", loc -> {

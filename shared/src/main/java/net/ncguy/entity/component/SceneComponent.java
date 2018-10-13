@@ -2,6 +2,8 @@ package net.ncguy.entity.component;
 
 import net.ncguy.entity.Entity;
 import net.ncguy.entity.Transform2D;
+import net.ncguy.entity.aspect.Aspect;
+import net.ncguy.entity.aspect.AspectKey;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -218,5 +220,15 @@ public class SceneComponent extends EntityComponent {
     public void PostReplicate() {
         super.PostReplicate();
         GetComponents().forEach(c -> c._OnAddToComponent(this));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> Aspect<T> ProvideAspect(AspectKey<T> key) {
+        if(key.type == Transform2D.class) {
+            return Aspect.of(this, key, (T) transform);
+        }
+
+        return super.ProvideAspect(key);
     }
 }

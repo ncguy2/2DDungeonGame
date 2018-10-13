@@ -58,6 +58,8 @@ public class ProfilerController implements Initializable {
     Map<Integer, List<HoveredThresholdNode>> nodeMap;
 
     SimpleObjectProperty<Integer> selectedFrameId;
+    private transient List<TaskStats> cpuStatDump;
+    private transient List<TaskStats> gpuStatDump;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -271,8 +273,12 @@ public class ProfilerController implements Initializable {
 //            }
 //        }, 0, 16);
 
-        ProfilerHost.Notify(() -> {
-            Platform.runLater(ProfilerController.this::UpdateChart);
+        ProfilerHost.Notify((cStats, gStats) -> {
+            Platform.runLater(() -> {
+                this.cpuStatDump = cStats;
+                this.gpuStatDump = gStats;
+                ProfilerController.this.UpdateChart();
+            });
         });
 
     }
@@ -296,15 +302,22 @@ public class ProfilerController implements Initializable {
     }
 
     void UpdateChart(String type, Series series) {
-        List<TaskStats> dump = ProfilerHost.instance()
-                .GetCurrentStats(type);
+        List<TaskStats> dump;
+        if(type.equals("CPU")) {
+            dump = cpuStatDump;
+        }else if(type.equals("GPU")) {
+            dump = gpuStatDump;
+        }else{
+            return;
+        }
+
         if (dump.isEmpty()) return;
         int frameId = dump.get(0).frame;
 
         // TODO abstract
         if (type.equalsIgnoreCase("CPU"))
             cpuStats.put(frameId, dump);
-        else if (type.equalsIgnoreCase("GPU"))
+        else //if (type.equalsIgnoreCase("GPU"))
             gpuStats.put(frameId, dump);
 
         long time = dump.stream()

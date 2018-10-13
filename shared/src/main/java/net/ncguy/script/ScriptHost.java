@@ -76,7 +76,7 @@ public class ScriptHost {
                 if(afterEval != null)
                     afterEval.accept(ctx);
 
-            } catch (ScriptException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });

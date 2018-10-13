@@ -28,6 +28,7 @@ public class RootController implements Initializable {
         AddItem("Shaders", "/fxml/pages/shaders.fxml");
         AddItem("Particles", "/fxml/pages/particles.fxml", false);
         AddItem("Profiler", "/fxml/pages/profiler.fxml", true);
+        AddItem("Cameras", "/fxml/pages/cameras.fxml", true);
 
     }
 

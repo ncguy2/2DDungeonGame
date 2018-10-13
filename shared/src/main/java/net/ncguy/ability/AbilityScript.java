@@ -1,6 +1,7 @@
 package net.ncguy.ability;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import net.ncguy.lib.foundation.utils.ExceptionUtils;
 import net.ncguy.script.ScriptHost;
 import net.ncguy.script.ScriptObject;
 
@@ -33,27 +34,27 @@ public class AbilityScript extends ScriptObject {
     
     public void InvokeUpdate(Object thiz, float delta) {
         if(Function_OnUpdate != null)
-            Function_OnUpdate.call(thiz, delta);
+            ExceptionUtils.ContainException(() -> Function_OnUpdate.call(thiz, delta));
     }
 
     public void InvokeActiveUpdate(Object thiz, float delta) {
         if(Function_OnActiveUpdate != null)
-            Function_OnActiveUpdate.call(thiz, delta);
+            ExceptionUtils.ContainException(() -> Function_OnActiveUpdate.call(thiz, delta));
     }
 
     public void InvokeInactiveUpdate(Object thiz, float delta) {
         if(Function_OnInactiveUpdate != null)
-            Function_OnInactiveUpdate.call(thiz, delta);
+            ExceptionUtils.ContainException(() -> Function_OnInactiveUpdate.call(thiz, delta));
     }
 
     public void InvokeEnabled(Object thiz) {
         if(Function_OnEnabled != null)
-            Function_OnEnabled.call(thiz);
+            ExceptionUtils.ContainException(() -> Function_OnEnabled.call(thiz));
     }
 
     public void InvokeDisabled(Object thiz) {
         if(Function_OnDisabled != null)
-            Function_OnDisabled.call(thiz);
+            ExceptionUtils.ContainException(() -> Function_OnDisabled.call(thiz));
     }
     
 }

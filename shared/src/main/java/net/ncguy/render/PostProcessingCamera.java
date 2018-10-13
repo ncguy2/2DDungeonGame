@@ -15,12 +15,26 @@ import net.ncguy.post.MultiPostProcessor;
 import net.ncguy.viewport.FBO;
 import net.ncguy.viewport.FBOBuilder;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class PostProcessingCamera implements IPropertyProvider {
+
+    public static List<WeakReference<PostProcessingCamera>> cameraRefs = new ArrayList<>();
+    private static void _register(PostProcessingCamera camera) {
+        cameraRefs.add(new WeakReference<>(camera));
+    }
+    public static List<PostProcessingCamera> GetCameras() {
+        List<WeakReference<PostProcessingCamera>> weakReferences = cameraRefs.stream().filter(e -> e.get() == null).collect(Collectors.toList());
+        cameraRefs.removeAll(weakReferences);
+        return cameraRefs.stream().map(Reference::get).collect(Collectors.toList());
+    }
 
     public final Camera camera;
 
@@ -38,6 +52,7 @@ public class PostProcessingCamera implements IPropertyProvider {
         this.processors = Arrays.asList(processors);
         this.fbo = FBOBuilder.BuildDefaultGBuffer(Math.round(camera.viewportWidth), Math.round(camera.viewportHeight));
         flattenFBO = new FBO(Pixmap.Format.RGBA8888, Math.round(camera.viewportWidth), Math.round(camera.viewportHeight), false);
+        _register(this);
     }
 
     public Camera Camera() {

@@ -150,17 +150,17 @@ public class GameLauncher extends Game {
         ProfilerHost.Clear();
 
         // TODO reimplement properly
-//        GPUTaskProfile tp;
-//        while((tp = GPUProfiler.GetFrameResults()) != null) {
-//            ProfilerHost.Post(new TaskStats(tp));
-//            GPUProfiler.Recycle(tp);
-//        }
-//
-//        CPUTaskProfile cp;
-//        while((cp = CPUProfiler.GetFrameResults()) != null) {
-//            ProfilerHost.Post(new TaskStats(cp));
-//            CPUProfiler.Recycle(cp);
-//        }
+        GPUTaskProfile tp;
+        while((tp = GPUProfiler.Get().GetFrameResults()) != null) {
+            ProfilerHost.Post(new TaskStats(tp));
+            GPUProfiler.Get().Recycle(tp);
+        }
+
+        CPUTaskProfile cp;
+        while((cp = CPUProfiler.Get().GetFrameResults()) != null) {
+            ProfilerHost.Post(new TaskStats(cp));
+            CPUProfiler.Get().Recycle(cp);
+        }
 
         ProfilerHost.instance().NotifyListeners();
         ScrollInputHelper.instance().Update(delta);
